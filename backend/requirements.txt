@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+motor
+pymongo
+dnspython
+pydantic
+pydantic-settings
+python-dotenv
+httpx
+google-auth

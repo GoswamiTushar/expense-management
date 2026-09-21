@@ -1,0 +1,50 @@
+import { StyleSheet } from 'react-native';
+import { colors } from '../../../theme/colors';
+
+export const styles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.cardDark,
+    borderRadius: 20,
+    padding: 16,
+    marginHorizontal: 16,
+    marginTop: 14,
+    borderWidth: 1,
+    borderColor: colors.borderDark,
+  },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  statusPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surfaceDark,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  dot: { width: 6, height: 6, borderRadius: 3, marginRight: 6 },
+  statusText: { fontSize: 10.5, fontWeight: '800' },
+  managerCount: { color: colors.textMuted, fontSize: 11 },
+  amount: { color: colors.textDark, fontSize: 32, fontWeight: '900', marginTop: 10 },
+  sub: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
+  actionsRow: { flexDirection: 'row', gap: 10, marginTop: 14 },
+  addBtn: {
+    flex: 1,
+    backgroundColor: colors.primary,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    borderRadius: 12,
+    gap: 6,
+  },
+  btnText: { color: colors.white, fontSize: 13.5, fontWeight: '700' },
+  settleBtn: {
+    flex: 1,
+    backgroundColor: colors.success,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    borderRadius: 12,
+    gap: 6,
+  },
+});

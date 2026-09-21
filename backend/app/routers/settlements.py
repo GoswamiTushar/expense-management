@@ -1,0 +1,26 @@
+import time
+from datetime import datetime
+from typing import List, Optional
+from fastapi import APIRouter
+from app.database import get_db
+from app.models.settlement import SettlementCreate, SettlementResponse
+
+router = APIRouter(prefix="/api/settlements", tags=["Settlements"])
+
+@router.get("", response_model=List[SettlementResponse])
+async def list_settlements(propertyId: Optional[str] = None):
+    query = {"propertyId": propertyId} if propertyId else {}
+    docs = await get_db().settlements.find(query).sort("settledAt", -1).to_list(200)
+    return [SettlementResponse(id=s["_id"], **s) for s in docs]
+
+@router.post("", response_model=SettlementResponse)
+async def create_settlement(payload: SettlementCreate):
+    now = datetime.utcnow().isoformat()
+    record = {
+        "_id": f"settle_{int(time.time()*1000)}",
+        **payload.model_dump(),
+        "settledAt": now,
+        "status": "completed",
+    }
+    await get_db().settlements.insert_one(record)
+    return SettlementResponse(id=record["_id"], **record)
