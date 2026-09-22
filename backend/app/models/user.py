@@ -15,6 +15,13 @@ class GoogleAuthRequest(BaseModel):
     id_token: str
     upiId: Optional[str] = ""
 
+class VerifyOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+class ResendOtpRequest(BaseModel):
+    email: EmailStr
+
 class UserResponse(BaseModel):
     id: str
     name: str

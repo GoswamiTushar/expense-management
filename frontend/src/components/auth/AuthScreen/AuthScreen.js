@@ -5,6 +5,7 @@ import { signUpUser, signInUser } from '../../../services/api/authApi';
 import AuthHeader from './AuthHeader';
 import AuthFormInputs from './AuthFormInputs';
 import GoogleSignInButton from './GoogleSignInButton';
+import OtpVerificationModal from '../OtpVerificationModal/OtpVerificationModal';
 
 export default function AuthScreen({ onAuthSuccess, onOpenInviteCode }) {
   const [isSignUp, setIsSignUp] = useState(true);
@@ -12,13 +13,18 @@ export default function AuthScreen({ onAuthSuccess, onOpenInviteCode }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [upiId, setUpiId] = useState('');
+  const [showOtp, setShowOtp] = useState(false);
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) return alert('Please enter email and password.');
     if (isSignUp && !name.trim()) return alert('Please enter your full name.');
     try {
-      const user = isSignUp ? await signUpUser({ name, email, password, upiId }) : await signInUser({ email, password });
-      onAuthSuccess(user);
+      if (isSignUp) {
+        await signUpUser({ name, email, password, upiId });
+        setShowOtp(true);
+      } else {
+        onAuthSuccess(await signInUser({ email, password }));
+      }
     } catch (err) { alert(err.message); }
   };
 
@@ -35,6 +41,7 @@ export default function AuthScreen({ onAuthSuccess, onOpenInviteCode }) {
           <TouchableOpacity style={styles.inviteLinkBtn} onPress={onOpenInviteCode}>
             <Text style={styles.inviteLinkText}>Invited by a partner? Join with invite code</Text>
           </TouchableOpacity>
+          <OtpVerificationModal visible={showOtp} email={email} onClose={() => setShowOtp(false)} onSuccess={onAuthSuccess} />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

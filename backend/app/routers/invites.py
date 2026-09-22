@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from app.database import get_db
 from app.models.invite import InviteCreate, InviteAccept, InviteResponse
-from app.routers.auth import create_user_doc
+from app.services.user_helper import create_user_doc
 from app.services.email_service import send_onboarding_email
 
 router = APIRouter(prefix="/api/invites", tags=["Invites"])

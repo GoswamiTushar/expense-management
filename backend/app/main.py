@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import ping_database
-from app.routers import auth, properties, expenses, settlements, invites
+from app.routers import auth, auth_signup, properties, expenses, settlements, invites
 
 app = FastAPI(title="Airbnb Expense API", version="2.0.0")
 
@@ -29,6 +29,7 @@ async def health_check():
     return {"status": "healthy" if db_ok else "degraded", "database": db_ok}
 
 app.include_router(auth.router)
+app.include_router(auth_signup.router)
 app.include_router(properties.router)
 app.include_router(expenses.router)
 app.include_router(settlements.router)
