@@ -32,7 +32,7 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
             <TextInput style={styles.input} placeholder="e.g. Monthly Rent, Electricity Bill" placeholderTextColor={colors.textDim} value={form.title} onChangeText={form.setTitle} />
             <CategoryPickerField selectedCategory={form.category} onSelectCategory={form.setCategory} />
             <Text style={styles.label}>SPLIT EQUALLY AMONG</Text>
-            <MemberChecklist managers={property?.managers || []} selectedMembers={form.selectedMembers} sharePerPerson={form.sharePerPerson} onToggle={form.toggleMember} />
+            <MemberChecklist managers={property?.managers || []} managerDetails={property?.managerDetails || []} currentUser={currentUser} selectedMembers={form.selectedMembers} sharePerPerson={form.sharePerPerson} onToggle={form.toggleMember} />
             <ImagePickerField receiptUrl={form.receiptUrl} onSelectReceipt={form.setReceiptUrl} />
             <Text style={styles.label}>NOTES (OPTIONAL)</Text>
             <TextInput style={styles.input} placeholder="e.g. UPI Ref # or notes" placeholderTextColor={colors.textDim} value={form.notes} onChangeText={form.setNotes} />
