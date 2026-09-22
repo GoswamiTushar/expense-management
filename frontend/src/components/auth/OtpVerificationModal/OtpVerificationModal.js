@@ -5,8 +5,8 @@ import { colors } from '../../../theme/colors';
 import { verifyOtp, resendOtp } from '../../../services/api/authApi';
 import { styles } from './OtpVerificationModal.styles';
 
-export default function OtpVerificationModal({ visible, email, onClose, onSuccess }) {
-  const [otp, setOtp] = useState('');
+export default function OtpVerificationModal({ visible, email, onClose, onSuccess, initialOtp = '' }) {
+  const [otp, setOtp] = useState(initialOtp || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   if (!visible) return null;

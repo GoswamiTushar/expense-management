@@ -7,7 +7,7 @@ def generate_otp() -> str:
 
 def send_verification_otp(to_email: str, otp: str) -> bool:
     print(f"[OTP Service] Verification code for {to_email}: {otp}")
-    html = render_otp_email(otp)
+    html = render_otp_email(otp, to_email)
     ok = send_mail(to_email, f"{otp} is your verification code", html)
     if ok:
         print(f"[OTP Service] Delivered code {otp} to {to_email}")

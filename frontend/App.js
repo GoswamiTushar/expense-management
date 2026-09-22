@@ -8,9 +8,18 @@ import AuthScreen from './src/components/auth/AuthScreen/AuthScreen';
 import MainDashboard from './src/components/dashboard/MainDashboard';
 import { AcceptInviteModal } from './src/components/auth/AcceptInviteModal/AcceptInviteModal';
 
+const getParams = () => {
+  if (typeof window !== 'undefined' && window.location?.search) {
+    const p = new URLSearchParams(window.location.search);
+    return { invite: p.get('invite') || '', otp: p.get('otp') || '', email: p.get('verify_email') || '' };
+  }
+  return { invite: '', otp: '', email: '' };
+};
+
 export default function App() {
   const data = usePropertyData();
-  const [showAcceptInvite, setShowAcceptInvite] = useState(false);
+  const [params] = useState(getParams);
+  const [showAcceptInvite, setShowAcceptInvite] = useState(Boolean(params.invite));
 
   const handleLogout = async () => {
     await logoutUser();
@@ -28,15 +37,8 @@ export default function App() {
       <Toast />
       {!data.currentUser ? (
         <>
-          <AuthScreen
-            onAuthSuccess={data.setCurrentUser}
-            onOpenInviteCode={() => setShowAcceptInvite(true)}
-          />
-          <AcceptInviteModal
-            visible={showAcceptInvite}
-            onClose={() => setShowAcceptInvite(false)}
-            onSuccess={handleInviteJoined}
-          />
+          <AuthScreen onAuthSuccess={data.setCurrentUser} onOpenInviteCode={() => setShowAcceptInvite(true)} initialOtp={params.otp} initialEmail={params.email} />
+          <AcceptInviteModal visible={showAcceptInvite} onClose={() => setShowAcceptInvite(false)} onSuccess={handleInviteJoined} initialCode={params.invite} />
         </>
       ) : (
         <MainDashboard data={data} onLogout={handleLogout} />

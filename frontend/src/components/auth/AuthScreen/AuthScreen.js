@@ -8,13 +8,13 @@ import AuthFormInputs from './AuthFormInputs';
 import GoogleSignInButton from './GoogleSignInButton';
 import OtpVerificationModal from '../OtpVerificationModal/OtpVerificationModal';
 
-export default function AuthScreen({ onAuthSuccess, onOpenInviteCode }) {
+export default function AuthScreen({ onAuthSuccess, onOpenInviteCode, initialOtp = '', initialEmail = '' }) {
   const [isSignUp, setIsSignUp] = useState(true);
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(initialEmail || '');
   const [password, setPassword] = useState('');
   const [upiId, setUpiId] = useState('');
-  const [showOtp, setShowOtp] = useState(false);
+  const [showOtp, setShowOtp] = useState(Boolean(initialOtp && initialEmail));
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
@@ -41,7 +41,7 @@ export default function AuthScreen({ onAuthSuccess, onOpenInviteCode }) {
           <TouchableOpacity style={styles.inviteLinkBtn} onPress={onOpenInviteCode}>
             <Text style={styles.inviteLinkText}>Invited by a partner? Join with invite code</Text>
           </TouchableOpacity>
-          <OtpVerificationModal visible={showOtp} email={email} onClose={() => setShowOtp(false)} onSuccess={onAuthSuccess} />
+          <OtpVerificationModal visible={showOtp} email={email} initialOtp={initialOtp} onClose={() => setShowOtp(false)} onSuccess={onAuthSuccess} />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
