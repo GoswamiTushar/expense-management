@@ -8,11 +8,8 @@ class Settings(BaseSettings):
     host: str = os.getenv("HOST", "0.0.0.0")
     cors_origins: str = os.getenv("CORS_ORIGINS", "*")
     google_client_id: str = os.getenv("GOOGLE_CLIENT_ID", "")
-    smtp_host: str = os.getenv("SMTP_HOST", "smtp.titan.email")
-    smtp_port: int = int(os.getenv("SMTP_PORT", "465"))
-    smtp_user: str = os.getenv("SMTP_USER", "")
-    smtp_pass: str = os.getenv("SMTP_PASS", "")
-    smtp_from: str = os.getenv("SMTP_FROM", "contact@tushargoswami.dev")
+    resend_api_key: str = os.getenv("RESEND_API_KEY", "")
+    email_from: str = os.getenv("EMAIL_FROM", "Airbnb Manager <onboarding@resend.dev>")
 
     class Config:
         env_file = ".env"
