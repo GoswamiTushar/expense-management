@@ -41,4 +41,5 @@ async def accept_invite(payload: InviteAccept):
             await db.users.insert_one(user)
     await db.properties.update_one({"_id": inv["propertyId"]}, {"$addToSet": {"managers": user["_id"]}})
     await db.invites.update_one({"_id": inv["_id"]}, {"$set": {"status": "accepted", "acceptedBy": user["_id"]}})
-    return {"user": {**user, "id": user["_id"]}, "propertyId": inv["propertyId"]}
+    u_clean = {k: v for k, v in user.items() if k != "password"}
+    return {"user": {**u_clean, "id": user["_id"]}, "propertyId": inv["propertyId"]}

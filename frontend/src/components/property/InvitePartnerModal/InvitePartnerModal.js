@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, TextInput, Linking } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, TextInput, Linking, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from './InvitePartnerModal.styles';
 import { colors } from '../../../theme/colors';
@@ -9,16 +9,17 @@ import InviteCodeDisplay from './InviteCodeDisplay';
 export default function InvitePartnerModal({ visible, onClose, property, currentUser }) {
   const [email, setEmail] = useState('');
   const [invite, setInvite] = useState(null);
-
+  const [loading, setLoading] = useState(false);
   if (!visible) return null;
 
   const handleCreate = async () => {
     if (!email.trim() || !email.includes('@')) return alert('Please enter a valid email address.');
-    const res = await createPropertyInvite({
-      propertyId: property?._id, propertyName: property?.name,
-      invitedBy: currentUser?.name || 'Property Owner', email: email.trim(),
-    });
-    setInvite(res);
+    setLoading(true);
+    try {
+      const res = await createPropertyInvite({ propertyId: property?._id, propertyName: property?.name, invitedBy: currentUser?.name || 'Property Owner', email: email.trim() });
+      setInvite(res);
+    } catch (err) { alert(err.message); }
+    finally { setLoading(false); }
   };
 
   const handleSendEmail = () => {
@@ -37,10 +38,10 @@ export default function InvitePartnerModal({ visible, onClose, property, current
           <Text style={styles.label}>FRIEND'S EMAIL ADDRESS</Text>
           <TextInput style={styles.input} placeholder="friend@example.com" placeholderTextColor={colors.textDim} keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
           {!invite ? (
-            <TouchableOpacity style={styles.genBtn} onPress={handleCreate} activeOpacity={0.8}><Text style={styles.genText}>Generate Partner Invite</Text></TouchableOpacity>
-          ) : (
-            <InviteCodeDisplay code={invite.code} onSendEmail={handleSendEmail} />
-          )}
+            <TouchableOpacity style={styles.genBtn} onPress={handleCreate} disabled={loading} activeOpacity={0.8}>
+              {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.genText}>Generate Partner Invite</Text>}
+            </TouchableOpacity>
+          ) : ( <InviteCodeDisplay code={invite.code} onSendEmail={handleSendEmail} /> )}
         </View>
       </View>
     </Modal>

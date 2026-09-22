@@ -7,8 +7,8 @@ def generate_otp() -> str:
     return str(random.randint(100000, 999999))
 
 def send_verification_otp(to_email: str, otp: str) -> bool:
+    print(f"[OTP Service] Verification code for {to_email}: {otp}")
     if not settings.smtp_user or not settings.smtp_pass:
-        print(f"[OTP Service MOCK] Verification code {otp} sent to {to_email}")
         return True
     try:
         sender = settings.smtp_from or settings.smtp_user
@@ -26,16 +26,16 @@ def send_verification_otp(to_email: str, otp: str) -> bool:
         """
         msg.attach(MIMEText(html, "html"))
         if settings.smtp_port == 465:
-            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=15) as s:
+            with smtplib.SMTP_SSL(settings.smtp_host, settings.smtp_port, timeout=5) as s:
                 s.login(settings.smtp_user, settings.smtp_pass)
                 s.sendmail(sender, to_email, msg.as_string())
         else:
-            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=15) as s:
+            with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=5) as s:
                 s.starttls()
                 s.login(settings.smtp_user, settings.smtp_pass)
                 s.sendmail(sender, to_email, msg.as_string())
-        print(f"[OTP Service] Sent code {otp} to {to_email}")
+        print(f"[OTP Service] Delivered code {otp} to {to_email}")
         return True
     except Exception as e:
-        print(f"[OTP Service Error] {e}")
+        print(f"[OTP Service Warning] SMTP delivery notice ({e}). Code remains valid: {otp}")
         return False

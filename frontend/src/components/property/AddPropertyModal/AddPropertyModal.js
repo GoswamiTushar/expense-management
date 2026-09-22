@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from './AddPropertyModal.styles';
 import { colors } from '../../../theme/colors';
@@ -9,13 +9,18 @@ export default function AddPropertyModal({ visible, onClose, onSubmit, currentUs
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [otaLinks, setOtaLinks] = useState({});
+  const [loading, setLoading] = useState(false);
 
   if (!visible) return null;
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!name.trim()) return alert('Enter a property name.');
-    onSubmit({ name: name.trim(), location: location.trim() || 'India', managers: [currentUser?._id].filter(Boolean), otaLinks });
-    setName(''); setLocation(''); setOtaLinks({}); onClose();
+    setLoading(true);
+    try {
+      await onSubmit({ name: name.trim(), location: location.trim() || 'India', managers: [currentUser?._id].filter(Boolean), otaLinks });
+      setName(''); setLocation(''); setOtaLinks({}); onClose();
+    } catch (err) { alert(err.message); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -32,8 +37,8 @@ export default function AddPropertyModal({ visible, onClose, onSubmit, currentUs
             <Text style={styles.label}>ADDRESS / CITY</Text>
             <TextInput style={styles.input} placeholder="e.g. Calangute, Goa, India" placeholderTextColor={colors.textDim} value={location} onChangeText={setLocation} />
             <OtaLinksField otaLinks={otaLinks} onChangeLinks={setOtaLinks} />
-            <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} activeOpacity={0.8}>
-              <Text style={styles.submitText}>Create Property</Text>
+            <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} disabled={loading} activeOpacity={0.8}>
+              {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.submitText}>Create Property</Text>}
             </TouchableOpacity>
           </ScrollView>
         </View>
