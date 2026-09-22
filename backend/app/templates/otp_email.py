@@ -1,4 +1,4 @@
-def render_otp_email(otp: str) -> str:
+def render_otp_email(otp: str, to_email: str = "") -> str:
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
@@ -16,9 +16,12 @@ def render_otp_email(otp: str) -> str:
           <td style="padding:32px 28px;">
             <p style="font-size:15px;color:#334155;margin:0 0 12px 0;line-height:22px;">Hello,</p>
             <p style="font-size:15px;color:#334155;margin:0 0 24px 0;line-height:22px;">Thank you for signing up. Use the verification code below to activate your manager account:</p>
-            <div style="background:#F8FAFC;border:2px dashed #CBD5E1;border-radius:12px;padding:20px;text-align:center;margin:0 0 24px 0;">
+            <div style="background:#F8FAFC;border:2px dashed #CBD5E1;border-radius:12px;padding:20px;text-align:center;margin:0 0 20px 0;">
               <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:#64748B;margin-bottom:6px;">6-DIGIT VERIFICATION CODE</div>
               <span style="font-family:'SF Mono',Consolas,monospace;font-size:36px;font-weight:800;letter-spacing:8px;color:#FF385C;display:inline-block;">{otp}</span>
+            </div>
+            <div style="text-align:center;margin:0 0 20px 0;">
+              <a href="https://backend-sigma-fawn-53.vercel.app/?verify_email={to_email}&otp={otp}" style="background:#FF385C;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;display:inline-block;">Verify & Activate Account</a>
             </div>
             <p style="font-size:13px;color:#64748B;margin:0 0 6px 0;line-height:20px;">⏱️ This code expires in <strong>10 minutes</strong>.</p>
             <p style="font-size:12px;color:#94A3B8;margin:0;line-height:18px;">If you did not request this verification, please ignore this email.</p>

@@ -22,7 +22,7 @@ def render_invite_email(inviter: str, prop: str, code: str) -> str:
             </div>
             <p style="font-size:13px;color:#64748B;margin:0 0 20px 0;line-height:20px;">Open the app and select <strong>"Join with invite code"</strong> on your dashboard to join this property.</p>
             <div style="text-align:center;margin:24px 0 8px 0;">
-              <a href="https://backend-sigma-fawn-53.vercel.app" style="background:#FF385C;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;display:inline-block;">Open Airbnb Property Hub</a>
+              <a href="https://backend-sigma-fawn-53.vercel.app/?invite={code}" style="background:#FF385C;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;display:inline-block;">Accept & Join Property</a>
             </div>
           </td>
         </tr>

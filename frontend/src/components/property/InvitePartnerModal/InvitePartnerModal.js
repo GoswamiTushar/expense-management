@@ -16,7 +16,7 @@ export default function InvitePartnerModal({ visible, onClose, property, current
     if (!email.trim() || !email.includes('@')) return alert('Please enter a valid email address.');
     setLoading(true);
     try {
-      const res = await createPropertyInvite({ propertyId: property?._id, propertyName: property?.name, invitedBy: currentUser?.name || 'Property Owner', email: email.trim() });
+      const res = await createPropertyInvite({ propertyId: property?._id, propertyName: property?.name, invitedBy: currentUser?.name || 'Property Owner', email: email.trim(), inviterEmail: currentUser?.email || '' });
       setInvite(res);
     } catch (err) { alert(err.message); }
     finally { setLoading(false); }

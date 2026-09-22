@@ -6,6 +6,7 @@ class InviteCreate(BaseModel):
     propertyName: str
     invitedBy: str
     email: str
+    inviterEmail: Optional[str] = ""
 
 class InviteAccept(BaseModel):
     inviteCode: str

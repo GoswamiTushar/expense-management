@@ -17,7 +17,7 @@ async def create_invite(payload: InviteCreate):
         "status": "pending", "createdAt": datetime.utcnow().isoformat(),
     }
     await get_db().invites.insert_one(inv)
-    send_onboarding_email(payload.email, code, payload.propertyName, payload.invitedBy)
+    send_onboarding_email(payload.email, code, payload.propertyName, payload.invitedBy, payload.inviterEmail or "")
     return InviteResponse(id=inv["_id"], **inv)
 
 @router.get("/{code}", response_model=InviteResponse)

@@ -5,8 +5,8 @@ import { colors } from '../../../theme/colors';
 import { acceptPropertyInvite } from '../../../services/api/inviteApi';
 import { styles } from './AcceptInviteModal.styles';
 
-export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser }) => {
-  const [code, setCode] = useState('');
+export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser, initialCode = '' }) => {
+  const [code, setCode] = useState(initialCode || '');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
