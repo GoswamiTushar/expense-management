@@ -70,7 +70,7 @@ export const buildPersonTables = (managers = [], expenses = []) => {
         ${makeTd(paidByName, false, bg, isPayer)}
         ${makeTd(role, false, bg)}
         ${makeTd(myShare > 0 ? formatInr(myShare) : '—', true, bg)}
-        ${makeTd(iPaid > 0 ? formatInr(iPaid) : '—', true, bg, isPaid)}
+        ${makeTd(iPaid > 0 ? formatInr(iPaid) : '—', true, bg, isPayer)}
       </tr>`;
     }).join('');
 
