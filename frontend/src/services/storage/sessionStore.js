@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import { store as SecureStore } from './secureStorage';
 
 const SESSION_KEY = 'airbnb_user_session';
 const ACCESS_TOKEN_KEY = 'airbnb_access_token';

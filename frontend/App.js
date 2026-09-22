@@ -29,7 +29,10 @@ export default function App() {
   useEffect(() => {
     (async () => {
       const stored = await getDeviceUserProfile();
-      setCurrentUser(stored || null);
+      if (stored) {
+        // Ensure _id is always set (maps from id field returned by backend)
+        setCurrentUser({ ...stored, _id: stored._id || stored.id, id: stored.id || stored._id });
+      }
       setAuthLoading(false);
     })();
   }, []);

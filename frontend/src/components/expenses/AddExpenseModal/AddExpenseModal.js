@@ -33,7 +33,7 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
             <CategoryPickerField selectedCategory={form.category} onSelectCategory={form.setCategory} />
             <Text style={styles.label}>SPLIT EQUALLY AMONG</Text>
             <MemberChecklist managers={property?.managers || []} managerDetails={property?.managerDetails || []} currentUser={currentUser} selectedMembers={form.selectedMembers} sharePerPerson={form.sharePerPerson} onToggle={form.toggleMember} />
-            <ImagePickerField receiptUrl={form.receiptUrl} onSelectReceipt={form.setReceiptUrl} />
+            <ImagePickerField receiptUrls={form.receiptUrls} addReceiptUrls={form.addReceiptUrls} removeReceiptUrl={form.removeReceiptUrl} />
             <Text style={styles.label}>NOTES (OPTIONAL)</Text>
             <TextInput style={styles.input} placeholder="e.g. UPI Ref # or notes" placeholderTextColor={colors.textDim} value={form.notes} onChangeText={form.setNotes} />
             <TouchableOpacity style={styles.submitBtn} onPress={form.handleSubmit} activeOpacity={0.8}>

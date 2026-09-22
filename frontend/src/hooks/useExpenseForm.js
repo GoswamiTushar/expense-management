@@ -6,18 +6,32 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Rent');
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [receiptUrl, setReceiptUrl] = useState('');
+  const [receiptUrls, setReceiptUrls] = useState([]);  // ← now an array
   const [notes, setNotes] = useState('');
 
   useEffect(() => {
     setTitle(''); setAmount(''); setCategory('Rent');
-    setSelectedMembers(property?.managers || []); setReceiptUrl(''); setNotes('');
+    setSelectedMembers(property?.managers || []); setReceiptUrls([]); setNotes('');
   }, [property]);
 
   const toggleMember = (id) => {
     if (selectedMembers.includes(id)) {
       if (selectedMembers.length > 1) setSelectedMembers(selectedMembers.filter((m) => m !== id));
     } else { setSelectedMembers([...selectedMembers, id]); }
+  };
+
+  /** Append new URIs (from camera or gallery), avoiding duplicates */
+  const addReceiptUrls = (newUris) => {
+    const toAdd = Array.isArray(newUris) ? newUris : [newUris];
+    setReceiptUrls((prev) => {
+      const merged = [...prev, ...toAdd.filter((u) => u && !prev.includes(u))];
+      return merged;
+    });
+  };
+
+  /** Remove a single image by its URI */
+  const removeReceiptUrl = (uri) => {
+    setReceiptUrls((prev) => prev.filter((u) => u !== uri));
   };
 
   const parsedAmount = parseFloat(amount) || 0;
@@ -28,14 +42,18 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
     onSubmit({
       propertyId: property._id, title: title.trim(), amount: parsedAmount, category,
       paidBy: currentUser?._id, payerName: currentUser?.name || 'Manager',
-      splitAmong: selectedMembers, sharePerPerson, receiptUrl, notes: notes.trim(), date: new Date().toISOString(),
+      splitAmong: selectedMembers, sharePerPerson,
+      receiptUrl: receiptUrls[0] || '',   // backward-compat: first image as primary
+      receiptUrls,                         // full array for new consumers
+      notes: notes.trim(), date: new Date().toISOString(),
     });
     onClose();
   };
 
   return {
     title, setTitle, amount, setAmount, category, setCategory,
-    selectedMembers, toggleMember, receiptUrl, setReceiptUrl,
+    selectedMembers, toggleMember,
+    receiptUrls, addReceiptUrls, removeReceiptUrl,
     notes, setNotes, parsedAmount, sharePerPerson, handleSubmit,
   };
 };

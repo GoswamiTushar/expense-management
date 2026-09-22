@@ -1,5 +1,6 @@
 import * as ImagePicker from 'expo-image-picker';
 
+/** Capture a single photo from camera. Returns one URI string or null. */
 export const pickReceiptFromCamera = async () => {
   const { status } = await ImagePicker.requestCameraPermissionsAsync();
   if (status !== 'granted') {
@@ -11,30 +12,32 @@ export const pickReceiptFromCamera = async () => {
     mediaTypes: ['images'],
     allowsEditing: true,
     aspect: [4, 3],
-    quality: 0.7,
+    quality: 0.75,
   });
 
-  if (!result.canceled && result.assets && result.assets.length > 0) {
-    return result.assets[0].uri;
+  if (!result.canceled && result.assets?.length > 0) {
+    return result.assets[0].uri;   // single URI
   }
   return null;
 };
 
-export const pickReceiptFromGallery = async () => {
+/** Pick one or more photos from gallery. Returns array of URI strings (empty on cancel). */
+export const pickReceiptsFromGallery = async () => {
   const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (status !== 'granted') {
     alert('Media gallery permission is required to upload receipt images.');
-    return null;
+    return [];
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ['images'],
-    allowsEditing: true,
-    quality: 0.7,
+    allowsMultipleSelection: true,   // ← multi-select
+    quality: 0.75,
+    orderedSelection: true,
   });
 
-  if (!result.canceled && result.assets && result.assets.length > 0) {
-    return result.assets[0].uri;
+  if (!result.canceled && result.assets?.length > 0) {
+    return result.assets.map((a) => a.uri);
   }
-  return null;
+  return [];
 };

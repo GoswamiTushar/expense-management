@@ -1,6 +1,13 @@
 import { apiClient } from './apiClient';
 import { saveDeviceUserProfile, clearDeviceUserProfile, saveTokens, clearTokens } from '../storage/sessionStore';
 
+// Ensure both id and _id are always present on user objects
+const normalizeUser = (user) => ({
+  ...user,
+  id: user.id || user._id,
+  _id: user._id || user.id,
+});
+
 export const signUpUser = async ({ name, email, password, upiId = '' }) => {
   return await apiClient('/auth/signup', {
     method: 'POST',
@@ -14,9 +21,10 @@ export const verifyOtp = async ({ email, otp }) => {
     body: { email, otp },
   });
   // Response: { user, accessToken, refreshToken }
+  const user = normalizeUser(res.user);
   await saveTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
-  await saveDeviceUserProfile(res.user);
-  return res.user;
+  await saveDeviceUserProfile(user);
+  return user;
 };
 
 export const resendOtp = async ({ email }) => {
@@ -32,9 +40,10 @@ export const signInUser = async ({ email, password }) => {
     body: { email, password },
   });
   // Response: { user, accessToken, refreshToken }
+  const user = normalizeUser(res.user);
   await saveTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
-  await saveDeviceUserProfile(res.user);
-  return res.user;
+  await saveDeviceUserProfile(user);
+  return user;
 };
 
 export const logoutUser = async () => {
