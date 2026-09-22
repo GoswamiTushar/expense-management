@@ -5,8 +5,10 @@ import { styles } from './PropertyPickerModal.styles';
 import { colors } from '../../../theme/colors';
 
 export default function PropertyPickerModal({ visible, onClose, properties = [], activeProperty, onSelectProperty, onOpenAddProperty, onOpenJoinInvite }) {
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}>

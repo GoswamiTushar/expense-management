@@ -15,8 +15,8 @@ import { sendExpensePushNotification, sendSettlementPushNotification } from '../
 export default function MainDashboard({ data, onLogout }) {
   const [cat, setCat] = useState('ALL');
   const [settleWith, setSettleWith] = useState(null);
-  const [modals, setModals] = useState({});
-  const setM = (k, v) => setModals((p) => ({ ...p, [k]: v }));
+  const [activeModal, setActiveModal] = useState(null);
+  const setM = (k) => setActiveModal(k || null);
 
   const onAddExpense = async (exp) => {
     const res = await createExpense(exp); data.setExpenses((p) => [res, ...p]);
@@ -32,12 +32,12 @@ export default function MainDashboard({ data, onLogout }) {
 
   return (
     <View style={styles.container}>
-      <Header activeProperty={data.activeProperty} currentUser={data.currentUser} onOpenPropertyPicker={() => setM('showPropPicker', true)} onOpenNotifications={() => setM('showNotifs', true)} onOpenAuditLog={() => setM('showAudit', true)} onOpenProfile={() => setM('showProfile', true)} onOpenInvitePartner={() => setM('showInvitePartner', true)} />
+      <Header activeProperty={data.activeProperty} currentUser={data.currentUser} onOpenPropertyPicker={() => setM('showPropPicker')} onOpenNotifications={() => setM('showNotifs')} onOpenAuditLog={() => setM('showAudit')} onOpenProfile={() => setM('showProfile')} onOpenInvitePartner={() => setM('showInvitePartner')} />
       <DashboardContent data={data} cat={cat} setCat={setCat} setM={setM} setSettleWith={setSettleWith} />
       {data.activeProperty && (
-        <TouchableOpacity style={styles.fab} onPress={() => setM('showAdd', true)}><Ionicons name="add" size={24} color={colors.white} /><Text style={styles.fabText}>Add Expense</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.fab} onPress={() => setM('showAdd')}><Ionicons name="add" size={24} color={colors.white} /><Text style={styles.fabText}>Add Expense</Text></TouchableOpacity>
       )}
-      <AppModals modals={{ ...modals, setShowAdd: (v) => setM('showAdd', v), setShowSettle: (v) => setM('showSettle', v), setShowPropPicker: (v) => setM('showPropPicker', v), setShowAddProp: (v) => setM('showAddProp', v), setShowNotifs: (v) => setM('showNotifs', v), setShowHistory: (v) => setM('showHistory', v), setShowAudit: (v) => setM('showAudit', v), setShowProfile: (v) => setM('showProfile', v), setShowInvitePartner: (v) => setM('showInvitePartner', v), setShowAcceptInvite: (v) => setM('showAcceptInvite', v) }} data={data} settleWith={settleWith} onAddExpense={onAddExpense} onSettle={onSettle} onCreateProperty={onCreateProp} onSaveProfile={async (p) => { const s = await saveDeviceUserProfile(p); data.setCurrentUser(s); }} onLogout={onLogout} onInviteSuccess={data.reload} onAcceptInviteSuccess={(r) => { data.setCurrentUser(r.user); data.reload(); }} />
+      <AppModals activeModal={activeModal} setM={setM} data={data} settleWith={settleWith} onAddExpense={onAddExpense} onSettle={onSettle} onCreateProperty={onCreateProp} onSaveProfile={async (p) => { const s = await saveDeviceUserProfile(p); data.setCurrentUser(s); }} onLogout={onLogout} onInviteSuccess={data.reload} onAcceptInviteSuccess={(r) => { data.setCurrentUser(r.user); data.reload(); }} />
     </View>
   );
 }

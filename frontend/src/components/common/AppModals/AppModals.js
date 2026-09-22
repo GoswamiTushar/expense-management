@@ -10,19 +10,20 @@ import EditProfileModal from '../../profile/EditProfileModal/EditProfileModal';
 import InvitePartnerModal from '../../property/InvitePartnerModal/InvitePartnerModal';
 import { AcceptInviteModal } from '../../auth/AcceptInviteModal/AcceptInviteModal';
 
-export default function AppModals({ modals, data, settleWith, onAddExpense, onSettle, onCreateProperty, onSaveProfile, onLogout, onInviteSuccess, onAcceptInviteSuccess }) {
+export default function AppModals({ activeModal, setM, data, settleWith, onAddExpense, onSettle, onCreateProperty, onSaveProfile, onLogout, onInviteSuccess, onAcceptInviteSuccess }) {
+  const close = () => setM(null);
   return (
     <>
-      <AddExpenseModal visible={modals.showAdd} onClose={() => modals.setShowAdd(false)} onSubmit={onAddExpense} property={data.activeProperty} currentUser={data.currentUser} />
-      <SettleUpModal visible={modals.showSettle} onClose={() => modals.setShowSettle(false)} onSubmit={onSettle} creditor={settleWith?.user} debtor={data.currentUser} property={data.activeProperty} defaultAmount={settleWith?.amount} />
-      <PropertyPickerModal visible={modals.showPropPicker} onClose={() => modals.setShowPropPicker(false)} properties={data.properties} activeProperty={data.activeProperty} onSelectProperty={data.setActiveProperty} onOpenAddProperty={() => modals.setShowAddProp(true)} onOpenJoinInvite={() => modals.setShowAcceptInvite(true)} />
-      <AddPropertyModal visible={modals.showAddProp} onClose={() => modals.setShowAddProp(false)} onSubmit={onCreateProperty} currentUser={data.currentUser} />
-      <NotificationDrawerModal visible={modals.showNotifs} onClose={() => modals.setShowNotifs(false)} />
-      <SettlementHistoryModal visible={modals.showHistory} onClose={() => modals.setShowHistory(false)} settlements={data.settlements} />
-      <ChronoAuditLogModal visible={modals.showAudit} onClose={() => modals.setShowAudit(false)} expenses={data.expenses} />
-      <EditProfileModal visible={modals.showProfile} onClose={() => modals.setShowProfile(false)} currentUser={data.currentUser} onSaveProfile={onSaveProfile} onLogout={onLogout} />
-      <InvitePartnerModal visible={modals.showInvitePartner} onClose={() => modals.setShowInvitePartner(false)} property={data.activeProperty} currentUser={data.currentUser} onSuccess={onInviteSuccess} />
-      <AcceptInviteModal visible={modals.showAcceptInvite} onClose={() => modals.setShowAcceptInvite(false)} onSuccess={onAcceptInviteSuccess} currentUser={data.currentUser} />
+      <AddExpenseModal visible={activeModal === 'showAdd'} onClose={close} onSubmit={onAddExpense} property={data.activeProperty} currentUser={data.currentUser} />
+      <SettleUpModal visible={activeModal === 'showSettle'} onClose={close} onSubmit={onSettle} creditor={settleWith?.user} debtor={data.currentUser} property={data.activeProperty} defaultAmount={settleWith?.amount} />
+      <PropertyPickerModal visible={activeModal === 'showPropPicker'} onClose={close} properties={data.properties} activeProperty={data.activeProperty} onSelectProperty={data.setActiveProperty} onOpenAddProperty={() => setM('showAddProp')} onOpenJoinInvite={() => setM('showAcceptInvite')} />
+      <AddPropertyModal visible={activeModal === 'showAddProp'} onClose={close} onSubmit={onCreateProperty} currentUser={data.currentUser} />
+      <NotificationDrawerModal visible={activeModal === 'showNotifs'} onClose={close} />
+      <SettlementHistoryModal visible={activeModal === 'showHistory'} onClose={close} settlements={data.settlements} />
+      <ChronoAuditLogModal visible={activeModal === 'showAudit'} onClose={close} expenses={data.expenses} />
+      <EditProfileModal visible={activeModal === 'showProfile'} onClose={close} currentUser={data.currentUser} onSaveProfile={onSaveProfile} onLogout={onLogout} />
+      <InvitePartnerModal visible={activeModal === 'showInvitePartner'} onClose={close} property={data.activeProperty} currentUser={data.currentUser} onSuccess={onInviteSuccess} />
+      <AcceptInviteModal visible={activeModal === 'showAcceptInvite'} onClose={close} onSuccess={onAcceptInviteSuccess} currentUser={data.currentUser} />
     </>
   );
 }

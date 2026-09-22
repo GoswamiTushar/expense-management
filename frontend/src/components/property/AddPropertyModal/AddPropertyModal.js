@@ -10,19 +10,16 @@ export default function AddPropertyModal({ visible, onClose, onSubmit, currentUs
   const [location, setLocation] = useState('');
   const [otaLinks, setOtaLinks] = useState({});
 
+  if (!visible) return null;
+
   const handleCreate = () => {
     if (!name.trim()) return alert('Enter a property name.');
-    onSubmit({
-      name: name.trim(),
-      location: location.trim() || 'India',
-      managers: [currentUser?._id].filter(Boolean),
-      otaLinks,
-    });
+    onSubmit({ name: name.trim(), location: location.trim() || 'India', managers: [currentUser?._id].filter(Boolean), otaLinks });
     setName(''); setLocation(''); setOtaLinks({}); onClose();
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal visible={true} animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
           <View style={styles.header}>

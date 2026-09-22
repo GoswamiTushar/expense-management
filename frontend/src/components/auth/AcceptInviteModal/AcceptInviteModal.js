@@ -10,6 +10,7 @@ export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser }) 
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  if (!visible) return null;
 
   const handleJoin = async () => {
     if (!code.trim()) return Alert.alert('Required', 'Please enter invite code.');
@@ -25,7 +26,7 @@ export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser }) 
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={true} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}><Text style={styles.title}>Join Property via Invite</Text><TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity></View>
@@ -39,9 +40,7 @@ export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser }) 
               <TextInput style={[styles.input, { marginTop: 6 }]} placeholder="••••••••" placeholderTextColor={colors.textMuted} secureTextEntry value={password} onChangeText={setPassword} />
             </>
           )}
-          <TouchableOpacity style={styles.joinBtn} onPress={handleJoin} disabled={loading}>
-            {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Join Property</Text>}
-          </TouchableOpacity>
+          <TouchableOpacity style={styles.joinBtn} onPress={handleJoin} disabled={loading}>{loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Join Property</Text>}</TouchableOpacity>
         </View>
       </View>
     </Modal>

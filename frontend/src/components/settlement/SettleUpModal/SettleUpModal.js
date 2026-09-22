@@ -12,18 +12,19 @@ export default function SettleUpModal({ visible, onClose, onSubmit, creditor, de
 
   useEffect(() => { if (visible) setLaunched(false); }, [visible]);
 
+  if (!visible) return null;
+
   const handlePayUpi = () => {
     openUpiApp({ upiId, payeeName: creditor?.name || 'Partner', amount: defaultAmount, note: `${property?.name || 'Airbnb'} Payment` });
     setLaunched(true);
   };
-
   const handleComplete = () => {
     onSubmit({ propertyId: property?._id, settledBy: debtor?._id, settledByName: debtor?.name || 'Partner', paidTo: creditor?._id, paidToName: creditor?.name || 'Partner', amount: defaultAmount, paymentMode: 'UPI App' });
     onClose();
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}><Text style={styles.title}>Pay Partner</Text><TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity></View>

@@ -9,25 +9,22 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
   const [upiId, setUpiId] = useState('');
 
   useEffect(() => {
-    if (visible && currentUser) {
-      setName(currentUser.name || '');
-      setUpiId(currentUser.upiId || '');
-    }
+    if (visible && currentUser) { setName(currentUser.name || ''); setUpiId(currentUser.upiId || ''); }
   }, [visible, currentUser]);
+
+  if (!visible) return null;
 
   const handleSave = () => {
     if (!name.trim()) return alert('Please enter your name.');
     onSaveProfile({
-      ...currentUser,
-      name: name.trim(),
-      upiId: upiId.trim(),
+      ...currentUser, name: name.trim(), upiId: upiId.trim(),
       initials: name.trim().split(' ').map((n) => n[0]).join('').substring(0, 2).toUpperCase(),
     });
     onClose();
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}>

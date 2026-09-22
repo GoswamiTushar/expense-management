@@ -5,8 +5,10 @@ import { styles } from './NotificationDrawerModal.styles';
 import { colors } from '../../../theme/colors';
 
 export default function NotificationDrawerModal({ visible, onClose, notifications = [] }) {
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}>
@@ -14,16 +16,11 @@ export default function NotificationDrawerModal({ visible, onClose, notification
               <Ionicons name="notifications" size={18} color={colors.primary} />
               <Text style={styles.title}>Push Notifications</Text>
             </View>
-            <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={20} color={colors.textMuted} />
-            </TouchableOpacity>
+            <TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity>
           </View>
-
           <ScrollView showsVerticalScrollIndicator={false}>
             {notifications.length === 0 ? (
-              <Text style={{ color: colors.textMuted, textAlign: 'center', paddingVertical: 24 }}>
-                No notifications received yet.
-              </Text>
+              <Text style={{ color: colors.textMuted, textAlign: 'center', paddingVertical: 24 }}>No notifications received yet.</Text>
             ) : (
               notifications.map((n, i) => (
                 <View key={n.id || i} style={styles.item}>

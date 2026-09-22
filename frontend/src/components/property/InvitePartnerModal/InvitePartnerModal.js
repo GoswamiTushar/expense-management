@@ -10,6 +10,8 @@ export default function InvitePartnerModal({ visible, onClose, property, current
   const [email, setEmail] = useState('');
   const [invite, setInvite] = useState(null);
 
+  if (!visible) return null;
+
   const handleCreate = async () => {
     if (!email.trim() || !email.includes('@')) return alert('Please enter a valid email address.');
     const res = await createPropertyInvite({
@@ -27,7 +29,7 @@ export default function InvitePartnerModal({ visible, onClose, property, current
   };
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}><Text style={styles.title}>Invite Co-Manager</Text><TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity></View>

@@ -9,6 +9,8 @@ export default function OtpVerificationModal({ visible, email, onClose, onSucces
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
 
+  if (!visible) return null;
+
   const handleVerify = async () => {
     if (!otp.trim() || otp.trim().length < 6) return Alert.alert('Invalid Code', 'Please enter 6-digit code.');
     setLoading(true);
@@ -29,7 +31,7 @@ export default function OtpVerificationModal({ visible, email, onClose, onSucces
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal visible={true} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}><Text style={styles.title}>Verify Your Email</Text><TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity></View>

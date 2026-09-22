@@ -7,10 +7,12 @@ import { formatCurrency } from '../../../utils/currency';
 import { formatDateTime } from '../../../utils/date';
 
 export default function ChronoAuditLogModal({ visible, onClose, expenses = [] }) {
+  if (!visible) return null;
+
   const sorted = [...expenses].sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date));
 
   return (
-    <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
+    <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}>

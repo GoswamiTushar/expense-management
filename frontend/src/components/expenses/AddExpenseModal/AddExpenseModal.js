@@ -12,8 +12,10 @@ import MemberChecklist from './MemberChecklist';
 export default function AddExpenseModal({ visible, onClose, onSubmit, property, currentUser }) {
   const form = useExpenseForm(property, currentUser, onSubmit, onClose);
 
+  if (!visible) return null;
+
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal visible={true} animationType="slide" transparent onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.backdrop}>
         <View style={styles.sheet}>
           <View style={styles.header}>
