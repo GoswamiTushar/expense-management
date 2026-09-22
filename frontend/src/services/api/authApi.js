@@ -33,15 +33,6 @@ export const signInUser = async ({ email, password }) => {
   return user;
 };
 
-export const signInWithGoogle = async (idToken, upiId = '') => {
-  const user = await apiClient('/auth/google', {
-    method: 'POST',
-    body: { id_token: idToken, upiId },
-  });
-  await saveDeviceUserProfile(user);
-  return user;
-};
-
 export const logoutUser = async () => {
   await clearDeviceUserProfile();
 };

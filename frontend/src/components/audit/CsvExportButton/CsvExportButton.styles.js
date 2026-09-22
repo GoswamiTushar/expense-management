@@ -5,9 +5,9 @@ export const styles = StyleSheet.create({
   btn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceDark,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    backgroundColor: colors.cardDark,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: colors.borderDark,
@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
   },
   text: {
     color: colors.textDark,
-    fontSize: 11.5,
+    fontSize: 11,
     fontWeight: '700',
   },
 });

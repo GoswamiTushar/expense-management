@@ -11,10 +11,6 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class GoogleAuthRequest(BaseModel):
-    id_token: str
-    upiId: Optional[str] = ""
-
 class VerifyOtpRequest(BaseModel):
     email: EmailStr
     otp: str

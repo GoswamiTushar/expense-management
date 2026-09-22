@@ -5,7 +5,6 @@ import { colors } from '../../../theme/colors';
 import { signUpUser, signInUser } from '../../../services/api/authApi';
 import AuthHeader from './AuthHeader';
 import AuthFormInputs from './AuthFormInputs';
-import GoogleSignInButton from './GoogleSignInButton';
 import OtpVerificationModal from '../OtpVerificationModal/OtpVerificationModal';
 
 export default function AuthScreen({ onAuthSuccess, onOpenInviteCode, initialOtp = '', initialEmail = '' }) {
@@ -37,7 +36,6 @@ export default function AuthScreen({ onAuthSuccess, onOpenInviteCode, initialOtp
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} disabled={loading} activeOpacity={0.8}>
             {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.submitText}>{isSignUp ? 'Create Manager Account' : 'Sign In to Account'}</Text>}
           </TouchableOpacity>
-          <GoogleSignInButton onAuthSuccess={onAuthSuccess} />
           <TouchableOpacity style={styles.inviteLinkBtn} onPress={onOpenInviteCode}>
             <Text style={styles.inviteLinkText}>Invited by a partner? Join with invite code</Text>
           </TouchableOpacity>

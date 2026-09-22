@@ -39,8 +39,7 @@ export const usePropertyData = () => {
     setRefreshing(false);
   }, [activeProperty]);
 
-  const balanceData = activeProperty && currentUser
-    ? computeBalances(expenses, settlements, activeProperty.managers || [], currentUser._id) : null;
+  const balanceData = activeProperty && currentUser ? computeBalances(expenses, settlements, activeProperty.managers || [], currentUser._id) : null;
 
   return {
     refreshing, refresh, properties, setProperties, activeProperty, setActiveProperty,

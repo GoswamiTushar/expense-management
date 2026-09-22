@@ -3,15 +3,15 @@ import { TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from './CsvExportButton.styles';
 import { colors } from '../../../theme/colors';
-import { exportExpensesToCsv } from '../../../services/export/csvExporter';
+import { exportExpensesToExcel } from '../../../services/export/excelExporter';
 
-export default function CsvExportButton({ expenses = [], propertyName = '' }) {
+export default function CsvExportButton({ expenses = [], property = null, settlements = [], userMap = {} }) {
   const [exporting, setExporting] = useState(false);
 
   const handleExport = async () => {
     if (expenses.length === 0) return alert('No expenses to export.');
     setExporting(true);
-    await exportExpensesToCsv(expenses, [], propertyName);
+    await exportExpensesToExcel({ property, expenses, settlements, userMap });
     setExporting(false);
   };
 
@@ -21,8 +21,8 @@ export default function CsvExportButton({ expenses = [], propertyName = '' }) {
         <ActivityIndicator size="small" color={colors.primary} />
       ) : (
         <>
-          <Ionicons name="download-outline" size={14} color={colors.primary} />
-          <Text style={styles.text}>Export CSV</Text>
+          <Ionicons name="document-text-outline" size={13} color={colors.primary} />
+          <Text style={styles.text}>Export Excel</Text>
         </>
       )}
     </TouchableOpacity>
