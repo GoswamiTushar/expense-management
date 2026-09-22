@@ -5,24 +5,23 @@ import { colors } from '../../../theme/colors';
 import { acceptPropertyInvite } from '../../../services/api/inviteApi';
 import { styles } from './AcceptInviteModal.styles';
 
-export const AcceptInviteModal = ({ visible, onClose, onSuccess }) => {
+export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser }) => {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [upiId, setUpiId] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleJoin = async () => {
-    if (!code.trim() || !name.trim() || !password.trim()) return Alert.alert('Required', 'Please fill all fields.');
+    if (!code.trim()) return Alert.alert('Required', 'Please enter invite code.');
+    if (!currentUser && (!name.trim() || !password.trim())) return Alert.alert('Required', 'Please enter name and password.');
     setLoading(true);
     try {
-      const res = await acceptPropertyInvite({ inviteCode: code, name, password, upiId });
-      Alert.alert('Welcome!', 'You joined successfully.');
+      const res = await acceptPropertyInvite({ inviteCode: code, userId: currentUser?._id, name, password });
+      Alert.alert('Success', 'You joined the property!');
       onSuccess?.(res);
       onClose();
-    } catch (err) {
-      Alert.alert('Join Failed', err.message || 'Invalid invite code.');
-    } finally { setLoading(false); }
+    } catch (err) { Alert.alert('Join Failed', err.message || 'Invalid code.'); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -30,17 +29,18 @@ export const AcceptInviteModal = ({ visible, onClose, onSuccess }) => {
       <View style={styles.backdrop}>
         <View style={styles.card}>
           <View style={styles.header}><Text style={styles.title}>Join Property via Invite</Text><TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity></View>
-          <Text style={styles.sub}>Enter the code sent to your email.</Text>
+          <Text style={styles.sub}>{currentUser ? 'Enter code to add property to your account.' : 'Only for users who received an invite code.'}</Text>
           <Text style={styles.label}>INVITE CODE</Text>
           <TextInput style={styles.input} placeholder="INV-XXXXX" placeholderTextColor={colors.textMuted} autoCapitalize="characters" value={code} onChangeText={setCode} />
-          <Text style={styles.label}>FULL NAME</Text>
-          <TextInput style={styles.input} placeholder="e.g. Rahul Verma" placeholderTextColor={colors.textMuted} value={name} onChangeText={setName} />
-          <Text style={styles.label}>PASSWORD</Text>
-          <TextInput style={styles.input} placeholder="••••••••" placeholderTextColor={colors.textMuted} secureTextEntry value={password} onChangeText={setPassword} />
-          <Text style={styles.label}>UPI ID (OPTIONAL)</Text>
-          <TextInput style={styles.input} placeholder="e.g. rahul@oksbi" placeholderTextColor={colors.textMuted} autoCapitalize="none" value={upiId} onChangeText={setUpiId} />
+          {!currentUser && (
+            <>
+              <Text style={styles.label}>FULL NAME & PASSWORD</Text>
+              <TextInput style={styles.input} placeholder="Your Name" placeholderTextColor={colors.textMuted} value={name} onChangeText={setName} />
+              <TextInput style={[styles.input, { marginTop: 6 }]} placeholder="••••••••" placeholderTextColor={colors.textMuted} secureTextEntry value={password} onChangeText={setPassword} />
+            </>
+          )}
           <TouchableOpacity style={styles.joinBtn} onPress={handleJoin} disabled={loading}>
-            {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Join & Activate Account</Text>}
+            {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Join Property</Text>}
           </TouchableOpacity>
         </View>
       </View>

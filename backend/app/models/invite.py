@@ -9,8 +9,9 @@ class InviteCreate(BaseModel):
 
 class InviteAccept(BaseModel):
     inviteCode: str
-    name: str
-    password: str
+    userId: Optional[str] = None
+    name: Optional[str] = ""
+    password: Optional[str] = ""
     upiId: Optional[str] = ""
 
 class InviteResponse(BaseModel):

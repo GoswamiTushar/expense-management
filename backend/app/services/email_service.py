@@ -17,7 +17,7 @@ def send_onboarding_email(to_email: str, invite_code: str, property_name: str, i
         <h3>You have been invited!</h3>
         <p><strong>{inviter_name}</strong> invited you to co-manage <strong>{property_name}</strong>.</p>
         <p>Your Invite Code: <strong>{invite_code}</strong></p>
-        <p>Open the app and select 'Join via Invite' to get started!</p>
+        <p>Open the app, sign in or sign up, and select 'Join via Code' on your dashboard to join!</p>
         """
         msg.attach(MIMEText(html, "html"))
         if settings.smtp_port == 465:

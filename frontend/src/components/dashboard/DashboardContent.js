@@ -17,8 +17,11 @@ export default function DashboardContent({ data, cat, setCat, setM, setSettleWit
         <View style={styles.emptyBox}>
           <Ionicons name="business" size={44} color={colors.primary} />
           <Text style={styles.emptyTitle}>No Properties Configured</Text>
-          <Text style={styles.emptySub}>Add your Airbnb/OTA property or join an existing one using an invite code.</Text>
-          <TouchableOpacity style={styles.emptyBtn} onPress={() => setM('showAddProp', true)}><Text style={styles.emptyBtnText}>+ Create Property</Text></TouchableOpacity>
+          <Text style={styles.emptySub}>Create your Airbnb property or join a partner's property using an invite code.</Text>
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
+            <TouchableOpacity style={styles.emptyBtn} onPress={() => setM('showAddProp', true)}><Text style={styles.emptyBtnText}>+ Create Property</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.emptyBtn, { backgroundColor: '#0284C7' }]} onPress={() => setM('showAcceptInvite', true)}><Text style={styles.emptyBtnText}>🔑 Join via Code</Text></TouchableOpacity>
+          </View>
         </View>
       ) : (
         <>

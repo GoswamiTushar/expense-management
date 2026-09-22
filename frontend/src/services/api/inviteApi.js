@@ -23,8 +23,9 @@ export const acceptPropertyInvite = async (payload) => {
     method: 'POST',
     body: {
       inviteCode: payload.inviteCode.trim().toUpperCase(),
-      name: payload.name.trim(),
-      password: payload.password,
+      userId: payload.userId || undefined,
+      name: (payload.name || '').trim(),
+      password: payload.password || '',
       upiId: (payload.upiId || '').trim(),
     },
   });

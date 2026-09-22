@@ -31,10 +31,14 @@ async def accept_invite(payload: InviteAccept):
     db = get_db()
     inv = await db.invites.find_one({"code": payload.inviteCode.strip().upper(), "status": "pending"})
     if not inv: raise HTTPException(status_code=400, detail="Invalid or expired invite code")
-    user = await db.users.find_one({"email": inv["email"].lower()})
-    if not user:
-        user = create_user_doc(payload.name, inv["email"], payload.password, payload.upiId or "")
-        await db.users.insert_one(user)
+    if payload.userId:
+        user = await db.users.find_one({"_id": payload.userId})
+        if not user: raise HTTPException(status_code=404, detail="User not found")
+    else:
+        user = await db.users.find_one({"email": inv["email"].lower()})
+        if not user:
+            user = create_user_doc(payload.name or "Manager", inv["email"], payload.password or "", payload.upiId or "")
+            await db.users.insert_one(user)
     await db.properties.update_one({"_id": inv["propertyId"]}, {"$addToSet": {"managers": user["_id"]}})
     await db.invites.update_one({"_id": inv["_id"]}, {"$set": {"status": "accepted", "acceptedBy": user["_id"]}})
     return {"user": {**user, "id": user["_id"]}, "propertyId": inv["propertyId"]}

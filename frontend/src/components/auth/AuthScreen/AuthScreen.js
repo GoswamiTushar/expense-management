@@ -17,13 +17,9 @@ export default function AuthScreen({ onAuthSuccess, onOpenInviteCode }) {
     if (!email.trim() || !password.trim()) return alert('Please enter email and password.');
     if (isSignUp && !name.trim()) return alert('Please enter your full name.');
     try {
-      const user = isSignUp
-        ? await signUpUser({ name, email, password, upiId })
-        : await signInUser({ email, password });
+      const user = isSignUp ? await signUpUser({ name, email, password, upiId }) : await signInUser({ email, password });
       onAuthSuccess(user);
-    } catch (err) {
-      alert(err.message);
-    }
+    } catch (err) { alert(err.message); }
   };
 
   return (
@@ -31,17 +27,13 @@ export default function AuthScreen({ onAuthSuccess, onOpenInviteCode }) {
       <ScrollView contentContainerStyle={{ justifyContent: 'center', flexGrow: 1 }} showsVerticalScrollIndicator={false}>
         <View style={styles.card}>
           <AuthHeader isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
-          <AuthFormInputs
-            isSignUp={isSignUp} name={name} setName={setName}
-            email={email} setEmail={setEmail} password={password} setPassword={setPassword}
-            upiId={upiId} setUpiId={setUpiId}
-          />
+          <AuthFormInputs isSignUp={isSignUp} name={name} setName={setName} email={email} setEmail={setEmail} password={password} setPassword={setPassword} upiId={upiId} setUpiId={setUpiId} />
           <TouchableOpacity style={styles.submitBtn} onPress={handleSubmit} activeOpacity={0.8}>
-            <Text style={styles.submitText}>{isSignUp ? 'Create Account & Continue' : 'Sign In'}</Text>
+            <Text style={styles.submitText}>{isSignUp ? 'Create Manager Account' : 'Sign In to Account'}</Text>
           </TouchableOpacity>
           <GoogleSignInButton onAuthSuccess={onAuthSuccess} />
           <TouchableOpacity style={styles.inviteLinkBtn} onPress={onOpenInviteCode}>
-            <Text style={styles.inviteLinkText}>Have a partner invite code? Click here</Text>
+            <Text style={styles.inviteLinkText}>Invited by a partner? Join with invite code</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
