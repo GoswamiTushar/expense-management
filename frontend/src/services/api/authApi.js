@@ -1,5 +1,5 @@
 import { apiClient } from './apiClient';
-import { saveDeviceUserProfile, clearDeviceUserProfile } from '../storage/sessionStore';
+import { saveDeviceUserProfile, clearDeviceUserProfile, saveTokens, clearTokens } from '../storage/sessionStore';
 
 export const signUpUser = async ({ name, email, password, upiId = '' }) => {
   return await apiClient('/auth/signup', {
@@ -9,12 +9,14 @@ export const signUpUser = async ({ name, email, password, upiId = '' }) => {
 };
 
 export const verifyOtp = async ({ email, otp }) => {
-  const user = await apiClient('/auth/verify-otp', {
+  const res = await apiClient('/auth/verify-otp', {
     method: 'POST',
     body: { email, otp },
   });
-  await saveDeviceUserProfile(user);
-  return user;
+  // Response: { user, accessToken, refreshToken }
+  await saveTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
+  await saveDeviceUserProfile(res.user);
+  return res.user;
 };
 
 export const resendOtp = async ({ email }) => {
@@ -25,14 +27,17 @@ export const resendOtp = async ({ email }) => {
 };
 
 export const signInUser = async ({ email, password }) => {
-  const user = await apiClient('/auth/signin', {
+  const res = await apiClient('/auth/signin', {
     method: 'POST',
     body: { email, password },
   });
-  await saveDeviceUserProfile(user);
-  return user;
+  // Response: { user, accessToken, refreshToken }
+  await saveTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
+  await saveDeviceUserProfile(res.user);
+  return res.user;
 };
 
 export const logoutUser = async () => {
+  await clearTokens();
   await clearDeviceUserProfile();
 };

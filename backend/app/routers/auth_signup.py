@@ -4,7 +4,7 @@ from app.database import get_db
 from app.models.user import UserCreate, VerifyOtpRequest, ResendOtpRequest, UserResponse
 from app.services.otp_service import generate_otp, send_verification_otp
 from app.services.user_helper import create_user_doc
-from app.services.security import hash_password
+from app.services.security import hash_password, create_access_token, create_refresh_token
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
@@ -19,7 +19,7 @@ async def signup(payload: UserCreate, bg: BackgroundTasks):
     bg.add_task(send_verification_otp, payload.email, otp)
     return {"status": "pending_verification", "email": payload.email.lower()}
 
-@router.post("/verify-otp", response_model=UserResponse)
+@router.post("/verify-otp")
 async def verify_otp(payload: VerifyOtpRequest):
     db = get_db()
     p = await db.pending_verifications.find_one({"email": payload.email.lower()})
@@ -30,7 +30,12 @@ async def verify_otp(payload: VerifyOtpRequest):
     user = create_user_doc(p["name"], p["email"], p["password"], p["upiId"])
     await db.users.insert_one(user)
     await db.pending_verifications.delete_one({"_id": p["_id"]})
-    return UserResponse(id=user["_id"], **user)
+    user_data = UserResponse(id=user["_id"], **user).model_dump()
+    return {
+        "user": user_data,
+        "accessToken": create_access_token(user["_id"]),
+        "refreshToken": create_refresh_token(user["_id"]),
+    }
 
 @router.post("/resend-otp")
 async def resend_otp(payload: ResendOtpRequest, bg: BackgroundTasks):

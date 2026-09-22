@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException
 from app.database import get_db
 from app.models.user import UserLogin, UserResponse
-from app.services.security import verify_password, hash_password
+from app.services.security import verify_password, hash_password, create_access_token, create_refresh_token
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
-@router.post("/signin", response_model=UserResponse)
+@router.post("/signin")
 async def signin(payload: UserLogin):
     db = get_db()
     user = await db.users.find_one({"email": payload.email.lower()})
@@ -15,4 +15,9 @@ async def signin(payload: UserLogin):
         h = hash_password(payload.password)
         await db.users.update_one({"_id": user["_id"]}, {"$set": {"password": h}})
         user["password"] = h
-    return UserResponse(id=user["_id"], **user)
+    user_data = UserResponse(id=user["_id"], **user).model_dump()
+    return {
+        "user": user_data,
+        "accessToken": create_access_token(user["_id"]),
+        "refreshToken": create_refresh_token(user["_id"]),
+    }

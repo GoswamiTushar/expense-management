@@ -1,15 +1,16 @@
 import time, random
 from datetime import datetime
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from app.database import get_db
 from app.models.invite import InviteCreate, InviteAccept, InviteResponse
 from app.services.user_helper import create_user_doc
 from app.services.email_service import send_onboarding_email
+from app.deps import get_current_user
 
 router = APIRouter(prefix="/api/invites", tags=["Invites"])
 
 @router.post("", response_model=InviteResponse)
-async def create_invite(payload: InviteCreate):
+async def create_invite(payload: InviteCreate, current_user: dict = Depends(get_current_user)):
     code = f"INV-{''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=5))}"
     inv = {
         "_id": f"inv_{int(time.time()*1000)}",
@@ -22,12 +23,17 @@ async def create_invite(payload: InviteCreate):
 
 @router.get("/{code}", response_model=InviteResponse)
 async def get_invite(code: str):
+    """Public endpoint — needed so invite recipients can preview the invite before signing in."""
     inv = await get_db().invites.find_one({"code": code.strip().upper()})
     if not inv: raise HTTPException(status_code=404, detail="Invite code not found")
     return InviteResponse(id=inv["_id"], **inv)
 
 @router.post("/accept")
 async def accept_invite(payload: InviteAccept):
+    """
+    Accept an invite. Public endpoint — the user may not be signed in yet
+    (they are creating an account via the invite link).
+    """
     db = get_db()
     inv = await db.invites.find_one({"code": payload.inviteCode.strip().upper(), "status": "pending"})
     if not inv: raise HTTPException(status_code=400, detail="Invalid or expired invite code")

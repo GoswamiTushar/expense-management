@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { SafeAreaView, StatusBar } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StatusBar, View, ActivityIndicator } from 'react-native';
 import { styles } from './src/styles/app.styles';
+import { colors } from './src/theme/colors';
 import { usePropertyData } from './src/hooks/usePropertyData';
 import { logoutUser } from './src/services/api/authApi';
+import { getDeviceUserProfile } from './src/services/storage/sessionStore';
 import Toast from './src/components/common/Toast/Toast';
 import AuthScreen from './src/components/auth/AuthScreen/AuthScreen';
 import MainDashboard from './src/components/dashboard/MainDashboard';
@@ -17,31 +19,69 @@ const getParams = () => {
 };
 
 export default function App() {
-  const data = usePropertyData();
+  // Auth state lives here — single source of truth
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true); // true while checking stored session
   const [params] = useState(getParams);
   const [showAcceptInvite, setShowAcceptInvite] = useState(Boolean(params.invite));
 
+  // Check for a persisted session on app start (before rendering anything)
+  useEffect(() => {
+    (async () => {
+      const stored = await getDeviceUserProfile();
+      setCurrentUser(stored || null);
+      setAuthLoading(false);
+    })();
+  }, []);
+
+  // Data hook — only fetches when currentUser is non-null
+  const data = usePropertyData(currentUser);
+
+  const handleAuthSuccess = (user) => setCurrentUser(user);
+
   const handleLogout = async () => {
     await logoutUser();
-    data.setCurrentUser(null);
+    setCurrentUser(null);
   };
 
   const handleInviteJoined = (res) => {
-    data.setCurrentUser(res.user);
+    setCurrentUser(res.user);
     data.reload();
   };
+
+  // Show a minimal loading state while we read the keychain
+  if (authLoading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={colors.primary || '#FF385C'} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
       <Toast />
-      {!data.currentUser ? (
+      {!currentUser ? (
         <>
-          <AuthScreen onAuthSuccess={data.setCurrentUser} onOpenInviteCode={() => setShowAcceptInvite(true)} initialOtp={params.otp} initialEmail={params.email} />
-          <AcceptInviteModal visible={showAcceptInvite} onClose={() => setShowAcceptInvite(false)} onSuccess={handleInviteJoined} initialCode={params.invite} />
+          <AuthScreen
+            onAuthSuccess={handleAuthSuccess}
+            onOpenInviteCode={() => setShowAcceptInvite(true)}
+            initialOtp={params.otp}
+            initialEmail={params.email}
+          />
+          <AcceptInviteModal
+            visible={showAcceptInvite}
+            onClose={() => setShowAcceptInvite(false)}
+            onSuccess={handleInviteJoined}
+            initialCode={params.invite}
+          />
         </>
       ) : (
-        <MainDashboard data={data} onLogout={handleLogout} />
+        <MainDashboard
+          data={{ ...data, currentUser, setCurrentUser }}
+          onLogout={handleLogout}
+        />
       )}
     </SafeAreaView>
   );
