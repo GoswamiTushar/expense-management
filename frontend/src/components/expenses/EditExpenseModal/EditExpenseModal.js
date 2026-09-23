@@ -20,6 +20,7 @@ import { formatCurrency } from '../../../utils/currency';
 import { formatDateTime } from '../../../utils/date';
 import CategoryPickerField from '../AddExpenseModal/CategoryPickerField';
 import DatePickerField from '../AddExpenseModal/DatePickerField';
+import { useSwipeDown } from '../../../hooks/useSwipeDown';
 
 export default function EditExpenseModal({
   visible,
@@ -80,6 +81,9 @@ export default function EditExpenseModal({
       onClose();
     });
   };
+
+  // Must be above early-return so hook is called unconditionally
+  const swipeHandlers = useSwipeDown(slideAnim, handleClose, loading);
 
   useEffect(() => {
     if (expense) {
@@ -172,10 +176,10 @@ export default function EditExpenseModal({
             ]}
           >
             {/* Native Drawer Drag Indicator */}
-            <View style={styles.dragHandle} />
+            <View {...swipeHandlers} style={[styles.dragHandle, { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 8 }]} />
 
             {/* Header */}
-            <View style={styles.header}>
+            <View {...swipeHandlers} style={styles.header}>
               <View style={styles.titleBox}>
                 <Text style={styles.modalTitle}>Expense Details &amp; Edit</Text>
                 <Text style={styles.modalSub}>

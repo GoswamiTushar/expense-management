@@ -18,6 +18,7 @@ import { styles } from './AddExpenseModal.styles';
 import { colors } from '../../../theme/colors';
 import { formatCurrency } from '../../../utils/currency';
 import { useExpenseForm } from '../../../hooks/useExpenseForm';
+import { useSwipeDown } from '../../../hooks/useSwipeDown';
 import CategoryPickerField from './CategoryPickerField';
 import DatePickerField from './DatePickerField';
 import ImagePickerField from './ImagePickerField';
@@ -47,6 +48,7 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
   };
 
   const form = useExpenseForm(property, currentUser, onSubmit, handleClose, visible);
+  const swipeHandlers = useSwipeDown(slideAnim, handleClose, form.submitting);
 
   useEffect(() => {
     if (visible) {
@@ -91,10 +93,10 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
               },
             ]}
           >
-            {/* Native Drag Pill Indicator */}
-            <View style={styles.dragHandle} />
+            {/* Native Drag Pill — also swipeable */}
+            <View {...swipeHandlers} style={[styles.dragHandle, { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 8 }]} />
 
-            <View style={styles.header}>
+            <View {...swipeHandlers} style={styles.header}>
               <View>
                 <Text style={styles.title}>Log Airbnb Expense</Text>
                 <Text style={styles.sub}>{property?.name || 'Property'}</Text>
