@@ -19,7 +19,8 @@
   },
   "scripts": {
     "start": "expo start",
-    "build": "expo export -p web",
+    "build": "expo export --platform all",
+    "build:web": "expo export -p web",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web"
