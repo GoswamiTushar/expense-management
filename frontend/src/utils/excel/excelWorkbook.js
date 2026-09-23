@@ -1,5 +1,5 @@
 import { buildOverviewTable, buildSpendingTable } from './excelSummaryTable';
-import { buildCategoryTable } from './excelCategoryTable';
+import { buildCategoryTable, buildCategoryDetailTables } from './excelCategoryTable';
 import { buildSettlementTable, buildExpensesTable } from './excelSettlementTable';
 import { calculatePropertyDebts } from './excelDebts';
 import { buildPersonTables } from './excelPersonTable';
@@ -12,6 +12,7 @@ export const buildExcelHtml = ({ property, expenses = [], settlements = [], user
   const categoryHtml = buildCategoryTable(expenses);
   const settlementHtml = buildSettlementTable(managers, debts);
   const expensesHtml = buildExpensesTable(expenses, userMap);
+  const categoryDetailTablesHtml = buildCategoryDetailTables(expenses, userMap);
   const personTablesHtml = buildPersonTables(managers, expenses);
 
   const banner = `
@@ -34,6 +35,7 @@ export const buildExcelHtml = ({ property, expenses = [], settlements = [], user
         ${categoryHtml}
         ${settlementHtml}
         ${expensesHtml}
+        ${categoryDetailTablesHtml}
         ${personTablesHtml}
       </body>
     </html>

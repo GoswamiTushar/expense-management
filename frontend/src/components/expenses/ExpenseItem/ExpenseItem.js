@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { styles } from './ExpenseItem.styles';
 import { getCategoryById } from '../../../theme/categories';
 import { formatCurrency } from '../../../utils/currency';
-import { formatDateTime } from '../../../utils/date';
+import { formatDate } from '../../../utils/date';
 
 export default function ExpenseItem({ expense, userMap = {}, onPress }) {
   const cat = getCategoryById(expense.category);
@@ -39,7 +39,7 @@ export default function ExpenseItem({ expense, userMap = {}, onPress }) {
             </Text>
           </View>
           <Text style={styles.sub} numberOfLines={1}>
-            {formatDateTime(expense.createdAt || expense.date)} • {splitCount} managers
+            {formatDate(expense.date || expense.createdAt)} • {splitCount} managers
             {hasReceipt ? ' 📷' : ''}
           </Text>
         </View>

@@ -17,6 +17,8 @@ export default function AppModals({
   data,
   settleWith,
   selectedExpense,
+  notifications = [],
+  onMarkNotificationsRead,
   onAddExpense,
   onUpdateExpense,
   onSettle,
@@ -80,6 +82,9 @@ export default function AppModals({
       <NotificationDrawerModal
         visible={activeModal === 'showNotifs'}
         onClose={close}
+        notifications={notifications}
+        onMarkAllRead={onMarkNotificationsRead}
+        currentUser={data.currentUser}
       />
       <SettlementHistoryModal
         visible={activeModal === 'showHistory'}

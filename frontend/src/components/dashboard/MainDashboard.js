@@ -10,7 +10,11 @@ import { createExpense, updateExpense } from '../../services/api/expenseApi';
 import { createSettlement } from '../../services/api/settlementApi';
 import { createProperty } from '../../services/api/propertyApi';
 import { saveDeviceUserProfile } from '../../services/storage/sessionStore';
-import { sendExpensePushNotification, sendSettlementPushNotification } from '../../services/notifications/pushService';
+import {
+  sendExpensePushNotification,
+  sendExpenseEditNotification,
+  sendSettlementPushNotification,
+} from '../../services/notifications/pushService';
 
 export default function MainDashboard({ data, onLogout }) {
   const [cat, setCat] = useState('ALL');
@@ -29,6 +33,7 @@ export default function MainDashboard({ data, onLogout }) {
       amount: exp.amount,
       shareAmount: exp.sharePerPerson,
     });
+    data.refresh();
   };
 
   const onUpdateExpense = async (expenseId, payload) => {
@@ -37,6 +42,20 @@ export default function MainDashboard({ data, onLogout }) {
       prev.map((item) => (item.id === expenseId || item._id === expenseId ? updated : item))
     );
     setSelectedExpense(updated);
+
+    const changeParts = [];
+    if (payload.category) changeParts.push(`category to '${payload.category}'`);
+    if (payload.title) changeParts.push('title');
+    if (payload.amount) changeParts.push(`amount to ₹${payload.amount}`);
+
+    sendExpenseEditNotification({
+      property: data.activeProperty,
+      editorName: data.currentUser?.name,
+      title: updated.title,
+      summary: changeParts.join(', ') || 'details',
+    });
+
+    data.refresh();
     return updated;
   };
 
@@ -49,6 +68,7 @@ export default function MainDashboard({ data, onLogout }) {
       creditorName: settleWith?.user?.name,
       amount: s.amount,
     });
+    data.refresh();
   };
 
   const onCreateProp = async (p) => {
@@ -62,6 +82,7 @@ export default function MainDashboard({ data, onLogout }) {
       <Header
         activeProperty={data.activeProperty}
         currentUser={data.currentUser}
+        unreadCount={data.unreadCount || 0}
         onOpenPropertyPicker={() => setM('showPropPicker')}
         onOpenNotifications={() => setM('showNotifs')}
         onOpenAuditLog={() => setM('showAudit')}
@@ -91,6 +112,8 @@ export default function MainDashboard({ data, onLogout }) {
         data={data}
         settleWith={settleWith}
         selectedExpense={selectedExpense}
+        notifications={data.notifications || []}
+        onMarkNotificationsRead={data.markNotificationsAsRead}
         onAddExpense={onAddExpense}
         onUpdateExpense={onUpdateExpense}
         onSettle={onSettle}

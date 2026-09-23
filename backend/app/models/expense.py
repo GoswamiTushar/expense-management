@@ -19,6 +19,7 @@ class ExpenseCreate(BaseModel):
     receiptUrl: Optional[str] = ""
     receiptUrls: Optional[List[str]] = []
     notes: Optional[str] = ""
+    date: Optional[str] = None
     auditLog: Optional[List[AuditLogEntry]] = []
 
 class ExpenseUpdate(BaseModel):
@@ -26,9 +27,10 @@ class ExpenseUpdate(BaseModel):
     amount: Optional[float] = None
     category: Optional[str] = None
     notes: Optional[str] = None
+    date: Optional[str] = None
 
 class ExpenseResponse(ExpenseCreate):
     id: str
-    date: str
-    createdAt: str
+    date: Optional[str] = ""
+    createdAt: Optional[str] = ""
     auditLog: Optional[List[AuditLogEntry]] = []

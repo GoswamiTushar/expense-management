@@ -19,6 +19,7 @@ import { colors } from '../../../theme/colors';
 import { formatCurrency } from '../../../utils/currency';
 import { formatDateTime } from '../../../utils/date';
 import CategoryPickerField from '../AddExpenseModal/CategoryPickerField';
+import DatePickerField from '../AddExpenseModal/DatePickerField';
 
 export default function EditExpenseModal({
   visible,
@@ -30,6 +31,7 @@ export default function EditExpenseModal({
 }) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
+  const [date, setDate] = useState('');
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
@@ -83,6 +85,7 @@ export default function EditExpenseModal({
     if (expense) {
       setTitle(expense.title || '');
       setCategory(expense.category || '');
+      setDate(expense.date || expense.createdAt || '');
       setAmount(String(expense.amount || ''));
       setNotes(expense.notes || '');
       setLoading(false);
@@ -120,6 +123,9 @@ export default function EditExpenseModal({
     if (isCreator && (isNaN(parsedAmount) || parsedAmount <= 0)) {
       return alert('Please enter a valid amount.');
     }
+    if (isCreator && (!date || !date.trim())) {
+      return alert('Please select a valid expense date.');
+    }
 
     setLoading(true);
     try {
@@ -127,11 +133,14 @@ export default function EditExpenseModal({
         title: title.trim(),
         category: category.trim(),
       };
-      // Only the creator can edit amount and notes
+      // Only the creator can edit amount, date, and notes
       if (isCreator) {
         payload.notes = notes.trim();
         if (parsedAmount !== expense.amount) {
           payload.amount = parsedAmount;
+        }
+        if (date.trim() && date.trim() !== (expense.date || '').trim()) {
+          payload.date = date.trim();
         }
       }
       await onSave(expense._id || expense.id, payload);
@@ -196,6 +205,16 @@ export default function EditExpenseModal({
                 selectedCategory={category}
                 onSelectCategory={setCategory}
                 label="CATEGORY (ALL MANAGERS CAN EDIT)"
+                required={true}
+              />
+
+              {/* Expense Date (Editable ONLY by creator) */}
+              <DatePickerField
+                selectedDate={date}
+                onSelectDate={setDate}
+                disabled={!isCreator}
+                disabledMessage={`Only ${payerName} can edit date`}
+                label={isCreator ? "EXPENSE DATE (CREATOR CAN EDIT)" : "EXPENSE DATE"}
                 required={true}
               />
 

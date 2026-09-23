@@ -2,6 +2,10 @@ const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 
 
 export const formatDate = (isoString) => {
   if (!isoString) return '';
+  if (typeof isoString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
+    const [y, m, d] = isoString.split('-').map(Number);
+    return `${d} ${MONTHS[m - 1]} ${y}`;
+  }
   const d = new Date(isoString);
   if (isNaN(d.getTime())) return '';
   return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
@@ -9,6 +13,9 @@ export const formatDate = (isoString) => {
 
 export const formatTime = (isoString) => {
   if (!isoString) return '';
+  if (typeof isoString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
+    return '';
+  }
   const d = new Date(isoString);
   if (isNaN(d.getTime())) return '';
   let hours = d.getHours();
@@ -20,7 +27,12 @@ export const formatTime = (isoString) => {
 
 export const formatDateTime = (isoString) => {
   if (!isoString) return '';
+  if (typeof isoString === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoString)) {
+    return formatDate(isoString);
+  }
   const d = new Date(isoString);
   if (isNaN(d.getTime())) return '';
-  return `${formatDate(isoString)}, ${formatTime(isoString)}`;
+  const time = formatTime(isoString);
+  return time ? `${formatDate(isoString)}, ${time}` : formatDate(isoString);
 };
+

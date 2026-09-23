@@ -5,6 +5,7 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState(''); // No default — mandatory selection
+  const [date, setDate] = useState(''); // No default — mandatory selection
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [receiptUrls, setReceiptUrls] = useState([]); // array of image URIs
   const [notes, setNotes] = useState('');
@@ -14,6 +15,7 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
     setTitle('');
     setAmount('');
     setCategory('');
+    setDate('');
     setSelectedMembers(property?.managers || []);
     setReceiptUrls([]);
     setNotes('');
@@ -48,6 +50,7 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
   const handleSubmit = async () => {
     if (!title.trim() || parsedAmount <= 0) return alert('Enter a title and valid amount.');
     if (!category || !category.trim()) return alert('Please select an expense category.');
+    if (!date || !date.trim()) return alert('Please select the expense date.');
     setSubmitting(true);
     try {
       await onSubmit({
@@ -62,7 +65,7 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
         receiptUrl: receiptUrls[0] || '', // backward-compat: first image as primary
         receiptUrls, // full array for new consumers
         notes: notes.trim(),
-        date: new Date().toISOString(),
+        date: date.trim(),
       });
       onClose();
     } catch (err) {
@@ -79,6 +82,8 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
     setAmount,
     category,
     setCategory,
+    date,
+    setDate,
     selectedMembers,
     toggleMember,
     receiptUrls,

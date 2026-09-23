@@ -1,4 +1,5 @@
 import { TABLE_STYLE, formatInr, makeTh, makeTd, sectionTitle } from './excelStyles';
+import { getCategoryById } from '../../theme/categories';
 
 /**
  * buildPersonTables — generates one table per manager showing every expense
@@ -62,10 +63,12 @@ export const buildPersonTables = (managers = [], expenses = []) => {
 
       const paidByName = managers.find((m) => m.id === exp.paidBy)?.name || exp.paidBy || 'Unknown';
 
+      const catLabel = getCategoryById(exp.category)?.label || exp.category || 'General';
+
       return `<tr>
         ${makeTd(dateStr, false, bg)}
         ${makeTd(exp.title || 'Untitled', false, bg, true)}
-        ${makeTd(exp.category || 'General', false, bg)}
+        ${makeTd(catLabel, false, bg)}
         ${makeTd(formatInr(expAmount), true, bg)}
         ${makeTd(paidByName, false, bg, isPayer)}
         ${makeTd(role, false, bg)}
@@ -107,7 +110,7 @@ export const buildPersonTables = (managers = [], expenses = []) => {
 
     return `
       <table ${TABLE_STYLE}>
-        ${sectionTitle(`${managerIdx + 6}. ${manager.name}'s Expense Breakdown`, accent, 8)}
+        ${sectionTitle(`${managerIdx + 7}. ${manager.name}'s Expense Breakdown`, accent, 8)}
         <tr>${headers}</tr>
         ${relevant.length > 0 ? rows + summaryRow : noDataRow}
       </table>

@@ -19,6 +19,7 @@ import { colors } from '../../../theme/colors';
 import { formatCurrency } from '../../../utils/currency';
 import { useExpenseForm } from '../../../hooks/useExpenseForm';
 import CategoryPickerField from './CategoryPickerField';
+import DatePickerField from './DatePickerField';
 import ImagePickerField from './ImagePickerField';
 import MemberChecklist from './MemberChecklist';
 
@@ -128,6 +129,10 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
             <CategoryPickerField
               selectedCategory={form.category}
               onSelectCategory={form.setCategory}
+            />
+            <DatePickerField
+              selectedDate={form.date}
+              onSelectDate={form.setDate}
             />
             <Text style={styles.label}>SPLIT EQUALLY AMONG</Text>
             <MemberChecklist

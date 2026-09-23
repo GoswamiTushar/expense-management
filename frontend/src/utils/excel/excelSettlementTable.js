@@ -1,4 +1,5 @@
 import { TABLE_STYLE, formatInr, makeTh, makeTd, sectionTitle } from './excelStyles';
+import { getCategoryById } from '../../theme/categories';
 
 export const buildSettlementTable = (managers = [], debts = []) => {
   const headers = [
@@ -20,7 +21,7 @@ export const buildExpensesTable = (expenses = [], userMap = {}) => {
   const getName = (id) => userMap[id]?.name || id;
   const headers = [
     makeTh('Date', '#E11D48', '110px'), makeTh('Title', '#E11D48', '200px'),
-    makeTh('Category', '#E11D48', '150px'), makeTh('Amount', '#E11D48', '140px'),
+    makeTh('Category', '#E11D48', '160px'), makeTh('Amount', '#E11D48', '140px'),
     makeTh('Paid By', '#E11D48', '180px'), makeTh('Split Among', '#E11D48', '220px'),
     makeTh('Share / Person', '#E11D48', '140px'), makeTh('Notes', '#E11D48', '200px'),
   ].join('');
@@ -31,7 +32,8 @@ export const buildExpensesTable = (expenses = [], userMap = {}) => {
     const dateStr = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : 'N/A';
     const splitNames = (exp.splitAmong || []).map(getName).join(', ') || 'All';
     const share = exp.sharePerPerson || Math.round((Number(exp.amount || 0) / ((exp.splitAmong || []).length || 1)) * 100) / 100;
-    return `<tr>${makeTd(dateStr, false, bg)}${makeTd(exp.title || 'Untitled', false, bg, true)}${makeTd(exp.category || 'General', false, bg)}${makeTd(formatInr(exp.amount), true, bg, true)}${makeTd(getName(exp.paidBy), false, bg, true)}${makeTd(splitNames, false, bg)}${makeTd(formatInr(share), true, bg)}${makeTd(exp.notes || '-', false, bg)}</tr>`;
+    const catLabel = getCategoryById(exp.category)?.label || exp.category || 'General';
+    return `<tr>${makeTd(dateStr, false, bg)}${makeTd(exp.title || 'Untitled', false, bg, true)}${makeTd(catLabel, false, bg)}${makeTd(formatInr(exp.amount), true, bg, true)}${makeTd(getName(exp.paidBy), false, bg, true)}${makeTd(splitNames, false, bg)}${makeTd(formatInr(share), true, bg)}${makeTd(exp.notes || '-', false, bg)}</tr>`;
   }).join('');
 
   return `<table ${TABLE_STYLE}>${sectionTitle('5. Itemized Expenses Record', '#E11D48', 8)}<tr>${headers}</tr>${rows}</table>`;

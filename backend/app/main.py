@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import ping_database
 from app.middleware import log_requests
-from app.routers import auth, auth_signup, auth_token, properties, expenses, settlements, invites
+from app.routers import auth, auth_signup, auth_token, properties, expenses, settlements, invites, notifications
 
 app = FastAPI(title="Airbnb Expense API", version="2.0.0")
 
@@ -55,3 +55,4 @@ app.include_router(properties.router)
 app.include_router(expenses.router)
 app.include_router(settlements.router)
 app.include_router(invites.router)
+app.include_router(notifications.router)
