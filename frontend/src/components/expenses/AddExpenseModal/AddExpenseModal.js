@@ -46,7 +46,7 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
     });
   };
 
-  const form = useExpenseForm(property, currentUser, onSubmit, handleClose);
+  const form = useExpenseForm(property, currentUser, onSubmit, handleClose, visible);
 
   useEffect(() => {
     if (visible) {

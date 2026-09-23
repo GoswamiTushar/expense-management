@@ -11,10 +11,22 @@ router = APIRouter(prefix="/api/properties", tags=["Properties"])
 async def attach_managers(props):
     ids = list({m for p in props for m in p.get("managers", [])})
     users = await get_db().users.find({"_id": {"$in": ids}}).to_list(100) if ids else []
-    umap = {u["_id"]: {"id": u["_id"], "name": u.get("name", "Manager"), "email": u.get("email", ""), "initials": u.get("initials", "M"), "color": u.get("color", "#FF385C")} for u in users}
+    umap = {
+        u["_id"]: {
+            "id": u["_id"],
+            "name": u.get("name", "Manager"),
+            "email": u.get("email", ""),
+            "initials": u.get("initials", "M"),
+            "color": u.get("color", "#FF385C"),
+            "upiId": u.get("upiId", ""),
+            "pushTokens": u.get("pushTokens", []),  # for sending push notifications
+        }
+        for u in users
+    }
     for p in props:
         p["managerDetails"] = [umap.get(m, {"id": m, "name": "Manager"}) for m in p.get("managers", [])]
     return props
+
 
 @router.get("", response_model=List[PropertyResponse])
 async def list_properties(current_user: dict = Depends(get_current_user)):

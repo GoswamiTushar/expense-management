@@ -5,14 +5,16 @@ import {
   Modal,
   Animated,
   ActivityIndicator,
+  TouchableOpacity,
   Easing,
+  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { apiTracker } from '../../../services/api/apiTracker';
 import { styles } from './GlobalApiLoader.styles';
 
 export default function GlobalApiLoader() {
-  const [state, setState] = useState({ isLoading: false, isSlow: false, activeCount: 0 });
+  const [state, setState] = useState({ isLoading: false, isSlow: false, isTimedOut: false, activeCount: 0 });
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
 
@@ -96,6 +98,16 @@ export default function GlobalApiLoader() {
     outputRange: ['0%', '60%', '0%'],
   });
 
+  const handleRetry = () => {
+    apiTracker.forceReset();
+    if (Platform.OS === 'web') {
+      window.location.reload();
+    } else {
+      // On native, just reset — the user can pull-to-refresh
+      // The fetch itself will have already errored out due to timeout
+    }
+  };
+
   return (
     <>
       {/* Sleek top progress line for all active requests */}
@@ -124,31 +136,60 @@ export default function GlobalApiLoader() {
         <View style={styles.modalBackdrop}>
           <View style={styles.overlayCard}>
             <Animated.View style={[styles.pulseGlowBox, { transform: [{ scale: pulseAnim }] }]}>
-              <ActivityIndicator size="small" color="#38BDF8" />
+              {state.isTimedOut
+                ? <Ionicons name="cloud-offline-outline" size={22} color="#F87171" />
+                : <ActivityIndicator size="small" color="#38BDF8" />
+              }
             </Animated.View>
 
-            <Text style={styles.overlayTitle}>Synchronizing with Cloud Server...</Text>
+            <Text style={styles.overlayTitle}>
+              {state.isTimedOut ? 'Server Unavailable' : 'Synchronizing with Cloud Server...'}
+            </Text>
             <Text style={styles.overlaySub}>
-              Establishing secure connection with property database. Please wait a moment...
+              {state.isTimedOut
+                ? 'The server is taking too long to respond. It may be waking up from sleep. Try again in a moment.'
+                : 'Establishing secure connection with property database. Please wait a moment...'}
             </Text>
 
-            {/* Glowing progress line */}
-            <View style={styles.progressBarTrack}>
-              <Animated.View
-                style={[
-                  styles.progressBarFill,
-                  {
-                    marginLeft: leftInterpolate,
-                    width: widthInterpolate,
-                  },
-                ]}
-              />
-            </View>
+            {/* Glowing progress line — hidden when timed out */}
+            {!state.isTimedOut && (
+              <View style={styles.progressBarTrack}>
+                <Animated.View
+                  style={[
+                    styles.progressBarFill,
+                    {
+                      marginLeft: leftInterpolate,
+                      width: widthInterpolate,
+                    },
+                  ]}
+                />
+              </View>
+            )}
 
-            <View style={styles.badge}>
-              <Ionicons name="shield-checkmark" size={13} color="#38BDF8" />
-              <Text style={styles.badgeText}>Encrypted Cloud Sync</Text>
-            </View>
+            {state.isTimedOut ? (
+              <TouchableOpacity
+                onPress={handleRetry}
+                style={{
+                  marginTop: 16,
+                  backgroundColor: '#38BDF8',
+                  paddingHorizontal: 24,
+                  paddingVertical: 10,
+                  borderRadius: 10,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="refresh" size={15} color="#0f172a" />
+                <Text style={{ color: '#0f172a', fontWeight: '800', fontSize: 13 }}>Retry</Text>
+              </TouchableOpacity>
+            ) : (
+              <View style={styles.badge}>
+                <Ionicons name="shield-checkmark" size={13} color="#38BDF8" />
+                <Text style={styles.badgeText}>Encrypted Cloud Sync</Text>
+              </View>
+            )}
           </View>
         </View>
       </Modal>

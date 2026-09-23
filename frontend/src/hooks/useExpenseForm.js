@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { calculateSplitShare } from '../services/engine/splitEngine';
 
-export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
+export const useExpenseForm = (property, currentUser, onSubmit, onClose, visible) => {
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState(''); // No default — mandatory selection
@@ -11,7 +11,9 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Reset whenever the modal opens (visible flips to true) or the property changes
   useEffect(() => {
+    if (visible === false) return; // Don't reset on close, only on open or property change
     setTitle('');
     setAmount('');
     setCategory('');
@@ -20,7 +22,7 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
     setReceiptUrls([]);
     setNotes('');
     setSubmitting(false);
-  }, [property]);
+  }, [property, visible]);
 
   const toggleMember = (id) => {
     if (selectedMembers.includes(id)) {

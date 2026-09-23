@@ -26,12 +26,16 @@ export default function MainDashboard({ data, onLogout }) {
   const onAddExpense = async (exp) => {
     const res = await createExpense(exp);
     data.setExpenses((p) => [res, ...p]);
+    const coManagers = (data.activeProperty?.managerDetails || []).filter(
+      (m) => String(m.id) !== String(data.currentUser?._id)
+    );
     sendExpensePushNotification({
       property: data.activeProperty,
       payerName: data.currentUser?.name,
       title: exp.title,
       amount: exp.amount,
       shareAmount: exp.sharePerPerson,
+      recipients: coManagers,
     });
     data.refresh();
   };
@@ -48,11 +52,15 @@ export default function MainDashboard({ data, onLogout }) {
     if (payload.title) changeParts.push('title');
     if (payload.amount) changeParts.push(`amount to ₹${payload.amount}`);
 
+    const coManagers = (data.activeProperty?.managerDetails || []).filter(
+      (m) => String(m.id) !== String(data.currentUser?._id)
+    );
     sendExpenseEditNotification({
       property: data.activeProperty,
       editorName: data.currentUser?.name,
       title: updated.title,
       summary: changeParts.join(', ') || 'details',
+      recipients: coManagers,
     });
 
     data.refresh();
@@ -62,11 +70,15 @@ export default function MainDashboard({ data, onLogout }) {
   const onSettle = async (s) => {
     const res = await createSettlement(s);
     data.setSettlements((p) => [res, ...p]);
+    const coManagers = (data.activeProperty?.managerDetails || []).filter(
+      (m) => String(m.id) !== String(data.currentUser?._id)
+    );
     sendSettlementPushNotification({
       property: data.activeProperty,
       debtorName: data.currentUser?.name,
       creditorName: settleWith?.user?.name,
       amount: s.amount,
+      recipients: coManagers,
     });
     data.refresh();
   };

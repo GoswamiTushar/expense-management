@@ -15,17 +15,34 @@ const normalize = (data) => {
   return normalizeDoc(data);
 };
 
+// Request timeout (ms) — generous for Render free-tier cold starts
+const REQUEST_TIMEOUT_MS = 45000;
+
 // Internal fetch wrapper — does not retry on 401
 const _fetch = async (path, options = {}, accessToken = null) => {
   const url = `${CONFIG.API_URL}${path}`;
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
   if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
-  const res = await fetch(url, {
-    ...options,
-    headers,
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
-  return res;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  try {
+    const res = await fetch(url, {
+      ...options,
+      headers,
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+    return res;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new Error('Request timed out. The server is taking too long to respond. Please try again.');
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 };
 
 // Public API client — attaches token and handles 401 → refresh → retry

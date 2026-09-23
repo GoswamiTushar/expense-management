@@ -53,3 +53,24 @@ async def update_profile(payload: UpdateProfileRequest, current_user: dict = Dep
     # Return updated user
     updated = await db.users.find_one({"_id": current_user["_id"]})
     return UserResponse(id=updated["_id"], **updated).model_dump()
+
+
+class PushTokenRequest(BaseModel):
+    token: str
+    platform: Optional[str] = None  # "android", "ios", "web"
+
+
+@router.patch("/push-token")
+async def register_push_token(payload: PushTokenRequest, current_user: dict = Depends(get_current_user)):
+    """Store/update the device push token for the current user."""
+    db = get_db()
+    token = payload.token.strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="Token cannot be empty.")
+
+    # Store as a set of tokens (user may have multiple devices)
+    await db.users.update_one(
+        {"_id": current_user["_id"]},
+        {"$addToSet": {"pushTokens": token}}
+    )
+    return {"success": True}

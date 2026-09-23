@@ -33,7 +33,17 @@
     },
     "plugins": [
       "expo-sharing",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#FF385C",
+          "sounds": [],
+          "androidMode": "default",
+          "androidCollapsedTitle": "Airbnb Manager"
+        }
+      ]
     ],
     "extra": {
       "eas": {

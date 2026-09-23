@@ -11,6 +11,7 @@ import GlobalApiLoader from './src/components/common/GlobalApiLoader/GlobalApiLo
 import AuthScreen from './src/components/auth/AuthScreen/AuthScreen';
 import MainDashboard from './src/components/dashboard/MainDashboard';
 import { AcceptInviteModal } from './src/components/auth/AcceptInviteModal/AcceptInviteModal';
+import { registerForPushNotifications } from './src/services/notifications/pushService';
 
 const getParams = () => {
   if (typeof window !== 'undefined' && window.location?.search) {
@@ -34,6 +35,8 @@ export default function App() {
       if (stored) {
         // Ensure _id is always set (maps from id field returned by backend)
         setCurrentUser({ ...stored, _id: stored._id || stored.id, id: stored.id || stored._id });
+        // Re-register push token on every app start (token can change)
+        registerForPushNotifications().catch(() => {});
       }
       setAuthLoading(false);
     })();
@@ -42,7 +45,11 @@ export default function App() {
   // Data hook — only fetches when currentUser is non-null
   const data = usePropertyData(currentUser);
 
-  const handleAuthSuccess = (user) => setCurrentUser(user);
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    // Register for push notifications on login (async, non-blocking)
+    registerForPushNotifications().catch(() => {});
+  };
 
   const handleLogout = async () => {
     await logoutUser();

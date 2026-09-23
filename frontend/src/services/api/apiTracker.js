@@ -6,7 +6,9 @@ class ApiTracker {
   constructor() {
     this.activeCount = 0;
     this.isSlow = false;
+    this.isTimedOut = false;
     this.slowTimer = null;
+    this.timeoutTimer = null;
     this.listeners = [];
   }
 
@@ -24,6 +26,7 @@ class ApiTracker {
       activeCount: this.activeCount,
       isLoading: this.activeCount > 0,
       isSlow: this.isSlow,
+      isTimedOut: this.isTimedOut,
     };
   }
 
@@ -40,6 +43,7 @@ class ApiTracker {
 
   startRequest() {
     this.activeCount += 1;
+    this.isTimedOut = false;
 
     // Start slow-request timer if not already running
     if (!this.slowTimer) {
@@ -49,6 +53,16 @@ class ApiTracker {
           this.notify();
         }
       }, 2000); // 2s threshold for Render cold-start or slow network notice
+    }
+
+    // Start timeout timer — after 30s show a retry option
+    if (!this.timeoutTimer) {
+      this.timeoutTimer = setTimeout(() => {
+        if (this.activeCount > 0) {
+          this.isTimedOut = true;
+          this.notify();
+        }
+      }, 30000);
     }
 
     this.notify();
@@ -62,9 +76,24 @@ class ApiTracker {
         clearTimeout(this.slowTimer);
         this.slowTimer = null;
       }
+      if (this.timeoutTimer) {
+        clearTimeout(this.timeoutTimer);
+        this.timeoutTimer = null;
+      }
       this.isSlow = false;
+      this.isTimedOut = false;
     }
 
+    this.notify();
+  }
+
+  // Force-reset all state (used by the retry button)
+  forceReset() {
+    this.activeCount = 0;
+    this.isSlow = false;
+    this.isTimedOut = false;
+    if (this.slowTimer) { clearTimeout(this.slowTimer); this.slowTimer = null; }
+    if (this.timeoutTimer) { clearTimeout(this.timeoutTimer); this.timeoutTimer = null; }
     this.notify();
   }
 }

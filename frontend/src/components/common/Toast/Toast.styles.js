@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { colors } from '../../../theme/colors';
 
 export const styles = StyleSheet.create({
-  container: { position: 'absolute', top: 15, left: 16, right: 16, zIndex: 9999, alignItems: 'center' },
+  container: { position: 'absolute', left: 16, right: 16, zIndex: 9999, alignItems: 'center' },
   card: {
     maxWidth: 500, width: '100%', backgroundColor: colors.cardDark, borderRadius: 16, padding: 14,
     flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.borderDark,
