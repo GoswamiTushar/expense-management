@@ -9,7 +9,7 @@ import DashboardContent from './DashboardContent';
 import { createExpense, updateExpense } from '../../services/api/expenseApi';
 import { createSettlement } from '../../services/api/settlementApi';
 import { createProperty } from '../../services/api/propertyApi';
-import { saveDeviceUserProfile } from '../../services/storage/sessionStore';
+import { updateProfile } from '../../services/api/authApi';
 import {
   sendExpensePushNotification,
   sendExpenseEditNotification,
@@ -119,8 +119,12 @@ export default function MainDashboard({ data, onLogout }) {
         onSettle={onSettle}
         onCreateProperty={onCreateProp}
         onSaveProfile={async (p) => {
-          const s = await saveDeviceUserProfile(p);
-          data.setCurrentUser(s);
+          try {
+            const updated = await updateProfile({ name: p.name, upiId: p.upiId });
+            data.setCurrentUser(updated);
+          } catch (err) {
+            alert('Failed to save profile: ' + (err.message || 'Unknown error'));
+          }
         }}
         onLogout={onLogout}
         onInviteSuccess={data.reload}

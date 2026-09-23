@@ -46,7 +46,22 @@ export const signInUser = async ({ email, password }) => {
   return user;
 };
 
+/**
+ * Update the authenticated user's profile (name, upiId) on the backend.
+ * Also persists the returned updated user to local device storage.
+ */
+export const updateProfile = async ({ name, upiId }) => {
+  const updated = await apiClient('/auth/profile', {
+    method: 'PATCH',
+    body: { name, upiId },
+  });
+  const user = normalizeUser(updated);
+  await saveDeviceUserProfile(user);
+  return user;
+};
+
 export const logoutUser = async () => {
   await clearTokens();
   await clearDeviceUserProfile();
 };
+
