@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { SafeAreaView, StatusBar, View, ActivityIndicator } from 'react-native';
+import { StatusBar, View, ActivityIndicator } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './src/styles/app.styles';
 import { colors } from './src/theme/colors';
 import { usePropertyData } from './src/hooks/usePropertyData';
@@ -56,38 +57,42 @@ export default function App() {
   // Show a minimal loading state while we read the keychain
   if (authLoading) {
     return (
-      <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={colors.primary || '#FF385C'} />
-      </SafeAreaView>
+      <SafeAreaProvider>
+        <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={colors.primary || '#FF385C'} />
+        </SafeAreaView>
+      </SafeAreaProvider>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.surfaceDark} />
-      <GlobalApiLoader />
-      <Toast />
-      {!currentUser ? (
-        <>
-          <AuthScreen
-            onAuthSuccess={handleAuthSuccess}
-            onOpenInviteCode={() => setShowAcceptInvite(true)}
-            initialOtp={params.otp}
-            initialEmail={params.email}
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.surfaceDark} />
+        <GlobalApiLoader />
+        <Toast />
+        {!currentUser ? (
+          <>
+            <AuthScreen
+              onAuthSuccess={handleAuthSuccess}
+              onOpenInviteCode={() => setShowAcceptInvite(true)}
+              initialOtp={params.otp}
+              initialEmail={params.email}
+            />
+            <AcceptInviteModal
+              visible={showAcceptInvite}
+              onClose={() => setShowAcceptInvite(false)}
+              onSuccess={handleInviteJoined}
+              initialCode={params.invite}
+            />
+          </>
+        ) : (
+          <MainDashboard
+            data={{ ...data, currentUser, setCurrentUser }}
+            onLogout={handleLogout}
           />
-          <AcceptInviteModal
-            visible={showAcceptInvite}
-            onClose={() => setShowAcceptInvite(false)}
-            onSuccess={handleInviteJoined}
-            initialCode={params.invite}
-          />
-        </>
-      ) : (
-        <MainDashboard
-          data={{ ...data, currentUser, setCurrentUser }}
-          onLogout={handleLogout}
-        />
-      )}
-    </SafeAreaView>
+        )}
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
