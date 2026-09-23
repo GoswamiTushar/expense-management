@@ -26,6 +26,23 @@ export const createExpense = async (expense) => {
   return newExp;
 };
 
+export const updateExpense = async (expenseId, payload, propertyId) => {
+  const updated = await apiClient(`/expenses/${expenseId}`, {
+    method: 'PUT',
+    body: payload,
+  });
+  const propId = propertyId || updated.propertyId;
+  if (propId) {
+    const cached = await AsyncStorage.getItem(`${STORAGE_KEY}_${propId}`);
+    if (cached) {
+      const list = JSON.parse(cached);
+      const next = list.map((e) => ((e._id === expenseId || e.id === expenseId) ? updated : e));
+      await AsyncStorage.setItem(`${STORAGE_KEY}_${propId}`, JSON.stringify(next));
+    }
+  }
+  return updated;
+};
+
 export const deleteExpense = async (expenseId) => {
   return await apiClient(`/expenses/${expenseId}`, { method: 'DELETE' });
 };

@@ -1,5 +1,6 @@
 import { CONFIG } from '../../config/urls';
 import { getAccessToken, getRefreshToken, saveTokens, clearTokens, clearDeviceUserProfile } from '../storage/sessionStore';
+import { apiTracker } from './apiTracker';
 
 const normalizeDoc = (item) => {
   if (item && typeof item === 'object' && !Array.isArray(item)) {
@@ -29,9 +30,11 @@ const _fetch = async (path, options = {}, accessToken = null) => {
 
 // Public API client — attaches token and handles 401 → refresh → retry
 export const apiClient = async (path, options = {}) => {
-  let accessToken = await getAccessToken();
+  apiTracker.startRequest();
+  try {
+    let accessToken = await getAccessToken();
 
-  let res = await _fetch(path, options, accessToken);
+    let res = await _fetch(path, options, accessToken);
 
   // Token expired — attempt silent refresh once
   if (res.status === 401 && !options._isRetry) {
@@ -69,4 +72,7 @@ export const apiClient = async (path, options = {}) => {
 
   const json = await res.json();
   return normalize(json);
+  } finally {
+    apiTracker.endRequest();
+  }
 };

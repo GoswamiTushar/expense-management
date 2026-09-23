@@ -107,7 +107,7 @@ export const buildPersonTables = (managers = [], expenses = []) => {
 
     return `
       <table ${TABLE_STYLE}>
-        ${sectionTitle(`${managerIdx + 5}. ${manager.name}'s Expense Breakdown`, accent, 8)}
+        ${sectionTitle(`${managerIdx + 6}. ${manager.name}'s Expense Breakdown`, accent, 8)}
         <tr>${headers}</tr>
         ${relevant.length > 0 ? rows + summaryRow : noDataRow}
       </table>

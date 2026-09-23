@@ -1,4 +1,5 @@
 import { buildOverviewTable, buildSpendingTable } from './excelSummaryTable';
+import { buildCategoryTable } from './excelCategoryTable';
 import { buildSettlementTable, buildExpensesTable } from './excelSettlementTable';
 import { calculatePropertyDebts } from './excelDebts';
 import { buildPersonTables } from './excelPersonTable';
@@ -8,6 +9,7 @@ export const buildExcelHtml = ({ property, expenses = [], settlements = [], user
   const debts = calculatePropertyDebts(managers, expenses, settlements, userMap);
   const overviewHtml = buildOverviewTable(property, expenses);
   const spendingHtml = buildSpendingTable(managers, expenses);
+  const categoryHtml = buildCategoryTable(expenses);
   const settlementHtml = buildSettlementTable(managers, debts);
   const expensesHtml = buildExpensesTable(expenses, userMap);
   const personTablesHtml = buildPersonTables(managers, expenses);
@@ -29,6 +31,7 @@ export const buildExcelHtml = ({ property, expenses = [], settlements = [], user
         ${banner}
         ${overviewHtml}
         ${spendingHtml}
+        ${categoryHtml}
         ${settlementHtml}
         ${expensesHtml}
         ${personTablesHtml}

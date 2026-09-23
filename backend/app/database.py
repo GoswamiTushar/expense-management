@@ -22,7 +22,15 @@ def get_sanitized_uri(uri: str) -> str:
 def get_client() -> AsyncIOMotorClient:
     global _client
     if _client is None:
-        _client = AsyncIOMotorClient(get_sanitized_uri(settings.mongodb_uri))
+        _client = AsyncIOMotorClient(
+            get_sanitized_uri(settings.mongodb_uri),
+            serverSelectionTimeoutMS=20000,
+            connectTimeoutMS=10000,
+            maxPoolSize=20,
+            minPoolSize=1,
+            maxIdleTimeMS=45000,
+            retryWrites=True,
+        )
     return _client
 
 def get_db():

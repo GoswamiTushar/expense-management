@@ -25,6 +25,12 @@
     "plugins": [
       "expo-sharing",
       "expo-secure-store"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "1b341bdf-3b39-4323-8d4b-8cc8d99ee036"
+      }
+    },
+    "owner": "tushar-goswamis-team"
   }
 }

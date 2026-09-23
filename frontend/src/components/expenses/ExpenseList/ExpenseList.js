@@ -5,7 +5,7 @@ import { styles } from './ExpenseList.styles';
 import { colors } from '../../../theme/colors';
 import ExpenseItem from '../ExpenseItem/ExpenseItem';
 
-export default function ExpenseList({ expenses = [] }) {
+export default function ExpenseList({ expenses = [], userMap = {}, onSelectExpense }) {
   if (expenses.length === 0) {
     return (
       <View style={styles.emptyBox}>
@@ -21,7 +21,12 @@ export default function ExpenseList({ expenses = [] }) {
   return (
     <View>
       {expenses.map((expense) => (
-        <ExpenseItem key={expense._id} expense={expense} />
+        <ExpenseItem
+          key={expense._id || expense.id}
+          expense={expense}
+          userMap={userMap}
+          onPress={onSelectExpense}
+        />
       ))}
     </View>
   );

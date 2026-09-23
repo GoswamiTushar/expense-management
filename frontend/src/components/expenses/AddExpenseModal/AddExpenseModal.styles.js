@@ -2,9 +2,10 @@ import { StyleSheet } from 'react-native';
 import { colors } from '../../../theme/colors';
 
 export const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: colors.cardDark, borderTopLeftRadius: 20, borderTopRightRadius: 20, maxHeight: '90%', paddingBottom: 20, borderTopWidth: 1, borderColor: colors.borderDark },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.borderDark },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'flex-end' },
+  sheet: { backgroundColor: colors.cardDark, borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '92%', paddingTop: 12, paddingBottom: 24, borderTopWidth: 1, borderColor: colors.borderDark, shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 12 },
+  dragHandle: { width: 40, height: 4.5, borderRadius: 3, backgroundColor: '#475569', alignSelf: 'center', marginBottom: 10 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 18, paddingTop: 4, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: colors.borderDark },
   title: { color: colors.textDark, fontSize: 17, fontWeight: '800' },
   sub: { color: colors.textMuted, fontSize: 12 },
   body: { paddingHorizontal: 18, paddingTop: 12 },

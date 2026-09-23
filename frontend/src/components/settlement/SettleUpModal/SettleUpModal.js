@@ -1,46 +1,127 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { styles } from './SettleUpModal.styles';
 import { colors } from '../../../theme/colors';
 import { formatCurrency } from '../../../utils/currency';
 import { openUpiApp } from '../../../services/upi/upiService';
 
-export default function SettleUpModal({ visible, onClose, onSubmit, creditor, debtor, property, defaultAmount = 0 }) {
+export default function SettleUpModal({
+  visible,
+  onClose,
+  onSubmit,
+  creditor,
+  debtor,
+  property,
+  defaultAmount = 0,
+}) {
   const [launched, setLaunched] = useState(false);
-  const upiId = creditor?.upiId || `${creditor?.name?.toLowerCase().replace(/\s+/g, '') || 'manager'}@upi`;
+  const [submitting, setSubmitting] = useState(false);
+  const upiId =
+    creditor?.upiId ||
+    `${creditor?.name?.toLowerCase().replace(/\s+/g, '') || 'manager'}@upi`;
 
-  useEffect(() => { if (visible) setLaunched(false); }, [visible]);
+  useEffect(() => {
+    if (visible) {
+      setLaunched(false);
+      setSubmitting(false);
+    }
+  }, [visible]);
 
   if (!visible) return null;
 
   const handlePayUpi = () => {
-    openUpiApp({ upiId, payeeName: creditor?.name || 'Partner', amount: defaultAmount, note: `${property?.name || 'Airbnb'} Payment` });
+    openUpiApp({
+      upiId,
+      payeeName: creditor?.name || 'Partner',
+      amount: defaultAmount,
+      note: `${property?.name || 'Airbnb'} Payment`,
+    });
     setLaunched(true);
   };
-  const handleComplete = () => {
-    onSubmit({ propertyId: property?._id, settledBy: debtor?._id, settledByName: debtor?.name || 'Partner', paidTo: creditor?._id, paidToName: creditor?.name || 'Partner', amount: defaultAmount, paymentMode: 'UPI App' });
-    onClose();
+
+  const handleComplete = async () => {
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        propertyId: property?._id,
+        settledBy: debtor?._id,
+        settledByName: debtor?.name || 'Partner',
+        paidTo: creditor?._id,
+        paidToName: creditor?.name || 'Partner',
+        amount: defaultAmount,
+        paymentMode: 'UPI App',
+      });
+      onClose();
+    } catch (err) {
+      alert(err.message || 'Failed to record settlement.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
     <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <View style={styles.header}><Text style={styles.title}>Pay Partner</Text><TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity></View>
+          <View style={styles.header}>
+            <Text style={styles.title}>Pay Partner</Text>
+            <TouchableOpacity onPress={onClose} disabled={submitting}>
+              <Ionicons name="close" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+          </View>
           <View style={styles.promptBox}>
-            <Text style={styles.promptText}>Pay <Text style={styles.amountHighlight}>{formatCurrency(defaultAmount)}</Text> to <Text style={styles.partnerHighlight}>{creditor?.name || 'Partner'}</Text>?</Text>
-            <View style={styles.upiPill}><Ionicons name="card" size={13} color="#38BDF8" /><Text style={styles.upiText}>UPI ID: {upiId}</Text></View>
+            <Text style={styles.promptText}>
+              Pay{' '}
+              <Text style={styles.amountHighlight}>{formatCurrency(defaultAmount)}</Text>{' '}
+              to{' '}
+              <Text style={styles.partnerHighlight}>
+                {creditor?.name || 'Partner'}
+              </Text>
+              ?
+            </Text>
+            <View style={styles.upiPill}>
+              <Ionicons name="card" size={13} color="#38BDF8" />
+              <Text style={styles.upiText}>UPI ID: {upiId}</Text>
+            </View>
           </View>
           {!launched ? (
             <View style={styles.btnRow}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.payBtn} onPress={handlePayUpi} activeOpacity={0.8}><Ionicons name="flash" size={15} color={colors.white} /><Text style={styles.payText}>Pay via UPI App</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.payBtn}
+                onPress={handlePayUpi}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="flash" size={15} color={colors.white} />
+                <Text style={styles.payText}>Pay via UPI App</Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <View style={styles.doneBox}>
-              <Text style={styles.donePrompt}>UPI App opened. After completing payment:</Text>
-              <TouchableOpacity style={styles.settleBtn} onPress={handleComplete} activeOpacity={0.8}><Ionicons name="checkmark-done" size={17} color={colors.white} /><Text style={styles.settleText}>Mark as Settled (Reset to ₹0)</Text></TouchableOpacity>
+              <Text style={styles.donePrompt}>
+                UPI App opened. After completing payment:
+              </Text>
+              <TouchableOpacity
+                style={[styles.settleBtn, submitting && { opacity: 0.85 }]}
+                onPress={handleComplete}
+                disabled={submitting}
+                activeOpacity={0.8}
+              >
+                {submitting ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    <ActivityIndicator size="small" color={colors.white} />
+                    <Text style={styles.settleText}>Recording Settlement...</Text>
+                  </View>
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-done" size={17} color={colors.white} />
+                    <Text style={styles.settleText}>Mark as Settled (Reset to ₹0)</Text>
+                  </>
+                )}
+              </TouchableOpacity>
             </View>
           )}
         </View>

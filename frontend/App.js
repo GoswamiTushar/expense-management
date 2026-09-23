@@ -6,6 +6,7 @@ import { usePropertyData } from './src/hooks/usePropertyData';
 import { logoutUser } from './src/services/api/authApi';
 import { getDeviceUserProfile } from './src/services/storage/sessionStore';
 import Toast from './src/components/common/Toast/Toast';
+import GlobalApiLoader from './src/components/common/GlobalApiLoader/GlobalApiLoader';
 import AuthScreen from './src/components/auth/AuthScreen/AuthScreen';
 import MainDashboard from './src/components/dashboard/MainDashboard';
 import { AcceptInviteModal } from './src/components/auth/AcceptInviteModal/AcceptInviteModal';
@@ -64,6 +65,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" />
+      <GlobalApiLoader />
       <Toast />
       {!currentUser ? (
         <>

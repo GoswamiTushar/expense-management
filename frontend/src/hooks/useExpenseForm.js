@@ -4,20 +4,28 @@ import { calculateSplitShare } from '../services/engine/splitEngine';
 export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Rent');
+  const [category, setCategory] = useState(''); // No default — mandatory selection
   const [selectedMembers, setSelectedMembers] = useState([]);
-  const [receiptUrls, setReceiptUrls] = useState([]);  // ← now an array
+  const [receiptUrls, setReceiptUrls] = useState([]); // array of image URIs
   const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    setTitle(''); setAmount(''); setCategory('Rent');
-    setSelectedMembers(property?.managers || []); setReceiptUrls([]); setNotes('');
+    setTitle('');
+    setAmount('');
+    setCategory('');
+    setSelectedMembers(property?.managers || []);
+    setReceiptUrls([]);
+    setNotes('');
+    setSubmitting(false);
   }, [property]);
 
   const toggleMember = (id) => {
     if (selectedMembers.includes(id)) {
       if (selectedMembers.length > 1) setSelectedMembers(selectedMembers.filter((m) => m !== id));
-    } else { setSelectedMembers([...selectedMembers, id]); }
+    } else {
+      setSelectedMembers([...selectedMembers, id]);
+    }
   };
 
   /** Append new URIs (from camera or gallery), avoiding duplicates */
@@ -37,23 +45,50 @@ export const useExpenseForm = (property, currentUser, onSubmit, onClose) => {
   const parsedAmount = parseFloat(amount) || 0;
   const sharePerPerson = calculateSplitShare(parsedAmount, selectedMembers);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!title.trim() || parsedAmount <= 0) return alert('Enter a title and valid amount.');
-    onSubmit({
-      propertyId: property._id, title: title.trim(), amount: parsedAmount, category,
-      paidBy: currentUser?._id, payerName: currentUser?.name || 'Manager',
-      splitAmong: selectedMembers, sharePerPerson,
-      receiptUrl: receiptUrls[0] || '',   // backward-compat: first image as primary
-      receiptUrls,                         // full array for new consumers
-      notes: notes.trim(), date: new Date().toISOString(),
-    });
-    onClose();
+    if (!category || !category.trim()) return alert('Please select an expense category.');
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        propertyId: property._id,
+        title: title.trim(),
+        amount: parsedAmount,
+        category: category.trim(),
+        paidBy: currentUser?._id,
+        payerName: currentUser?.name || 'Manager',
+        splitAmong: selectedMembers,
+        sharePerPerson,
+        receiptUrl: receiptUrls[0] || '', // backward-compat: first image as primary
+        receiptUrls, // full array for new consumers
+        notes: notes.trim(),
+        date: new Date().toISOString(),
+      });
+      onClose();
+    } catch (err) {
+      alert(err.message || 'Failed to create expense.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return {
-    title, setTitle, amount, setAmount, category, setCategory,
-    selectedMembers, toggleMember,
-    receiptUrls, addReceiptUrls, removeReceiptUrl,
-    notes, setNotes, parsedAmount, sharePerPerson, handleSubmit,
+    title,
+    setTitle,
+    amount,
+    setAmount,
+    category,
+    setCategory,
+    selectedMembers,
+    toggleMember,
+    receiptUrls,
+    addReceiptUrls,
+    removeReceiptUrl,
+    notes,
+    setNotes,
+    parsedAmount,
+    sharePerPerson,
+    submitting,
+    handleSubmit,
   };
 };

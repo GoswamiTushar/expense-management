@@ -10,6 +10,8 @@ import { computeBalances } from '../services/engine/balanceEngine';
  * No API calls fire until currentUser is set.
  */
 export const usePropertyData = (currentUser) => {
+  const [loading, setLoading] = useState(Boolean(currentUser?._id));
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [properties, setProperties] = useState([]);
   const [activeProperty, setActiveProperty] = useState(null);
@@ -17,23 +19,48 @@ export const usePropertyData = (currentUser) => {
   const [settlements, setSettlements] = useState([]);
 
   const fetchDetails = async (propId) => {
-    if (!propId) { setExpenses([]); setSettlements([]); return; }
-    const [e, s] = await Promise.all([getExpensesByProperty(propId), getSettlementsByProperty(propId)]);
-    setExpenses(e); setSettlements(s);
+    if (!propId) {
+      setExpenses([]);
+      setSettlements([]);
+      return;
+    }
+    setLoadingDetails(true);
+    try {
+      const [e, s] = await Promise.all([
+        getExpensesByProperty(propId),
+        getSettlementsByProperty(propId),
+      ]);
+      setExpenses(e);
+      setSettlements(s);
+    } catch (err) {
+      console.error('Error fetching property details:', err);
+    } finally {
+      setLoadingDetails(false);
+    }
   };
 
   const loadData = useCallback(async () => {
-    if (!currentUser?._id) return;  // ← guard: never fetch when unauthenticated
-    const props = await getProperties();
-    setProperties(props);
-    const initial = props[0] || null;
-    setActiveProperty(initial);
-    if (initial?._id) await fetchDetails(initial._id);
+    if (!currentUser?._id) return; // ← guard: never fetch when unauthenticated
+    setLoading(true);
+    try {
+      const props = await getProperties();
+      setProperties(props);
+      const initial = props[0] || null;
+      setActiveProperty(initial);
+      if (initial?._id) {
+        await fetchDetails(initial._id);
+      }
+    } catch (err) {
+      console.error('Error loading properties:', err);
+    } finally {
+      setLoading(false);
+    }
   }, [currentUser?._id]);
 
   // Reset all data immediately when user logs out
   useEffect(() => {
     if (!currentUser) {
+      setLoading(false);
       setProperties([]);
       setActiveProperty(null);
       setExpenses([]);
@@ -44,7 +71,9 @@ export const usePropertyData = (currentUser) => {
   }, [currentUser?._id]);
 
   useEffect(() => {
-    if (activeProperty?._id && currentUser?._id) fetchDetails(activeProperty._id);
+    if (activeProperty?._id && currentUser?._id) {
+      fetchDetails(activeProperty._id);
+    }
   }, [activeProperty?._id]);
 
   const refresh = useCallback(async () => {
@@ -54,13 +83,25 @@ export const usePropertyData = (currentUser) => {
     setRefreshing(false);
   }, [activeProperty, currentUser]);
 
-  const balanceData = activeProperty && currentUser
-    ? computeBalances(expenses, settlements, activeProperty.managers || [], currentUser._id)
-    : null;
+  const balanceData =
+    activeProperty && currentUser
+      ? computeBalances(expenses, settlements, activeProperty.managers || [], currentUser._id)
+      : null;
 
   return {
-    refreshing, refresh, properties, setProperties, activeProperty, setActiveProperty,
-    expenses, setExpenses, settlements, setSettlements,
-    balanceData, reload: loadData,
+    loading,
+    loadingDetails,
+    refreshing,
+    refresh,
+    properties,
+    setProperties,
+    activeProperty,
+    setActiveProperty,
+    expenses,
+    setExpenses,
+    settlements,
+    setSettlements,
+    balanceData,
+    reload: loadData,
   };
 };

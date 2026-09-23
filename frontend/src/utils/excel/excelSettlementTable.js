@@ -13,7 +13,7 @@ export const buildSettlementTable = (managers = [], debts = []) => {
         return `<tr>${makeTd(d.from, false, bg, true)}${makeTd(d.to, false, bg, true)}${makeTd(formatInr(d.amount), true, bg, true)}${makeTd('Pending Settlement', false, bg)}</tr>`;
       }).join('');
 
-  return `<table ${TABLE_STYLE}>${sectionTitle('3. Settlement Summary (Who Owes Whom)', '#B45309', 4)}<tr>${headers}</tr>${rows}</table>`;
+  return `<table ${TABLE_STYLE}>${sectionTitle('4. Settlement Summary (Who Owes Whom)', '#B45309', 4)}<tr>${headers}</tr>${rows}</table>`;
 };
 
 export const buildExpensesTable = (expenses = [], userMap = {}) => {
@@ -34,5 +34,5 @@ export const buildExpensesTable = (expenses = [], userMap = {}) => {
     return `<tr>${makeTd(dateStr, false, bg)}${makeTd(exp.title || 'Untitled', false, bg, true)}${makeTd(exp.category || 'General', false, bg)}${makeTd(formatInr(exp.amount), true, bg, true)}${makeTd(getName(exp.paidBy), false, bg, true)}${makeTd(splitNames, false, bg)}${makeTd(formatInr(share), true, bg)}${makeTd(exp.notes || '-', false, bg)}</tr>`;
   }).join('');
 
-  return `<table ${TABLE_STYLE}>${sectionTitle('4. Itemized Expenses Record', '#E11D48', 8)}<tr>${headers}</tr>${rows}</table>`;
+  return `<table ${TABLE_STYLE}>${sectionTitle('5. Itemized Expenses Record', '#E11D48', 8)}<tr>${headers}</tr>${rows}</table>`;
 };
