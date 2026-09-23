@@ -1,8 +1,17 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform, StatusBar } from 'react-native';
 import { colors } from '../../../theme/colors';
 
+const STATUS_BAR_HEIGHT = Platform.OS === 'android' ? (StatusBar.currentHeight || 28) : 0;
+
 export const styles = StyleSheet.create({
-  container: { backgroundColor: colors.surfaceDark, paddingTop: 10, paddingBottom: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: colors.borderDark },
+  container: {
+    backgroundColor: colors.surfaceDark,
+    paddingTop: STATUS_BAR_HEIGHT + 10,
+    paddingBottom: 12,
+    paddingHorizontal: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderDark,
+  },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   brandBox: { flexDirection: 'row', alignItems: 'center' },
   brandIcon: { width: 28, height: 28, borderRadius: 7, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginRight: 8 },

@@ -8,10 +8,19 @@
     "userInterfaceStyle": "light",
     "scheme": "airbnbexpenses",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.tushar.airbnbexpenses",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "androidStatusBar": {
+      "barStyle": "light-content",
+      "backgroundColor": "#1E293B"
     },
     "android": {
       "package": "com.tushar.airbnbexpenses",
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
