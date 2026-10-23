@@ -53,9 +53,9 @@ export const apiClient = async (path, options = {}) => {
 
     let res = await _fetch(path, options, accessToken);
 
-  // Token expired — attempt silent refresh once
-  if (res.status === 401 && !options._isRetry) {
-    const refreshToken = await getRefreshToken();
+    // Token expired — attempt silent refresh once (skip for signin/signup)
+    if (res.status === 401 && !options._isRetry && !path.includes('/signin') && !path.includes('/signup')) {
+      const refreshToken = await getRefreshToken();
     if (refreshToken) {
       try {
         const refreshRes = await _fetch('/auth/refresh', {

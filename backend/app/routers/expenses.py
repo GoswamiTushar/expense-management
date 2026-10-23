@@ -7,12 +7,51 @@ from app.models.expense import ExpenseCreate, ExpenseUpdate, ExpenseResponse
 from app.deps import get_current_user
 from app.services.notification_service import record_notification
 
+from pydantic import BaseModel
+
 router = APIRouter(prefix="/api/expenses", tags=["Expenses"])
 
-@router.get("", response_model=List[ExpenseResponse])
-async def list_expenses(propertyId: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+class PaginatedExpensesResponse(BaseModel):
+    items: List[ExpenseResponse]
+    total: int
+    skip: int
+    limit: int
+    hasMore: bool
+
+@router.get("/paginated", response_model=PaginatedExpensesResponse)
+async def list_expenses_paginated(
+    propertyId: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 15,
+    current_user: dict = Depends(get_current_user),
+):
     query = {"propertyId": propertyId} if propertyId else {}
-    docs = await get_db().expenses.find(query).sort("createdAt", -1).to_list(500)
+    total = await get_db().expenses.count_documents(query)
+    docs = await get_db().expenses.find(query).sort("createdAt", -1).skip(skip).to_list(limit)
+    res = []
+    for e in docs:
+        e_date = e.get("date") or e.get("createdAt") or ""
+        e_created = e.get("createdAt") or e.get("date") or ""
+        e["date"] = e_date
+        e["createdAt"] = e_created
+        res.append(ExpenseResponse(id=e["_id"], **e))
+    return PaginatedExpensesResponse(
+        items=res,
+        total=total,
+        skip=skip,
+        limit=limit,
+        hasMore=(skip + len(res)) < total,
+    )
+
+@router.get("", response_model=List[ExpenseResponse])
+async def list_expenses(
+    propertyId: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 500,
+    current_user: dict = Depends(get_current_user),
+):
+    query = {"propertyId": propertyId} if propertyId else {}
+    docs = await get_db().expenses.find(query).sort("createdAt", -1).skip(skip).to_list(limit if limit > 0 else 500)
     res = []
     for e in docs:
         e_date = e.get("date") or e.get("createdAt") or ""
@@ -24,9 +63,21 @@ async def list_expenses(propertyId: Optional[str] = None, current_user: dict = D
 
 @router.post("", response_model=ExpenseResponse)
 async def create_expense(payload: ExpenseCreate, current_user: dict = Depends(get_current_user)):
-    now = datetime.utcnow().isoformat()
+    now = datetime.utcnow().isoformat() + "Z"
     actor_name = current_user.get("name") or payload.payerName or "Manager"
     actor_id = current_user.get("id") or current_user.get("_id") or payload.paidBy
+
+    amount = round(float(payload.amount), 2)
+    if amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Expense amount must be greater than zero.",
+        )
+    if not payload.splitAmong:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Expense must be split among at least one manager.",
+        )
 
     initial_audit = [{
         "action": "Created expense",
@@ -36,6 +87,8 @@ async def create_expense(payload: ExpenseCreate, current_user: dict = Depends(ge
     }]
 
     dump = payload.model_dump()
+    dump["amount"] = amount
+    dump["sharePerPerson"] = round(amount / len(payload.splitAmong), 2)
     if not dump.get("auditLog"):
         dump["auditLog"] = initial_audit
 
@@ -52,7 +105,7 @@ async def create_expense(payload: ExpenseCreate, current_user: dict = Depends(ge
     await record_notification(
         property_id=exp.get("propertyId"),
         title="New Expense Added",
-        body=f"{actor_name} logged '{exp.get('title')}' for ₹{float(exp.get('amount', 0)):,.2f}",
+        body=f"{actor_name} logged '{exp.get('title')}' for ₹{amount:,.2f}",
         actor_id=actor_id,
         actor_name=actor_name,
         notif_type="expense_created",
@@ -73,15 +126,20 @@ async def update_expense(
 
     user_id = str(current_user.get("id") or current_user.get("_id") or "")
     user_name = current_user.get("name") or "Manager"
-    now = datetime.utcnow().isoformat()
+    now = datetime.utcnow().isoformat() + "Z"
 
     paid_by = str(existing.get("paidBy", ""))
     is_creator = (user_id == paid_by)
 
     # Permission check: amount editing is strictly restricted to the creator
     if payload.amount is not None:
-        old_amount = round(float(existing.get("amount", 0)), 2)
         new_amount = round(float(payload.amount), 2)
+        if new_amount <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Expense amount must be greater than zero.",
+            )
+        old_amount = round(float(existing.get("amount", 0)), 2)
         if old_amount != new_amount:
             if not is_creator:
                 raise HTTPException(

@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Animated, TouchableOpacity, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './Toast.styles';
-import { colors } from '../../../theme/colors';
+import { createToastStyles, styles as defaultStyles } from './Toast.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { toastEmitter } from '../../../services/notifications/toastEmitter';
 
 export default function Toast() {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createToastStyles(colors, isDark), [colors, isDark]);
   const [toast, setToast] = useState(null);
   const [slideAnim] = useState(new Animated.Value(-100));
   const insets = useSafeAreaInsets();
@@ -14,9 +16,9 @@ export default function Toast() {
   useEffect(() => {
     return toastEmitter.subscribe((data) => {
       setToast(data);
-      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true }).start();
+      Animated.spring(slideAnim, { toValue: 0, useNativeDriver: Platform.OS !== 'web' }).start();
       const timer = setTimeout(() => {
-        Animated.timing(slideAnim, { toValue: -120, duration: 250, useNativeDriver: true }).start(() => setToast(null));
+        Animated.timing(slideAnim, { toValue: -120, duration: 250, useNativeDriver: Platform.OS !== 'web' }).start(() => setToast(null));
       }, 5000);
       return () => clearTimeout(timer);
     });

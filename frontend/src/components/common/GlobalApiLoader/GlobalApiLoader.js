@@ -67,13 +67,13 @@ export default function GlobalApiLoader() {
             toValue: 1.1,
             duration: 700,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
           Animated.timing(pulseAnim, {
             toValue: 1,
             duration: 700,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }),
         ])
       );

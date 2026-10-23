@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useMemo, useRef, useEffect } from 'react';
+import { View, Text, Modal, TouchableOpacity, ScrollView, Animated, Platform, TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './PropertyPickerModal.styles';
-import { colors } from '../../../theme/colors';
+import { createPropertyPickerStyles, styles as defaultStyles } from './PropertyPickerModal.styles';
+import { useTheme } from '../../../context/ThemeContext';
 
 export default function PropertyPickerModal({
   visible,
@@ -12,16 +12,64 @@ export default function PropertyPickerModal({
   onSelectProperty,
   onOpenAddProperty,
   onOpenJoinInvite,
+  onOpenInvitePartner,
 }) {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createPropertyPickerStyles(colors, isDark), [colors, isDark]);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.92)).current;
+
+  useEffect(() => {
+    if (visible) {
+      fadeAnim.setValue(0);
+      scaleAnim.setValue(0.92);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 220,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 8,
+          tension: 120,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]).start();
+    }
+  }, [visible]);
+
+  const handleClose = (callback) => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 0.94,
+        duration: 180,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    ]).start(() => {
+      onClose();
+      if (typeof callback === 'function') callback();
+    });
+  };
+
   if (!visible) return null;
 
   return (
-    <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <View style={styles.card}>
+    <Modal visible={true} transparent onRequestClose={() => handleClose()}>
+      <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
+        <TouchableWithoutFeedback onPress={() => handleClose()}>
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+        </TouchableWithoutFeedback>
+        <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
           <View style={styles.header}>
             <Text style={styles.title}>Airbnb Properties</Text>
-            <TouchableOpacity onPress={onClose}>
+            <TouchableOpacity onPress={() => handleClose()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="close" size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
@@ -40,8 +88,7 @@ export default function PropertyPickerModal({
                     key={prop._id}
                     style={[styles.item, active && styles.itemActive]}
                     onPress={() => {
-                      onSelectProperty(prop);
-                      onClose();
+                      handleClose(() => onSelectProperty(prop));
                     }}
                   >
                     <View style={{ flex: 1 }}>
@@ -50,9 +97,22 @@ export default function PropertyPickerModal({
                       </Text>
                       <Text style={styles.loc}>{prop.location}</Text>
                     </View>
-                    {active && (
-                      <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
-                    )}
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <TouchableOpacity
+                        style={styles.inviteBtn}
+                        onPress={(e) => {
+                          e.stopPropagation?.();
+                          handleClose(() => onOpenInvitePartner?.(prop));
+                        }}
+                        activeOpacity={0.75}
+                      >
+                        <Ionicons name="person-add-outline" size={13} color={colors.primary} />
+                        <Text style={styles.inviteBtnText}>Invite</Text>
+                      </TouchableOpacity>
+                      {active && (
+                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                      )}
+                    </View>
                   </TouchableOpacity>
                 );
               })
@@ -61,8 +121,7 @@ export default function PropertyPickerModal({
           <TouchableOpacity
             style={styles.addBtn}
             onPress={() => {
-              onClose();
-              onOpenAddProperty();
+              handleClose(() => onOpenAddProperty());
             }}
           >
             <Ionicons name="add-circle" size={17} color={colors.white} />
@@ -71,15 +130,14 @@ export default function PropertyPickerModal({
           <TouchableOpacity
             style={[styles.addBtn, { backgroundColor: '#0284C7', marginTop: 8 }]}
             onPress={() => {
-              onClose();
-              onOpenJoinInvite?.();
+              handleClose(() => onOpenJoinInvite?.());
             }}
           >
             <Ionicons name="key" size={17} color={colors.white} />
             <Text style={styles.addText}>Join via Invite Code</Text>
           </TouchableOpacity>
-        </View>
-      </View>
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 }

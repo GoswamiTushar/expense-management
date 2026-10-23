@@ -9,12 +9,12 @@ export const styles = StyleSheet.create({
     right: 0,
     height: 3,
     zIndex: 99999,
-    backgroundColor: 'rgba(255, 56, 92, 0.15)',
+    backgroundColor: 'rgba(94, 92, 230, 0.15)',
     overflow: 'hidden',
   },
   topBarIndicator: {
     height: '100%',
-    backgroundColor: colors.primary || '#FF385C',
+    backgroundColor: '#5E5CE6',
     borderRadius: 2,
   },
   modalBackdrop: {

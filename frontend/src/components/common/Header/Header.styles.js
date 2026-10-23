@@ -1,24 +1,172 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { colors } from '../../../theme/colors';
 
-export const styles = StyleSheet.create({
-  container: {
-    backgroundColor: colors.surfaceDark,
-    paddingTop: 10,
-    paddingBottom: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderDark,
-  },
-  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
-  brandBox: { flexDirection: 'row', alignItems: 'center' },
-  brandIcon: { width: 28, height: 28, borderRadius: 7, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginRight: 8 },
-  brandTitle: { color: colors.textDark, fontSize: 14.5, fontWeight: '800' },
-  brandSub: { color: colors.textMuted, fontSize: 10.5 },
-  actionGroup: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  iconBtn: { width: 29, height: 29, borderRadius: 15, backgroundColor: colors.cardDark, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.borderDark },
-  badge: { position: 'absolute', top: -2, right: -2, backgroundColor: colors.primary, borderRadius: 7, minWidth: 14, height: 14, alignItems: 'center', justifyContent: 'center' },
-  badgeText: { color: colors.white, fontSize: 8, fontWeight: '800' },
-  propertyBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.cardDark, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 10, borderWidth: 1, borderColor: colors.borderDark },
-  propText: { color: colors.textDark, fontSize: 12.5, fontWeight: '700', flex: 1 },
-});
+export const createHeaderStyles = (tColors = colors, isDark = true) =>
+  StyleSheet.create({
+    container: {
+      backgroundColor: isDark ? 'rgba(15, 18, 26, 0.92)' : 'rgba(255, 255, 255, 0.92)',
+      paddingTop: 12,
+      paddingBottom: 13,
+      paddingHorizontal: 18,
+      borderBottomWidth: 1,
+      borderBottomColor: isDark ? '#232838' : 'rgba(15, 23, 42, 0.08)',
+      borderTopWidth: 1,
+      borderTopColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(255, 255, 255, 0.95)',
+      ...(Platform.OS === 'web'
+        ? {
+            backdropFilter: 'blur(36px) saturate(200%) contrast(104%)',
+            WebkitBackdropFilter: 'blur(36px) saturate(200%) contrast(104%)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 100,
+            boxShadow: isDark
+              ? 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.10), 0 12px 28px -6px rgba(0, 0, 0, 0.55)'
+              : 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.95), 0 8px 24px -4px rgba(15, 23, 42, 0.05)',
+          }
+        : {}),
+    },
+    topRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    brandBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    brandIcon: {
+      width: 34,
+      height: 34,
+      borderRadius: 10,
+      backgroundColor: isDark ? '#151821' : '#0F172A',
+      borderWidth: 1,
+      borderColor: isDark ? '#232838' : 'rgba(15, 23, 42, 0.08)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginRight: 10,
+      shadowColor: '#000000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: isDark ? 0.35 : 0.08,
+      shadowRadius: 6,
+    },
+    brandTitle: {
+      color: tColors.textDark,
+      fontSize: 15,
+      fontWeight: '700',
+      letterSpacing: -0.3,
+    },
+    brandSub: {
+      color: tColors.textMuted,
+      fontSize: 10.5,
+      fontWeight: '500',
+    },
+    backBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: isDark ? '#151821' : '#FFFFFF',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: isDark ? '#232838' : 'rgba(15, 23, 42, 0.08)',
+      ...(Platform.OS === 'web'
+        ? {
+            boxShadow: isDark
+              ? '0 2px 6px rgba(0, 0, 0, 0.35)'
+              : '0 2px 6px rgba(15, 23, 42, 0.04)',
+            cursor: 'pointer',
+          }
+        : {}),
+    },
+    centerTitleBox: {
+      flex: 1,
+      alignItems: 'flex-start',
+      justifyContent: 'center',
+      paddingLeft: 10,
+      paddingRight: 6,
+    },
+    centerTitle: {
+      color: tColors.textDark,
+      fontSize: 15.5,
+      fontWeight: '700',
+      letterSpacing: -0.3,
+      textAlign: 'left',
+    },
+    centerSub: {
+      color: tColors.textMuted,
+      fontSize: 11,
+      fontWeight: '500',
+      marginTop: 1,
+      textAlign: 'left',
+    },
+    actionGroup: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 7,
+    },
+    iconBtn: {
+      width: 34,
+      height: 34,
+      borderRadius: 17,
+      backgroundColor: isDark ? '#151821' : '#FFFFFF',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: isDark ? '#232838' : 'rgba(15, 23, 42, 0.08)',
+      ...(Platform.OS === 'web'
+        ? {
+            boxShadow: isDark
+              ? '0 2px 6px rgba(0, 0, 0, 0.35)'
+              : '0 2px 6px rgba(15, 23, 42, 0.04)',
+            cursor: 'pointer',
+          }
+        : {}),
+    },
+    badge: {
+      position: 'absolute',
+      top: -3,
+      right: -3,
+      backgroundColor: '#5E5CE6',
+      borderRadius: 8,
+      minWidth: 15,
+      height: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: isDark ? '#151821' : '#FFFFFF',
+    },
+    badgeText: {
+      color: '#FFFFFF',
+      fontSize: 8.5,
+      fontWeight: '800',
+    },
+    propertyBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: isDark ? '#151821' : '#FFFFFF',
+      paddingHorizontal: 12,
+      paddingVertical: 9.5,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: isDark ? '#232838' : 'rgba(15, 23, 42, 0.08)',
+      ...(Platform.OS === 'web'
+        ? {
+            boxShadow: isDark
+              ? '0 2px 6px rgba(0, 0, 0, 0.35)'
+              : '0 2px 6px rgba(15, 23, 42, 0.03)',
+            cursor: 'pointer',
+          }
+        : {}),
+    },
+    propText: {
+      color: tColors.textDark,
+      fontSize: 13,
+      fontWeight: '600',
+      flex: 1,
+      letterSpacing: -0.2,
+    },
+  });
+
+export const styles = createHeaderStyles(colors, true);

@@ -30,8 +30,9 @@ async def attach_managers(props):
 
 @router.get("", response_model=List[PropertyResponse])
 async def list_properties(current_user: dict = Depends(get_current_user)):
-    """Return only properties where the authenticated user is a manager."""
-    docs = await get_db().properties.find({"managers": current_user["_id"]}).to_list(100)
+    """Return properties where user is a manager, or all properties if admin."""
+    query = {} if current_user.get("role") == "admin" else {"managers": current_user["_id"]}
+    docs = await get_db().properties.find(query).to_list(100)
     await attach_managers(docs)
     return [PropertyResponse(id=p["_id"], **p) for p in docs]
 

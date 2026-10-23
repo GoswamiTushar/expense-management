@@ -14,7 +14,7 @@ async def record_notification(
     if not property_id:
         return None
     try:
-        now = datetime.utcnow().isoformat()
+        now = datetime.utcnow().isoformat() + "Z"
         notif = {
             "_id": f"notif_{int(time.time()*1000)}",
             "propertyId": str(property_id),

@@ -14,11 +14,15 @@
     "expo-notifications": "~57.0.20",
     "expo-secure-store": "~57.0.4",
     "expo-sharing": "~57.0.21",
+    "html2pdf.js": "^0.14.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-web": "^0.21.2"
+    "react-native-web": "^0.21.2",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "expo start",

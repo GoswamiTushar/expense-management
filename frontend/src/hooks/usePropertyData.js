@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getProperties } from '../services/api/propertyApi';
-import { getExpensesByProperty } from '../services/api/expenseApi';
-import { getSettlementsByProperty } from '../services/api/settlementApi';
+import { getExpensesByProperty, getExpensesPaginated } from '../services/api/expenseApi';
+import {
+  getSettlementsByProperty,
+  getSettlementsPaginated,
+  getPropertyBalances,
+} from '../services/api/settlementApi';
 import {
   getNotificationsByProperty,
   markNotificationsRead,
@@ -22,32 +26,96 @@ export const usePropertyData = (currentUser) => {
   const [properties, setProperties] = useState([]);
   const [activeProperty, setActiveProperty] = useState(null);
   const [expenses, setExpenses] = useState([]);
+  const [totalExpenseCount, setTotalExpenseCount] = useState(0);
+  const [hasMoreExpenses, setHasMoreExpenses] = useState(false);
+  const [loadingMoreExpenses, setLoadingMoreExpenses] = useState(false);
+
   const [settlements, setSettlements] = useState([]);
+  const [totalSettlementCount, setTotalSettlementCount] = useState(0);
+  const [hasMoreSettlements, setHasMoreSettlements] = useState(false);
+  const [loadingMoreSettlements, setLoadingMoreSettlements] = useState(false);
+
   const [notifications, setNotifications] = useState([]);
+  const [serverBalances, setServerBalances] = useState(null);
 
   const currentUserId = String(currentUser?._id || currentUser?.id || '');
 
   const fetchDetails = async (propId) => {
     if (!propId) {
       setExpenses([]);
+      setTotalExpenseCount(0);
+      setHasMoreExpenses(false);
       setSettlements([]);
+      setTotalSettlementCount(0);
+      setHasMoreSettlements(false);
       setNotifications([]);
+      setServerBalances(null);
       return;
     }
     setLoadingDetails(true);
     try {
-      const [e, s, notifs] = await Promise.all([
-        getExpensesByProperty(propId),
-        getSettlementsByProperty(propId),
+      const [expPage, setPage, notifs, balances] = await Promise.all([
+        getExpensesPaginated(propId, 0, 15),
+        getSettlementsPaginated(propId, 'all', 0, 15),
         getNotificationsByProperty(propId),
+        getPropertyBalances(propId).catch(() => null),
       ]);
-      setExpenses(e);
-      setSettlements(s);
-      setNotifications(notifs);
+      setExpenses(expPage.items || []);
+      setTotalExpenseCount(expPage.total || 0);
+      setHasMoreExpenses(Boolean(expPage.hasMore));
+
+      setSettlements(setPage.items || []);
+      setTotalSettlementCount(setPage.total || 0);
+      setHasMoreSettlements(Boolean(setPage.hasMore));
+
+      setNotifications(notifs || []);
+      if (balances) {
+        setServerBalances(balances);
+      }
     } catch (err) {
       console.error('Error fetching property details:', err);
     } finally {
       setLoadingDetails(false);
+    }
+  };
+
+  const loadMoreExpenses = async () => {
+    const propId = activeProperty?._id || activeProperty?.id;
+    if (!propId || loadingMoreExpenses || !hasMoreExpenses) return;
+    setLoadingMoreExpenses(true);
+    try {
+      const next = await getExpensesPaginated(propId, expenses.length, 15);
+      setExpenses((prev) => {
+        const existingIds = new Set(prev.map((e) => e._id || e.id));
+        const filteredNew = (next.items || []).filter((e) => !existingIds.has(e._id || e.id));
+        return [...prev, ...filteredNew];
+      });
+      setHasMoreExpenses(Boolean(next.hasMore));
+      setTotalExpenseCount(next.total || expenses.length);
+    } catch (err) {
+      console.error('Error loading more expenses:', err);
+    } finally {
+      setLoadingMoreExpenses(false);
+    }
+  };
+
+  const loadMoreSettlements = async (statusFilter = 'all') => {
+    const propId = activeProperty?._id || activeProperty?.id;
+    if (!propId || loadingMoreSettlements || !hasMoreSettlements) return;
+    setLoadingMoreSettlements(true);
+    try {
+      const next = await getSettlementsPaginated(propId, statusFilter, settlements.length, 15);
+      setSettlements((prev) => {
+        const existingIds = new Set(prev.map((s) => s._id || s.id));
+        const filteredNew = (next.items || []).filter((s) => !existingIds.has(s._id || s.id));
+        return [...prev, ...filteredNew];
+      });
+      setHasMoreSettlements(Boolean(next.hasMore));
+      setTotalSettlementCount(next.total || settlements.length);
+    } catch (err) {
+      console.error('Error loading more settlements:', err);
+    } finally {
+      setLoadingMoreSettlements(false);
     }
   };
 
@@ -140,14 +208,15 @@ export const usePropertyData = (currentUser) => {
   ).length;
 
   const balanceData =
-    activeProperty && currentUser
+    serverBalances ||
+    (activeProperty && currentUser
       ? computeBalances(
           expenses,
           settlements,
           activeProperty.managers || [],
           currentUser._id || currentUser.id
         )
-      : null;
+      : null);
 
   return {
     loading,
@@ -160,8 +229,18 @@ export const usePropertyData = (currentUser) => {
     setActiveProperty,
     expenses,
     setExpenses,
+    totalExpenseCount,
+    setTotalExpenseCount,
+    hasMoreExpenses,
+    loadingMoreExpenses,
+    loadMoreExpenses,
     settlements,
     setSettlements,
+    totalSettlementCount,
+    setTotalSettlementCount,
+    hasMoreSettlements,
+    loadingMoreSettlements,
+    loadMoreSettlements,
     notifications,
     setNotifications,
     unreadCount,

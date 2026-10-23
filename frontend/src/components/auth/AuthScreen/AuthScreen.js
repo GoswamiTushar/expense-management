@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,8 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-import { styles } from './AuthScreen.styles';
-import { colors } from '../../../theme/colors';
+import { createAuthStyles, styles as defaultStyles } from './AuthScreen.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { signUpUser, signInUser } from '../../../services/api/authApi';
 import AuthHeader from './AuthHeader';
 import AuthFormInputs from './AuthFormInputs';
@@ -21,6 +21,8 @@ export default function AuthScreen({
   initialOtp = '',
   initialEmail = '',
 }) {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createAuthStyles(colors, isDark), [colors, isDark]);
   const [isSignUp, setIsSignUp] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState(initialEmail || '');
@@ -67,7 +69,7 @@ export default function AuthScreen({
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
-          <AuthHeader isSignUp={isSignUp} setIsSignUp={setIsSignUp} />
+          <AuthHeader isSignUp={isSignUp} setIsSignUp={setIsSignUp} styles={styles} />
           <AuthFormInputs
             isSignUp={isSignUp}
             name={name}
@@ -78,6 +80,7 @@ export default function AuthScreen({
             setPassword={setPassword}
             upiId={upiId}
             setUpiId={setUpiId}
+            styles={styles}
           />
           <TouchableOpacity
             style={[styles.submitBtn, loading && { opacity: 0.85 }]}

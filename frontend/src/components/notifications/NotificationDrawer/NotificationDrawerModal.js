@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  Animated,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './NotificationDrawerModal.styles';
-import { colors } from '../../../theme/colors';
+import { createNotificationStyles, styles as defaultStyles } from './NotificationDrawerModal.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { formatDateTime } from '../../../utils/date';
 import { requestBrowserNotificationPermission } from '../../../services/notifications/pushService';
 
@@ -20,7 +22,50 @@ export default function NotificationDrawerModal({
   onMarkAllRead,
   currentUser,
 }) {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createNotificationStyles(colors, isDark), [colors, isDark]);
   const [browserPerm, setBrowserPerm] = useState('granted');
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.92)).current;
+
+  useEffect(() => {
+    if (visible) {
+      fadeAnim.setValue(0);
+      scaleAnim.setValue(0.92);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 220,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 8,
+          tension: 120,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]).start();
+    }
+  }, [visible]);
+
+  const handleClose = (callback) => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 0.94,
+        duration: 180,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    ]).start(() => {
+      onClose();
+      if (typeof callback === 'function') callback();
+    });
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -44,7 +89,7 @@ export default function NotificationDrawerModal({
   const getNotifMeta = (type) => {
     switch (type) {
       case 'expense_created':
-        return { icon: 'wallet-outline', color: '#FF385C', bg: 'rgba(255, 56, 92, 0.15)' };
+        return { icon: 'wallet-outline', color: '#5E5CE6', bg: 'rgba(94, 92, 230, 0.15)' };
       case 'expense_updated':
         return { icon: 'create-outline', color: '#06B6D4', bg: 'rgba(6, 182, 212, 0.15)' };
       case 'settlement':
@@ -55,9 +100,12 @@ export default function NotificationDrawerModal({
   };
 
   return (
-    <Modal visible={true} animationType="fade" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <View style={styles.card}>
+    <Modal visible={true} transparent onRequestClose={() => handleClose()}>
+      <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
+        <TouchableWithoutFeedback onPress={() => handleClose()}>
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
+        </TouchableWithoutFeedback>
+        <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.titleGroup}>
@@ -80,7 +128,7 @@ export default function NotificationDrawerModal({
                   <Text style={styles.markReadText}>Mark read</Text>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity onPress={onClose} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <TouchableOpacity onPress={() => handleClose()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Ionicons name="close" size={20} color={colors.textMuted} />
               </TouchableOpacity>
             </View>
@@ -89,9 +137,12 @@ export default function NotificationDrawerModal({
           {/* Browser System Notification Permission Callout (if default) */}
           {Platform.OS === 'web' && browserPerm === 'default' && (
             <View style={styles.browserPermCard}>
-              <Text style={styles.browserPermText}>
-                🔔 Enable browser push notifications for real-time spend alerts.
-              </Text>
+              <View style={styles.browserPermLeft}>
+                <Ionicons name="notifications-outline" size={15} color={colors.info} />
+                <Text style={styles.browserPermText}>
+                  Enable browser push notifications for real-time spend alerts.
+                </Text>
+              </View>
               <TouchableOpacity
                 style={styles.enableBtn}
                 onPress={handleEnableNotifications}
@@ -140,8 +191,8 @@ export default function NotificationDrawerModal({
               })
             )}
           </ScrollView>
-        </View>
-      </View>
+        </Animated.View>
+      </Animated.View>
     </Modal>
   );
 }

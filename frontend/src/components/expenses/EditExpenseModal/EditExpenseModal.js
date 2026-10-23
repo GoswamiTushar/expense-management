@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,8 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './EditExpenseModal.styles';
-import { colors } from '../../../theme/colors';
+import { createEditExpenseStyles, styles as defaultStyles } from './EditExpenseModal.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { formatCurrency } from '../../../utils/currency';
 import { formatDateTime } from '../../../utils/date';
 import CategoryPickerField from '../AddExpenseModal/CategoryPickerField';
@@ -30,6 +30,8 @@ export default function EditExpenseModal({
   currentUser,
   userMap = {},
 }) {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createEditExpenseStyles(colors, isDark), [colors, isDark]);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('');
   const [date, setDate] = useState('');
@@ -50,14 +52,14 @@ export default function EditExpenseModal({
           toValue: 1,
           duration: 240,
           easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
           damping: 26,
           mass: 0.9,
           stiffness: 220,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ]).start();
     }
@@ -69,13 +71,13 @@ export default function EditExpenseModal({
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 180,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(slideAnim, {
         toValue: 600,
         duration: 220,
         easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start(() => {
       onClose();

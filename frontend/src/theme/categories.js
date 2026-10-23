@@ -1,5 +1,5 @@
 export const categories = [
-  { id: 'Rent', label: 'Rent', icon: 'home', color: '#FF385C' },
+  { id: 'Rent', label: 'Rent', icon: 'home', color: '#E06D53' },
   { id: 'Electricity', label: 'Electricity & Bills', icon: 'flash', color: '#F59E0B' },
   { id: 'Cleaning', label: 'Cleaning & Maid', icon: 'sparkles', color: '#10B981' },
   { id: 'Maintenance', label: 'Maintenance & Repairs', icon: 'construct', color: '#3B82F6' },

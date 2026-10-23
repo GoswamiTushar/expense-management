@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { PanResponder, Animated } from 'react-native';
+import { PanResponder, Animated, Platform } from 'react-native';
 
 /**
  * useSwipeDown — attaches a PanResponder to a bottom-sheet Animated.Value
@@ -42,7 +42,7 @@ export const useSwipeDown = (slideAnim, onClose, disabled = false) => {
             damping: 26,
             mass: 0.9,
             stiffness: 220,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }).start();
         }
       },
@@ -56,7 +56,7 @@ export const useSwipeDown = (slideAnim, onClose, disabled = false) => {
             damping: 26,
             mass: 0.9,
             stiffness: 220,
-            useNativeDriver: true,
+            useNativeDriver: Platform.OS !== 'web',
           }).start();
         }
       },

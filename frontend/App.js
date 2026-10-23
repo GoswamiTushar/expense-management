@@ -3,6 +3,7 @@ import { StatusBar, View, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './src/styles/app.styles';
 import { colors } from './src/theme/colors';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import { usePropertyData } from './src/hooks/usePropertyData';
 import { logoutUser } from './src/services/api/authApi';
 import { getDeviceUserProfile } from './src/services/storage/sessionStore';
@@ -10,8 +11,11 @@ import Toast from './src/components/common/Toast/Toast';
 import GlobalApiLoader from './src/components/common/GlobalApiLoader/GlobalApiLoader';
 import AuthScreen from './src/components/auth/AuthScreen/AuthScreen';
 import MainDashboard from './src/components/dashboard/MainDashboard';
+import AdminDashboard from './src/components/admin/AdminDashboard/AdminDashboard';
 import { AcceptInviteModal } from './src/components/auth/AcceptInviteModal/AcceptInviteModal';
 import { registerForPushNotifications } from './src/services/notifications/pushService';
+
+import { FAVICON_DATA_URI } from './src/utils/faviconBase64';
 
 const getParams = () => {
   if (typeof window !== 'undefined' && window.location?.search) {
@@ -21,12 +25,31 @@ const getParams = () => {
   return { invite: '', otp: '', email: '' };
 };
 
-export default function App() {
+function AppContent() {
+  const { colors: tColors, isDark } = useTheme();
+
   // Auth state lives here — single source of truth
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true); // true while checking stored session
   const [params] = useState(getParams);
   const [showAcceptInvite, setShowAcceptInvite] = useState(Boolean(params.invite));
+
+  // Set web page title & favicon dynamically for website use
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.title = 'Airbnb Manager | Expense & Settlement Hub';
+      try {
+        let link = document.querySelector("link[rel*='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'shortcut icon';
+          document.head.appendChild(link);
+        }
+        link.type = 'image/png';
+        link.href = FAVICON_DATA_URI;
+      } catch (_) {}
+    }
+  }, []);
 
   // Check for a persisted session on app start (before rendering anything)
   useEffect(() => {
@@ -64,42 +87,55 @@ export default function App() {
   // Show a minimal loading state while we read the keychain
   if (authLoading) {
     return (
-      <SafeAreaProvider>
-        <SafeAreaView style={[styles.safeArea, { justifyContent: 'center', alignItems: 'center' }]}>
-          <ActivityIndicator size="large" color={colors.primary || '#FF385C'} />
-        </SafeAreaView>
-      </SafeAreaProvider>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: tColors.bgDark, justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={tColors.primary} />
+      </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-        <StatusBar barStyle="light-content" backgroundColor={colors.surfaceDark} />
-        <GlobalApiLoader />
-        <Toast />
-        {!currentUser ? (
-          <>
-            <AuthScreen
-              onAuthSuccess={handleAuthSuccess}
-              onOpenInviteCode={() => setShowAcceptInvite(true)}
-              initialOtp={params.otp}
-              initialEmail={params.email}
-            />
-            <AcceptInviteModal
-              visible={showAcceptInvite}
-              onClose={() => setShowAcceptInvite(false)}
-              onSuccess={handleInviteJoined}
-              initialCode={params.invite}
-            />
-          </>
-        ) : (
-          <MainDashboard
-            data={{ ...data, currentUser, setCurrentUser }}
-            onLogout={handleLogout}
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: tColors.bgDark }]} edges={['top', 'left', 'right']}>
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={isDark ? tColors.surfaceDark : tColors.bgDark}
+      />
+      <GlobalApiLoader />
+      <Toast />
+      {!currentUser ? (
+        <>
+          <AuthScreen
+            onAuthSuccess={handleAuthSuccess}
+            onOpenInviteCode={() => setShowAcceptInvite(true)}
+            initialOtp={params.otp}
+            initialEmail={params.email}
           />
-        )}
-      </SafeAreaView>
+          <AcceptInviteModal
+            visible={showAcceptInvite}
+            onClose={() => setShowAcceptInvite(false)}
+            onSuccess={handleInviteJoined}
+            initialCode={params.invite}
+          />
+        </>
+      ) : currentUser?.role === 'admin' ? (
+        <AdminDashboard
+          onLogout={handleLogout}
+        />
+      ) : (
+        <MainDashboard
+          data={{ ...data, currentUser, setCurrentUser }}
+          onLogout={handleLogout}
+        />
+      )}
+    </SafeAreaView>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

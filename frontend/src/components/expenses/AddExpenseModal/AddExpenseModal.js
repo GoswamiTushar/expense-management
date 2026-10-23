@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,8 +14,8 @@ import {
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './AddExpenseModal.styles';
-import { colors } from '../../../theme/colors';
+import { createAddExpenseStyles, styles as defaultStyles } from './AddExpenseModal.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { formatCurrency } from '../../../utils/currency';
 import { useExpenseForm } from '../../../hooks/useExpenseForm';
 import { useSwipeDown } from '../../../hooks/useSwipeDown';
@@ -25,6 +25,8 @@ import ImagePickerField from './ImagePickerField';
 import MemberChecklist from './MemberChecklist';
 
 export default function AddExpenseModal({ visible, onClose, onSubmit, property, currentUser }) {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createAddExpenseStyles(colors, isDark), [colors, isDark]);
   const slideAnim = useRef(new Animated.Value(600)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -34,13 +36,13 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
       Animated.timing(fadeAnim, {
         toValue: 0,
         duration: 180,
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(slideAnim, {
         toValue: 600,
         duration: 220,
         easing: Easing.in(Easing.cubic),
-        useNativeDriver: true,
+        useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start(() => {
       onClose();
@@ -59,14 +61,14 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
           toValue: 1,
           duration: 240,
           easing: Easing.out(Easing.ease),
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
           damping: 26,
           mass: 0.9,
           stiffness: 220,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== 'web',
         }),
       ]).start();
     }

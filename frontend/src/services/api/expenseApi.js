@@ -15,6 +15,24 @@ export const getExpensesByProperty = async (propertyId) => {
   }
 };
 
+export const getExpensesPaginated = async (propertyId, skip = 0, limit = 15) => {
+  if (!propertyId) return { items: [], total: 0, hasMore: false };
+  try {
+    const res = await apiClient(
+      `/expenses/paginated?propertyId=${encodeURIComponent(propertyId)}&skip=${skip}&limit=${limit}`
+    );
+    return res;
+  } catch (_) {
+    const all = await getExpensesByProperty(propertyId);
+    const slice = all.slice(skip, skip + limit);
+    return {
+      items: slice,
+      total: all.length,
+      hasMore: skip + slice.length < all.length,
+    };
+  }
+};
+
 export const createExpense = async (expense) => {
   const newExp = await apiClient('/expenses', {
     method: 'POST',

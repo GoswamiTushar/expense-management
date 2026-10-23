@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../../theme/colors';
+import { createOtpStyles, styles as defaultStyles } from './OtpVerificationModal.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { verifyOtp, resendOtp } from '../../../services/api/authApi';
-import { styles } from './OtpVerificationModal.styles';
 
 export default function OtpVerificationModal({ visible, email, onClose, onSuccess, initialOtp = '' }) {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createOtpStyles(colors, isDark), [colors, isDark]);
   const [otp, setOtp] = useState(initialOtp || '');
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);

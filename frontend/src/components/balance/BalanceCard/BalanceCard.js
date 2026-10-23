@@ -1,49 +1,88 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './BalanceCard.styles';
-import { colors } from '../../../theme/colors';
+import { createBalanceCardStyles } from './BalanceCard.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { formatCurrency } from '../../../utils/currency';
+import PropertyManagersModal from '../../property/PropertyManagersModal/PropertyManagersModal';
 
-export default function BalanceCard({ property, balanceData, onAddExpense, onSettleUp }) {
+export default function BalanceCard({
+  property,
+  balanceData,
+  expenses = [],
+  userMap = {},
+  currentUser,
+  onAddExpense,
+  onSettleUp,
+}) {
+  const { colors: tColors, isDark } = useTheme();
+  const styles = useMemo(() => createBalanceCardStyles(tColors, isDark), [tColors, isDark]);
+  const [showManagersModal, setShowManagersModal] = useState(false);
+
   const net = balanceData?.currentUserNet || 0;
   const isOwed = net > 0;
   const owes = net < 0;
 
   const statusTitle = isOwed ? 'YOU ARE OWED' : owes ? 'YOU OWE' : 'ALL SETTLED UP';
-  const badgeColor = isOwed ? colors.success : owes ? colors.warning : colors.info;
+  const badgeColor = isOwed ? tColors.success : owes ? tColors.tertiary : tColors.primary;
+  const badgeBg = isOwed
+    ? isDark ? 'rgba(48, 209, 88, 0.14)' : 'rgba(16, 185, 129, 0.10)'
+    : owes
+    ? isDark ? 'rgba(224, 109, 83, 0.15)' : 'rgba(224, 109, 83, 0.10)'
+    : isDark ? 'rgba(94, 92, 230, 0.15)' : 'rgba(94, 92, 230, 0.08)';
+  const badgeBorder = isOwed
+    ? isDark ? 'rgba(48, 209, 88, 0.35)' : 'rgba(16, 185, 129, 0.25)'
+    : owes
+    ? isDark ? 'rgba(224, 109, 83, 0.35)' : 'rgba(224, 109, 83, 0.25)'
+    : isDark ? 'rgba(94, 92, 230, 0.35)' : 'rgba(94, 92, 230, 0.20)';
+
   const subText = isOwed
     ? 'Co-managers owe you for logged expenses'
     : owes
     ? 'Pending reimbursement to co-managers'
     : 'Zero pending dues on this property';
 
+  const btnIconColor = isDark ? '#0C0E14' : '#FFFFFF';
+
   return (
-    <View style={styles.card}>
-      <View style={styles.topRow}>
-        <View style={styles.statusPill}>
-          <View style={[styles.dot, { backgroundColor: badgeColor }]} />
-          <Text style={[styles.statusText, { color: badgeColor }]}>{statusTitle}</Text>
-        </View>
-        <Text style={styles.managerCount}>{property?.managers?.length || 3} Managers (Equal Split)</Text>
-      </View>
-
-      <Text style={styles.amount}>{net === 0 ? '₹0' : formatCurrency(Math.abs(net))}</Text>
-      <Text style={styles.sub}>{subText}</Text>
-
-      <View style={styles.actionsRow}>
-        <TouchableOpacity style={styles.addBtn} onPress={onAddExpense} activeOpacity={0.8}>
-          <Ionicons name="add-circle" size={18} color={colors.white} />
-          <Text style={styles.btnText}>Log Expense</Text>
-        </TouchableOpacity>
-
-        {owes && (
-          <TouchableOpacity style={styles.settleBtn} onPress={onSettleUp} activeOpacity={0.8}>
-            <Ionicons name="checkmark-done" size={17} color={colors.white} />
-            <Text style={styles.btnText}>Settle Dues</Text>
+    <>
+      <View style={styles.card}>
+        <View style={styles.topRow}>
+          <View style={[styles.statusPill, { backgroundColor: badgeBg, borderColor: badgeBorder }]}>
+            <View style={[styles.dot, { backgroundColor: badgeColor }]} />
+            <Text style={[styles.statusText, { color: badgeColor }]}>{statusTitle}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.managerCountBtn}
+            onPress={() => setShowManagersModal(true)}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.managerCount}>
+              {property?.managers?.length || 2} Managers (Equal Split)
+            </Text>
+            <Ionicons name="information-circle-outline" size={13} color={tColors.textMuted} />
           </TouchableOpacity>
-        )}
+        </View>
+
+        <Text style={styles.amount}>{net === 0 ? '₹0' : formatCurrency(Math.abs(net))}</Text>
+        <Text style={styles.sub}>{subText}</Text>
+
+        <View style={styles.actionsRow}>
+          <TouchableOpacity style={styles.addBtn} onPress={onAddExpense} activeOpacity={0.85}>
+            <Ionicons name="add-circle" size={18} color={btnIconColor} />
+            <Text style={styles.btnText}>Log New Expense</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+
+      <PropertyManagersModal
+        visible={showManagersModal}
+        onClose={() => setShowManagersModal(false)}
+        property={property}
+        expenses={expenses}
+        userMap={userMap}
+        currentUser={currentUser}
+      />
+    </>
   );
 }

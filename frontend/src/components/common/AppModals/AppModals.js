@@ -16,19 +16,29 @@ export default function AppModals({
   setM,
   data,
   settleWith,
+  setSettleWith,
+  settlementToEdit,
+  setSettlementToEdit,
   selectedExpense,
   notifications = [],
   onMarkNotificationsRead,
   onAddExpense,
   onUpdateExpense,
   onSettle,
+  onUpdateSettlement,
+  onConfirmSettlement,
+  onRejectSettlement,
+  onCancelSettlement,
   onCreateProperty,
   onSaveProfile,
   onLogout,
   onInviteSuccess,
   onAcceptInviteSuccess,
 }) {
-  const close = () => setM(null);
+  const close = () => {
+    setM(null);
+    if (setSettlementToEdit) setSettlementToEdit(null);
+  };
 
   const userMap = {};
   if (data.currentUser) {
@@ -59,8 +69,10 @@ export default function AppModals({
         visible={activeModal === 'showSettle'}
         onClose={close}
         onSubmit={onSettle}
-        creditor={settleWith?.user}
-        debtor={data.currentUser}
+        onUpdate={onUpdateSettlement}
+        settlementToEdit={settlementToEdit}
+        creditor={settleWith?.isOwedByMe === false ? data.currentUser : settleWith?.user}
+        debtor={settleWith?.isOwedByMe === false ? settleWith?.user : data.currentUser}
         property={data.activeProperty}
         defaultAmount={settleWith?.amount}
       />
@@ -72,6 +84,10 @@ export default function AppModals({
         onSelectProperty={data.setActiveProperty}
         onOpenAddProperty={() => setM('showAddProp')}
         onOpenJoinInvite={() => setM('showAcceptInvite')}
+        onOpenInvitePartner={(prop) => {
+          if (prop) data.setActiveProperty(prop);
+          setM('showInvitePartner');
+        }}
       />
       <AddPropertyModal
         visible={activeModal === 'showAddProp'}
@@ -90,11 +106,26 @@ export default function AppModals({
         visible={activeModal === 'showHistory'}
         onClose={close}
         settlements={data.settlements}
+        currentUser={data.currentUser}
+        activeProperty={data.activeProperty}
+        balanceData={data.balanceData}
+        onConfirmSettlement={onConfirmSettlement}
+        onRejectSettlement={onRejectSettlement}
+        onCancelSettlement={onCancelSettlement}
+        onLoadMoreSettlements={data.loadMoreSettlements}
+        loadingMoreSettlements={data.loadingMoreSettlements}
+        onOpenSettleWithUser={(user, amount, isOwedByMe = true) => {
+          close();
+          setSettleWith({ user, amount, isOwedByMe });
+          setM('showSettle');
+        }}
       />
       <ChronoAuditLogModal
         visible={activeModal === 'showAudit'}
         onClose={close}
         expenses={data.expenses}
+        onLoadMore={data.loadMoreExpenses}
+        loadingMore={data.loadingMoreExpenses}
       />
       <EditProfileModal
         visible={activeModal === 'showProfile'}

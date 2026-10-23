@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../../theme/colors';
+import { createAcceptInviteStyles, styles as defaultStyles } from './AcceptInviteModal.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { acceptPropertyInvite } from '../../../services/api/inviteApi';
-import { styles } from './AcceptInviteModal.styles';
 
 export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser, initialCode = '' }) => {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createAcceptInviteStyles(colors, isDark), [colors, isDark]);
   const [code, setCode] = useState(initialCode || '');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');

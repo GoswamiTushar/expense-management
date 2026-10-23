@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Optional
 
 class AuditLogEntry(BaseModel):
@@ -10,12 +10,12 @@ class AuditLogEntry(BaseModel):
 class ExpenseCreate(BaseModel):
     propertyId: str
     title: str
-    amount: float
+    amount: float = Field(..., gt=0, description="Expense amount must be strictly positive")
     category: str
     paidBy: str
     payerName: Optional[str] = "Manager"
-    splitAmong: List[str]
-    sharePerPerson: float
+    splitAmong: List[str] = Field(..., min_length=1, description="Must split among at least one manager")
+    sharePerPerson: float = Field(..., gt=0, description="Share per person must be positive")
     receiptUrl: Optional[str] = ""
     receiptUrls: Optional[List[str]] = []
     notes: Optional[str] = ""
@@ -24,7 +24,7 @@ class ExpenseCreate(BaseModel):
 
 class ExpenseUpdate(BaseModel):
     title: Optional[str] = None
-    amount: Optional[float] = None
+    amount: Optional[float] = Field(None, gt=0, description="Updated amount must be strictly positive")
     category: Optional[str] = None
     notes: Optional[str] = None
     date: Optional[str] = None
@@ -34,3 +34,4 @@ class ExpenseResponse(ExpenseCreate):
     date: Optional[str] = ""
     createdAt: Optional[str] = ""
     auditLog: Optional[List[AuditLogEntry]] = []
+

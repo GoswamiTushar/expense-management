@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './AuthScreen.styles';
+import { styles as defaultStyles } from './AuthScreen.styles';
 import { colors } from '../../../theme/colors';
 
-export default function AuthHeader({ isSignUp, setIsSignUp }) {
+export default function AuthHeader({ isSignUp, setIsSignUp, styles = defaultStyles }) {
   return (
     <>
       <View style={styles.header}>

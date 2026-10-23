@@ -10,10 +10,29 @@ router = APIRouter(prefix="/api/auth", tags=["Auth"])
 
 @router.post("/signin")
 async def signin(payload: UserLogin):
+    import re
     db = get_db()
-    user = await db.users.find_one({"email": payload.email.lower()})
-    if not user or not verify_password(payload.password, user.get("password", "")):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
+    identifier = (payload.email or "").strip()
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Email or username is required.")
+
+    regex_ident = {"$regex": f"^{re.escape(identifier)}$", "$options": "i"}
+    user = await db.users.find_one({"$or": [{"email": regex_ident}, {"username": regex_ident}]})
+
+    if not user:
+        print(f"[Auth] Sign-in failed: No user found for '{identifier}'")
+        raise HTTPException(
+            status_code=401,
+            detail=f"No account found with username/email '{identifier}'. Please check spelling."
+        )
+
+    if not verify_password(payload.password, user.get("password", "")):
+        print(f"[Auth] Sign-in failed: Incorrect password for '{user.get('email')}'")
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect password. Please try again or ask admin to reset."
+        )
+
     if user.get("password") and not user["password"].startswith("pbkdf2:"):
         h = hash_password(payload.password)
         await db.users.update_one({"_id": user["_id"]}, {"$set": {"password": h}})
@@ -24,6 +43,12 @@ async def signin(payload: UserLogin):
         "accessToken": create_access_token(user["_id"]),
         "refreshToken": create_refresh_token(user["_id"]),
     }
+
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: dict = Depends(get_current_user)):
+    """Return the profile data of the currently authenticated user."""
+    return UserResponse(id=current_user["_id"], **current_user)
+
 
 
 class UpdateProfileRequest(BaseModel):

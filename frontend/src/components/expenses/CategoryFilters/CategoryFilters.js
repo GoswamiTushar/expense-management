@@ -1,18 +1,28 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './CategoryFilters.styles';
+import { createCategoryFilterStyles } from './CategoryFilters.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { categories } from '../../../theme/categories';
-import { colors } from '../../../theme/colors';
 
 export default function CategoryFilters({ selectedCategory, onSelectCategory }) {
+  const { colors: tColors, isDark } = useTheme();
+  const styles = useMemo(() => createCategoryFilterStyles(tColors, isDark), [tColors, isDark]);
+
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.scroll}
+    >
       <TouchableOpacity
         style={[styles.chip, selectedCategory === 'ALL' && styles.chipActive]}
         onPress={() => onSelectCategory('ALL')}
+        activeOpacity={0.8}
       >
-        <Text style={[styles.chipText, selectedCategory === 'ALL' && styles.chipTextActive]}>All</Text>
+        <Text style={[styles.chipText, selectedCategory === 'ALL' && styles.chipTextActive]}>
+          All
+        </Text>
       </TouchableOpacity>
 
       {categories.map((cat) => {
@@ -22,8 +32,14 @@ export default function CategoryFilters({ selectedCategory, onSelectCategory }) 
             key={cat.id}
             style={[styles.chip, active && styles.chipActive]}
             onPress={() => onSelectCategory(cat.id)}
+            activeOpacity={0.8}
           >
-            <Ionicons name={cat.icon} size={12} color={active ? colors.white : colors.textMuted} style={{ marginRight: 4 }} />
+            <Ionicons
+              name={cat.icon}
+              size={13}
+              color={active ? (isDark ? '#0C0E14' : '#FFFFFF') : tColors.textMuted}
+              style={{ marginRight: 5 }}
+            />
             <Text style={[styles.chipText, active && styles.chipTextActive]}>{cat.label}</Text>
           </TouchableOpacity>
         );

@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from './ExpenseItem.styles';
+import { createExpenseItemStyles } from './ExpenseItem.styles';
+import { useTheme } from '../../../context/ThemeContext';
 import { getCategoryById } from '../../../theme/categories';
 import { formatCurrency } from '../../../utils/currency';
 import { formatDate } from '../../../utils/date';
 
 export default function ExpenseItem({ expense, userMap = {}, onPress }) {
+  const { colors: tColors, isDark } = useTheme();
+  const styles = useMemo(() => createExpenseItemStyles(tColors, isDark), [tColors, isDark]);
+
   const cat = getCategoryById(expense.category);
   const splitCount = expense.splitAmong?.length || 1;
   const share = expense.sharePerPerson || Math.round((expense.amount / splitCount) * 100) / 100;
@@ -22,26 +26,30 @@ export default function ExpenseItem({ expense, userMap = {}, onPress }) {
     <TouchableOpacity
       style={styles.card}
       onPress={() => onPress?.(expense)}
-      activeOpacity={0.7}
+      activeOpacity={0.75}
     >
       <View style={styles.left}>
-        <View style={[styles.iconBox, { backgroundColor: cat.color + '22' }]}>
-          <Ionicons name={cat.icon} size={18} color={cat.color} />
+        <View style={[styles.iconBox, { backgroundColor: cat.color + (isDark ? '26' : '18') }]}>
+          <Ionicons name={cat.icon} size={20} color={cat.color} />
         </View>
         <View style={styles.info}>
           <Text style={styles.title} numberOfLines={1}>
             {expense.title}
           </Text>
           <View style={styles.payerRow}>
-            <Ionicons name="person-circle-outline" size={13} color="#38BDF8" />
+            <Ionicons name="person-circle-outline" size={13} color={tColors.info} />
             <Text style={styles.payerText} numberOfLines={1}>
               Logged by <Text style={styles.payerHighlight}>{payer}</Text>
             </Text>
           </View>
-          <Text style={styles.sub} numberOfLines={1}>
-            {formatDate(expense.date || expense.createdAt)} • {splitCount} managers
-            {hasReceipt ? ' 📷' : ''}
-          </Text>
+          <View style={styles.subRow}>
+            <Text style={styles.sub} numberOfLines={1}>
+              {formatDate(expense.date || expense.createdAt)} • {splitCount} managers
+            </Text>
+            {hasReceipt && (
+              <Ionicons name="camera-outline" size={12} color={tColors.textDim} style={styles.receiptIcon} />
+            )}
+          </View>
         </View>
       </View>
 

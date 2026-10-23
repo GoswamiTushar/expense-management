@@ -1,172 +1,207 @@
-import { StyleSheet } from 'react-native';
-import { colors } from '../../../theme/colors';
+import { StyleSheet, Platform } from 'react-native';
+import { colors, getLiquidGlass } from '../../../theme/colors';
 
-export const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.75)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  card: {
-    backgroundColor: colors.cardDark,
-    borderRadius: 22,
-    padding: 18,
-    width: '100%',
-    maxWidth: 480,
-    maxHeight: '82%',
-    borderWidth: 1,
-    borderColor: colors.borderDark,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-    elevation: 12,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderDark,
-    marginBottom: 12,
-  },
-  titleGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  title: {
-    color: colors.textDark,
-    fontSize: 16.5,
-    fontWeight: '800',
-  },
-  badge: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-  },
-  badgeText: {
-    color: colors.white,
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  markReadBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.25)',
-  },
-  markReadText: {
-    color: '#38BDF8',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  browserPermCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: 'rgba(14, 165, 233, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(14, 165, 233, 0.25)',
-    borderRadius: 14,
-    padding: 10,
-    marginBottom: 12,
-  },
-  browserPermText: {
-    color: '#38BDF8',
-    fontSize: 11.5,
-    fontWeight: '600',
-    flex: 1,
-    marginRight: 8,
-  },
-  enableBtn: {
-    backgroundColor: '#0284C7',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  enableBtnText: {
-    color: colors.white,
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  item: {
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceDark,
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: colors.borderDark,
-    gap: 10,
-  },
-  itemUnread: {
-    borderColor: 'rgba(56, 189, 248, 0.35)',
-    backgroundColor: 'rgba(15, 23, 42, 0.95)',
-  },
-  iconBox: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  itemContent: {
-    flex: 1,
-  },
-  itemTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 2,
-  },
-  itemTitle: {
-    color: colors.textDark,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  itemTime: {
-    color: colors.textMuted,
-    fontSize: 10.5,
-  },
-  itemBody: {
-    color: colors.textMuted,
-    fontSize: 12,
-    lineHeight: 16,
-  },
-  unreadDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: '#38BDF8',
-    position: 'absolute',
-    top: 8,
-    right: 8,
-  },
-  emptyBox: {
-    alignItems: 'center',
-    paddingVertical: 32,
-    gap: 6,
-  },
-  emptyTitle: {
-    color: colors.textDark,
-    fontSize: 14.5,
-    fontWeight: '700',
-    marginTop: 6,
-  },
-  emptySub: {
-    color: colors.textMuted,
-    fontSize: 12,
-    textAlign: 'center',
-    maxWidth: 280,
-  },
-});
+export const createNotificationStyles = (tColors = colors, isDark = true) => {
+  const glass = getLiquidGlass(isDark);
+
+  return StyleSheet.create({
+    backdrop: {
+      flex: 1,
+      backgroundColor: isDark ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.36)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      ...(Platform.OS === 'web'
+        ? {
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+          }
+        : {}),
+    },
+    card: {
+      backgroundColor: glass.backgroundColor,
+      borderRadius: 26,
+      padding: 22,
+      width: '100%',
+      maxWidth: 480,
+      maxHeight: '82%',
+      borderWidth: 1,
+      borderColor: glass.borderColor,
+      borderTopColor: glass.borderTopColor,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 16 },
+      shadowOpacity: isDark ? 0.5 : 0.12,
+      shadowRadius: 36,
+      elevation: 16,
+      ...(Platform.OS === 'web'
+        ? {
+            backdropFilter: glass.backdropFilter,
+            WebkitBackdropFilter: glass.backdropFilter,
+            boxShadow: `${glass.boxShadow}, 0 24px 48px -12px rgba(0, 0, 0, ${isDark ? '0.6' : '0.12'})`,
+          }
+        : {}),
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingBottom: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: tColors.borderDark,
+      marginBottom: 12,
+    },
+    titleGroup: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    title: {
+      color: tColors.textDark,
+      fontSize: 17,
+      fontWeight: '750',
+      letterSpacing: -0.3,
+    },
+    badge: {
+      backgroundColor: tColors.primary,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: 12,
+    },
+    badgeText: {
+      color: tColors.white,
+      fontSize: 11,
+      fontWeight: '800',
+    },
+    markReadBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: isDark
+        ? 'rgba(56, 189, 248, 0.12)'
+        : 'rgba(10, 132, 255, 0.10)',
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: isDark
+        ? 'rgba(56, 189, 248, 0.25)'
+        : 'rgba(10, 132, 255, 0.20)',
+    },
+    markReadText: {
+      color: '#38BDF8',
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    browserPermCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: isDark
+        ? 'rgba(14, 165, 233, 0.08)'
+        : 'rgba(14, 165, 233, 0.06)',
+      borderWidth: 1,
+      borderColor: 'rgba(14, 165, 233, 0.25)',
+      borderRadius: 14,
+      padding: 11,
+      marginBottom: 12,
+    },
+    browserPermLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flex: 1,
+      marginRight: 8,
+    },
+    browserPermText: {
+      color: '#38BDF8',
+      fontSize: 11.5,
+      fontWeight: '600',
+      flex: 1,
+    },
+    enableBtn: {
+      backgroundColor: '#0284C7',
+      paddingHorizontal: 11,
+      paddingVertical: 5,
+      borderRadius: 10,
+    },
+    enableBtnText: {
+      color: tColors.white,
+      fontSize: 11,
+      fontWeight: '800',
+    },
+    item: {
+      flexDirection: 'row',
+      backgroundColor: tColors.cardDark,
+      borderRadius: 14,
+      padding: 12,
+      marginBottom: 8,
+      borderWidth: 1,
+      borderColor: tColors.borderDark,
+      gap: 10,
+    },
+    itemUnread: {
+      borderColor: isDark ? 'rgba(56, 189, 248, 0.40)' : 'rgba(10, 132, 255, 0.35)',
+      backgroundColor: isDark
+        ? 'rgba(15, 23, 42, 0.90)'
+        : 'rgba(240, 249, 255, 0.95)',
+    },
+    iconBox: {
+      width: 36,
+      height: 36,
+      borderRadius: 12,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    itemContent: {
+      flex: 1,
+    },
+    itemTop: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 3,
+    },
+    itemTitle: {
+      color: tColors.textDark,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    itemTime: {
+      color: tColors.textMuted,
+      fontSize: 10.5,
+    },
+    itemBody: {
+      color: tColors.textMuted,
+      fontSize: 12,
+      lineHeight: 16,
+    },
+    unreadDot: {
+      width: 7,
+      height: 7,
+      borderRadius: 4,
+      backgroundColor: '#38BDF8',
+      position: 'absolute',
+      top: 8,
+      right: 8,
+    },
+    emptyBox: {
+      alignItems: 'center',
+      paddingVertical: 32,
+      gap: 6,
+    },
+    emptyTitle: {
+      color: tColors.textDark,
+      fontSize: 14.5,
+      fontWeight: '700',
+      marginTop: 6,
+    },
+    emptySub: {
+      color: tColors.textMuted,
+      fontSize: 12,
+      textAlign: 'center',
+      maxWidth: 280,
+    },
+  });
+};
+
+export const styles = createNotificationStyles(colors, true);

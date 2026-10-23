@@ -8,7 +8,7 @@ class UserCreate(BaseModel):
     upiId: Optional[str] = ""
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str  # Can be email or username "admin"
     password: str
 
 class VerifyOtpRequest(BaseModel):
@@ -25,3 +25,4 @@ class UserResponse(BaseModel):
     upiId: Optional[str] = ""
     initials: str
     color: str
+    role: Optional[str] = "user"

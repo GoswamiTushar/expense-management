@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
     marginBottom: 6,
   },
   requiredStar: {
-    color: colors.primary || '#FF385C',
+    color: '#5E5CE6',
   },
   triggerBtn: {
     flexDirection: 'row',
@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
     borderColor: colors.borderDark,
   },
   triggerBtnEmpty: {
-    borderColor: 'rgba(255, 56, 92, 0.4)',
+    borderColor: 'rgba(94, 92, 230, 0.4)',
   },
   triggerLeft: {
     flexDirection: 'row',

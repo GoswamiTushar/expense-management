@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, TouchableOpacity, Text, Animated, Easing, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { styles } from '../../styles/app.styles';
-import { colors } from '../../theme/colors';
+import { createAppStyles } from '../../styles/app.styles';
+import { useTheme } from '../../context/ThemeContext';
 import Header from '../common/Header/Header';
+import BottomNav from '../common/BottomNav/BottomNav';
 import AppModals from '../common/AppModals/AppModals';
 import DashboardContent from './DashboardContent';
+import SettlementsPage from '../settlement/SettlementsPage/SettlementsPage';
 import { createExpense, updateExpense } from '../../services/api/expenseApi';
-import { createSettlement } from '../../services/api/settlementApi';
+import {
+  createSettlement,
+  updateSettlement,
+  confirmSettlement,
+  rejectSettlement,
+  cancelSettlement,
+} from '../../services/api/settlementApi';
 import { createProperty } from '../../services/api/propertyApi';
 import { updateProfile } from '../../services/api/authApi';
 import {
@@ -17,11 +25,28 @@ import {
 } from '../../services/notifications/pushService';
 
 export default function MainDashboard({ data, onLogout }) {
+  const { colors: tColors, isDark } = useTheme();
+  const styles = React.useMemo(() => createAppStyles(tColors, isDark), [tColors, isDark]);
+
+  const [activeTab, setActiveTab] = useState('home');
   const [cat, setCat] = useState('ALL');
   const [settleWith, setSettleWith] = useState(null);
+  const [settlementToEdit, setSettlementToEdit] = useState(null);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
   const setM = (k) => setActiveModal(k || null);
+
+  const pageAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    pageAnim.setValue(0);
+    Animated.timing(pageAnim, {
+      toValue: 1,
+      duration: 220,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [activeTab]);
 
   const onAddExpense = async (exp) => {
     const res = await createExpense(exp);
@@ -83,6 +108,34 @@ export default function MainDashboard({ data, onLogout }) {
     data.refresh();
   };
 
+  const onConfirmSettlement = async (settlementId) => {
+    await confirmSettlement(settlementId);
+    data.refresh();
+  };
+
+  const onUpdateSettlement = async (settlementId, updates) => {
+    const updated = await updateSettlement(settlementId, updates);
+    data.refresh();
+    data.setSettlements((prev) =>
+      prev.map((s) => (s.id === settlementId || s._id === settlementId ? updated : s))
+    );
+  };
+
+  const onEditSettlement = (settlement) => {
+    setSettlementToEdit(settlement);
+    setM('showSettle');
+  };
+
+  const onRejectSettlement = async (settlementId, reason) => {
+    await rejectSettlement(settlementId, reason);
+    data.refresh();
+  };
+
+  const onCancelSettlement = async (settlementId) => {
+    await cancelSettlement(settlementId);
+    data.refresh();
+  };
+
   const onCreateProp = async (p) => {
     const n = await createProperty(p);
     data.setProperties((prev) => [n, ...prev]);
@@ -100,35 +153,134 @@ export default function MainDashboard({ data, onLogout }) {
         onOpenAuditLog={() => setM('showAudit')}
         onOpenProfile={() => setM('showProfile')}
         onOpenInvitePartner={() => setM('showInvitePartner')}
+        onBack={activeTab !== 'home' ? () => setActiveTab('home') : null}
+        title={activeTab === 'settle' ? 'Settlements Hub & Audit' : undefined}
+        subtitle={activeTab === 'settle' ? data.activeProperty?.name : undefined}
+        headerRightAction={
+          activeTab === 'settle' ? (
+            <TouchableOpacity
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                paddingHorizontal: 10,
+                paddingVertical: 5.5,
+                borderRadius: 10,
+                backgroundColor: isDark ? 'rgba(94, 92, 230, 0.22)' : 'rgba(94, 92, 230, 0.12)',
+                borderWidth: 1,
+                borderColor: isDark ? 'rgba(94, 92, 230, 0.4)' : 'rgba(94, 92, 230, 0.25)',
+                marginRight: 6,
+              }}
+              onPress={() => {
+                if (data.balanceData?.peopleUserOwes?.length > 0) {
+                  const firstOwed = data.balanceData.peopleUserOwes[0];
+                  const userObj = (data.activeProperty?.managerDetails || []).find(
+                    (m) => String(m.id) === String(firstOwed.userId)
+                  ) || { name: 'Co-Manager', id: firstOwed.userId };
+                  setSettleWith({ user: userObj, amount: firstOwed.amount, isOwedByMe: true });
+                  setM('showSettle');
+                } else {
+                  const otherManager = (data.activeProperty?.managerDetails || []).find(
+                    (m) => String(m.id) !== String(data.currentUser?._id)
+                  );
+                  if (otherManager) {
+                    setSettleWith({ user: otherManager, amount: 0, isOwedByMe: true });
+                  }
+                  setM('showSettle');
+                }
+              }}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="add" size={14} color={tColors.primary} />
+              <Text style={{ color: tColors.primary, fontSize: 11.5, fontWeight: '700' }}>
+                Settle Up
+              </Text>
+            </TouchableOpacity>
+          ) : null
+        }
       />
-      <DashboardContent
-        data={data}
-        cat={cat}
-        setCat={setCat}
-        setM={setM}
-        setSettleWith={setSettleWith}
-        onSelectExpense={(exp) => {
-          setSelectedExpense(exp);
-          setM('showEditExpense');
+      <Animated.View
+        style={{
+          flex: 1,
+          opacity: pageAnim,
+          transform: [
+            {
+              translateY: pageAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [8, 0],
+              }),
+            },
+          ],
         }}
-      />
+      >
+        {activeTab === 'settle' ? (
+          <SettlementsPage
+            settlements={data.settlements}
+            currentUser={data.currentUser}
+            activeProperty={data.activeProperty}
+            balanceData={data.balanceData}
+            onConfirmSettlement={onConfirmSettlement}
+            onRejectSettlement={onRejectSettlement}
+            onCancelSettlement={onCancelSettlement}
+            onEditSettlement={onEditSettlement}
+            onOpenSettleWithUser={(user, amount, isOwedByMe = true) => {
+              setSettleWith({ user, amount, isOwedByMe });
+              setM('showSettle');
+            }}
+            refreshing={data.refreshing}
+            onRefresh={data.refresh}
+            onLoadMoreSettlements={data.loadMoreSettlements}
+            loadingMoreSettlements={data.loadingMoreSettlements}
+          />
+        ) : (
+          <DashboardContent
+            data={data}
+            cat={cat}
+            setCat={setCat}
+            setM={setM}
+            setSettleWith={setSettleWith}
+            onConfirmSettlement={onConfirmSettlement}
+            onRejectSettlement={onRejectSettlement}
+            onCancelSettlement={onCancelSettlement}
+            onEditSettlement={onEditSettlement}
+            onOpenSettlements={() => setActiveTab('settle')}
+            onSelectExpense={(exp) => {
+              setSelectedExpense(exp);
+              setM('showEditExpense');
+            }}
+          />
+        )}
+      </Animated.View>
       {data.activeProperty && (
-        <TouchableOpacity style={styles.fab} onPress={() => setM('showAdd')}>
-          <Ionicons name="add" size={24} color={colors.white} />
-          <Text style={styles.fabText}>Add Expense</Text>
-        </TouchableOpacity>
+        <BottomNav
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          onAddExpense={() => setM('showAdd')}
+          onOpenSettle={() => {
+            setActiveTab('settle');
+          }}
+          onOpenPartners={() => setM('showInvitePartner')}
+          onOpenAudit={() => setM('showAudit')}
+        />
       )}
       <AppModals
         activeModal={activeModal}
         setM={setM}
         data={data}
         settleWith={settleWith}
+        setSettleWith={setSettleWith}
+        settlementToEdit={settlementToEdit}
+        setSettlementToEdit={setSettlementToEdit}
         selectedExpense={selectedExpense}
         notifications={data.notifications || []}
         onMarkNotificationsRead={data.markNotificationsAsRead}
         onAddExpense={onAddExpense}
         onUpdateExpense={onUpdateExpense}
         onSettle={onSettle}
+        onUpdateSettlement={onUpdateSettlement}
+        onConfirmSettlement={onConfirmSettlement}
+        onRejectSettlement={onRejectSettlement}
+        onCancelSettlement={onCancelSettlement}
         onCreateProperty={onCreateProp}
         onSaveProfile={async (p) => {
           try {
