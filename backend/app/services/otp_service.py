@@ -6,9 +6,9 @@ def generate_otp() -> str:
     return str(secrets.SystemRandom().randint(100000, 999999))
 
 def send_verification_otp(to_email: str, otp: str) -> bool:
-    print(f"[OTP Service] Verification code for {to_email}: {otp}")
+    print(f"[OTP Service] Dispatching verification code to {to_email}")
     html = render_otp_email(otp, to_email)
     ok = send_mail(to_email, f"{otp} is your verification code", html)
     if ok:
-        print(f"[OTP Service] Delivered code {otp} to {to_email}")
+        print(f"[OTP Service] Successfully dispatched verification email to {to_email}")
     return ok

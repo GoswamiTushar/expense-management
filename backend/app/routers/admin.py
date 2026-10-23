@@ -6,34 +6,55 @@ from app.database import get_db
 from app.deps import get_current_user
 from app.services.security import hash_password
 
+from app.config import settings
+
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
 async def ensure_admin_user():
-    """Ensure default admin user exists with username 'admin' and password 'admin123'."""
+    """
+    Ensure admin user exists in DB when explicitly configured in environment variables (.env).
+    No credentials or user data are hardcoded in application logic.
+    """
+    if not settings.admin_email or not settings.admin_password:
+        return
+
     db = get_db()
-    admin_user = await db.users.find_one({"$or": [{"username": "admin"}, {"email": "admin"}, {"email": "admin@airbnb.com"}]})
+    admin_ident = settings.admin_email.lower().strip()
+    admin_uname = (settings.admin_username or "admin").lower().strip()
+    admin_user = await db.users.find_one({
+        "$or": [
+            {"username": admin_uname},
+            {"email": admin_ident},
+            {"role": "admin"},
+        ]
+    })
     if not admin_user:
         new_admin = {
             "_id": "admin_root",
-            "username": "admin",
-            "email": "admin@airbnb.com",
+            "username": admin_uname,
+            "email": admin_ident,
             "name": "System Admin",
             "role": "admin",
-            "password": hash_password("admin123"),
+            "password": hash_password(settings.admin_password),
             "initials": "AD",
             "color": "#FF385C",
             "upiId": "",
             "createdAt": datetime.utcnow().isoformat(),
         }
         await db.users.insert_one(new_admin)
-        print("[Admin Init] Created default admin user (username: admin)")
+        print(f"[Admin Init] Initialized admin user from environment variables ({admin_ident})")
     else:
-        # Ensure role is admin and password is valid admin123
+        updates = {
+            "role": "admin",
+            "password": hash_password(settings.admin_password),
+            "email": admin_ident,
+            "username": admin_uname,
+        }
         await db.users.update_one(
             {"_id": admin_user["_id"]},
-            {"$set": {"role": "admin", "password": hash_password("admin123"), "username": "admin"}}
+            {"$set": updates}
         )
-        print("[Admin Init] Verified admin user credentials.")
+        print(f"[Admin Init] Synced admin user credentials from environment variables ({admin_ident})")
 
 async def require_admin(current_user: dict = Depends(get_current_user)) -> dict:
     if current_user.get("role") != "admin":

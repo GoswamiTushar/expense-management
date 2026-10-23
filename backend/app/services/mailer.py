@@ -2,12 +2,12 @@ import json, urllib.request, urllib.error
 from app.config import settings
 
 def send_mail(to_email: str, subject: str, html: str, cc: list = None) -> bool:
-    if not settings.resend_api_key:
-        print(f"[Mailer MOCK] Resend API key missing. Email to {to_email} skipped.")
+    if not settings.resend_api_key or not settings.email_from:
+        print(f"[Mailer Notice] RESEND_API_KEY or EMAIL_FROM not set in .env. Email to {to_email} skipped.")
         return True
     try:
         url = "https://api.resend.com/emails"
-        sender = settings.email_from or "Airbnb Manager <contact@tushargoswami.dev>"
+        sender = settings.email_from
         payload = {"from": sender, "to": [to_email], "subject": subject, "html": html}
         if cc:
             payload["cc"] = [c for c in cc if c]

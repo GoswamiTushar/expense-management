@@ -72,9 +72,9 @@ async def run_e2e_tests():
         "location": "Vrindavan, India",
         "managers": [id_tushar, id_rashi, id_joy],
         "managerDetails": [
-            {"id": id_tushar, "name": "Tushar Goswami", "email": "tushargoswami1510@gmail.com"},
-            {"id": id_rashi, "name": "Rashi Agrawal", "email": "rashigupta0411@gmail.com"},
-            {"id": id_joy, "name": "Joy", "email": "joygupta501@gmail.com"},
+            {"id": id_tushar, "name": "Tushar Goswami", "email": "tushar.test@example.com"},
+            {"id": id_rashi, "name": "Rashi Agrawal", "email": "rashi.test@example.com"},
+            {"id": id_joy, "name": "Joy", "email": "joy.test@example.com"},
         ]
     })
 

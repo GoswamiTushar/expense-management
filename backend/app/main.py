@@ -6,7 +6,6 @@ from app.config import settings
 from app.database import ping_database
 from app.middleware import log_requests
 from app.routers import auth, auth_signup, auth_token, properties, expenses, settlements, invites, notifications, admin
-from app.routers.admin import ensure_admin_user
 
 app = FastAPI(title="Airbnb Expense API", version="2.0.0")
 
@@ -27,7 +26,7 @@ async def _background_db_init():
         _db_ready = await ping_database()
         print(f"[FastAPI Startup] MongoDB connected: {_db_ready}")
         if _db_ready:
-            await ensure_admin_user()
+            await admin.ensure_admin_user()
     except Exception as e:
         _db_ready = False
         print(f"[FastAPI Startup] DB warm-up notice: {e}")
