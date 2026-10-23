@@ -1,22 +1,6 @@
-import { StyleSheet, Platform } from 'react-native';
-import { colors } from '../../../theme/colors';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-  topBarContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    zIndex: 99999,
-    backgroundColor: 'rgba(94, 92, 230, 0.15)',
-    overflow: 'hidden',
-  },
-  topBarIndicator: {
-    height: '100%',
-    backgroundColor: '#5E5CE6',
-    borderRadius: 2,
-  },
   modalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(10, 15, 30, 0.85)',
@@ -65,18 +49,20 @@ export const styles = StyleSheet.create({
     lineHeight: 18,
     marginBottom: 18,
   },
-  progressBarTrack: {
-    width: '100%',
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: 14,
-  },
-  progressBarFill: {
-    height: '100%',
+  retryBtn: {
+    marginTop: 16,
     backgroundColor: '#38BDF8',
-    borderRadius: 2,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  retryBtnText: {
+    color: '#0f172a',
+    fontWeight: '800',
+    fontSize: 13,
   },
   badge: {
     flexDirection: 'row',
@@ -95,3 +81,4 @@ export const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
+
