@@ -37,6 +37,8 @@ export default function BottomNav({
             styles.tabLabel,
             (activeTab === 'home' || activeTab === 'ledger') && styles.tabLabelActive,
           ]}
+          numberOfLines={1}
+          maxFontSizeMultiplier={1.2}
         >
           Home
         </Text>
@@ -56,22 +58,34 @@ export default function BottomNav({
           size={20}
           color={activeTab === 'settle' ? activeColor : inactiveColor}
         />
-        <Text style={[styles.tabLabel, activeTab === 'settle' && styles.tabLabelActive]}>
+        <Text
+          style={[styles.tabLabel, activeTab === 'settle' && styles.tabLabelActive]}
+          numberOfLines={1}
+          maxFontSizeMultiplier={1.2}
+        >
           Settle
         </Text>
       </TouchableOpacity>
 
-      {/* 3. Center Quick Add Button */}
-      <View style={styles.centerBtnWrap}>
-        <TouchableOpacity
-          style={styles.centerBtn}
-          onPress={onAddExpense}
-          activeOpacity={0.85}
-          title="Add Expense"
+      {/* 3. Center Quick Add Button (Elevated Radiant Action Tab) */}
+      <TouchableOpacity
+        style={styles.centerTabItem}
+        onPress={onAddExpense}
+        activeOpacity={0.82}
+        accessibilityLabel="Add Expense"
+        accessibilityRole="button"
+      >
+        <View style={styles.centerActionBtn}>
+          <Ionicons name="add" size={24} color="#FFFFFF" />
+        </View>
+        <Text
+          style={styles.centerTabLabel}
+          numberOfLines={1}
+          maxFontSizeMultiplier={1.2}
         >
-          <Ionicons name="add" size={26} color={centerIconColor} />
-        </TouchableOpacity>
-      </View>
+          Add Expense
+        </Text>
+      </TouchableOpacity>
 
       {/* 4. Partners Tab (Opens Invite Modal without resetting base screen tab) */}
       <TouchableOpacity
@@ -86,7 +100,7 @@ export default function BottomNav({
           size={20}
           color={inactiveColor}
         />
-        <Text style={styles.tabLabel}>
+        <Text style={styles.tabLabel} numberOfLines={1} maxFontSizeMultiplier={1.2}>
           Partners
         </Text>
       </TouchableOpacity>
@@ -104,7 +118,7 @@ export default function BottomNav({
           size={20}
           color={inactiveColor}
         />
-        <Text style={styles.tabLabel}>
+        <Text style={styles.tabLabel} numberOfLines={1} maxFontSizeMultiplier={1.2}>
           Audit
         </Text>
       </TouchableOpacity>

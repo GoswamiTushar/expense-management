@@ -14,7 +14,11 @@ export const calculatePropertyDebts = (managers = [], expenses = [], settlements
     });
   });
 
-  expenses.forEach((exp) => {
+  const activeExpenses = expenses.filter(
+    (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+  );
+
+  activeExpenses.forEach((exp) => {
     const payer = String(exp.paidBy || '');
     const splits = (exp.splitAmong || mIds).map((s) => String(s.id || s._id || s));
     const share = Number(exp.sharePerPerson) || (splits.length ? Number(exp.amount || 0) / splits.length : 0);

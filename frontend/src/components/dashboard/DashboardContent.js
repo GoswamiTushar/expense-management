@@ -26,7 +26,9 @@ export default function DashboardContent({
   const { colors: tColors, isDark } = useTheme();
   const styles = useMemo(() => createAppStyles(tColors, isDark), [tColors, isDark]);
 
-  const filtered = data.expenses.filter((e) => (cat === 'ALL' ? true : e.category === cat));
+  const filtered = data.expenses
+    .filter((e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y')
+    .filter((e) => (cat === 'ALL' ? true : e.category === cat));
   const userMap = {};
   if (data.currentUser) userMap[data.currentUser._id || data.currentUser.id] = data.currentUser;
   data.activeProperty?.managerDetails?.forEach((m) => {
@@ -100,7 +102,6 @@ export default function DashboardContent({
             expenses={data.expenses}
             userMap={userMap}
             currentUser={data.currentUser}
-            onAddExpense={() => setM('showAdd', true)}
           />
           <PendingSettlementsCard
             pendingIncoming={data.balanceData?.pendingIncoming || []}

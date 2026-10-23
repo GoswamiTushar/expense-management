@@ -129,7 +129,13 @@ export default function PendingSettlementsCard({
               <View style={styles.bellWrap}>
                 <Ionicons name="notifications" size={14} color={tColors.warning} />
               </View>
-              <Text style={styles.title}>Payment Confirmation Needed</Text>
+              <Text
+                style={styles.title}
+                numberOfLines={1}
+                maxFontSizeMultiplier={1.2}
+              >
+                Payment Confirmation Needed
+              </Text>
               <View style={styles.badge}>
                 <Text style={styles.badgeText}>{pendingIncoming.length}</Text>
               </View>

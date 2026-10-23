@@ -6,6 +6,7 @@ class AuditLogEntry(BaseModel):
     actorId: str
     actorName: str
     timestamp: str
+    notes: Optional[str] = ""
 
 class ExpenseCreate(BaseModel):
     propertyId: str
@@ -29,9 +30,30 @@ class ExpenseUpdate(BaseModel):
     notes: Optional[str] = None
     date: Optional[str] = None
 
+class DeleteExpenseRequest(BaseModel):
+    reason: Optional[str] = ""
+
+class RejectDeleteRequest(BaseModel):
+    reason: Optional[str] = ""
+
 class ExpenseResponse(ExpenseCreate):
     id: str
     date: Optional[str] = ""
     createdAt: Optional[str] = ""
     auditLog: Optional[List[AuditLogEntry]] = []
+    # Soft delete & approval workflow (backward-compatible)
+    isDeleted: Optional[bool] = False
+    deleted: Optional[bool] = False
+    deleteStatus: Optional[str] = None  # None | "pending_approval" | "approved" | "rejected"
+    deleteRequestedBy: Optional[str] = None
+    deleteRequestedByName: Optional[str] = None
+    deleteRequestedAt: Optional[str] = None
+    deleteReason: Optional[str] = None
+    deletedAt: Optional[str] = None
+    deletedBy: Optional[str] = None
+    deleteApprovedBy: Optional[str] = None
+    deleteApprovedByName: Optional[str] = None
+    deleteRejectedBy: Optional[str] = None
+    deleteRejectedByName: Optional[str] = None
+    deleteRejectionReason: Optional[str] = None
 

@@ -16,11 +16,17 @@ export default function ExpenseItem({ expense, userMap = {}, onPress }) {
   const share = expense.sharePerPerson || Math.round((expense.amount / splitCount) * 100) / 100;
   const hasReceipt = Boolean(expense.receiptUrl);
 
+  if (expense.isDeleted || expense.deleted === true || expense.deleted === 'Y' || expense.isDeleted === 'Y') {
+    return null;
+  }
+
   const rawPayer =
     expense.payerName && expense.payerName !== 'Manager'
       ? expense.payerName
       : userMap[expense.paidBy]?.name || expense.payerName || 'Manager';
   const payer = rawPayer || 'Manager';
+
+  const isPendingDelete = expense.deleteStatus === 'pending_approval';
 
   return (
     <TouchableOpacity
@@ -50,13 +56,23 @@ export default function ExpenseItem({ expense, userMap = {}, onPress }) {
               <Ionicons name="camera-outline" size={12} color={tColors.textDim} style={styles.receiptIcon} />
             )}
           </View>
+          {isPendingDelete && (
+            <View style={styles.deletionBadge}>
+              <Ionicons name="alert-circle-outline" size={11} color={isDark ? '#FBBF24' : '#B45309'} />
+              <Text style={styles.deletionBadgeText}>Delete Requested</Text>
+            </View>
+          )}
         </View>
       </View>
 
       <View style={styles.right}>
-        <Text style={styles.amount}>{formatCurrency(expense.amount)}</Text>
+        <Text style={styles.amount} numberOfLines={1} maxFontSizeMultiplier={1.25}>
+          {formatCurrency(expense.amount)}
+        </Text>
         <View style={styles.pill}>
-          <Text style={styles.pillText}>{formatCurrency(share)} / person</Text>
+          <Text style={styles.pillText} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+            {formatCurrency(share)} / person
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

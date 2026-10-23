@@ -62,9 +62,13 @@ export default function Header({
             <View style={styles.brandIcon}>
               <Ionicons name="home" size={16} color={tColors.white} />
             </View>
-            <View>
-              <Text style={styles.brandTitle}>Airbnb Manager</Text>
-              <Text style={styles.brandSub}>Expense & Settlement Hub</Text>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <Text style={styles.brandTitle} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+                Airbnb Manager
+              </Text>
+              <Text style={styles.brandSub} numberOfLines={1} maxFontSizeMultiplier={1.2}>
+                Expense & Settlement Hub
+              </Text>
             </View>
           </View>
         )}

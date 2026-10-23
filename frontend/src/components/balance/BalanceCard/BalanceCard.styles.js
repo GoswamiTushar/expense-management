@@ -32,6 +32,8 @@ export const createBalanceCardStyles = (tColors = colors, isDark = true) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: 8,
     },
     statusPill: {
       flexDirection: 'row',

@@ -419,12 +419,12 @@ export default function AdminDashboard({ onLogout }) {
             {loadingExpenses && <ActivityIndicator size="small" color={colors.primary} />}
           </View>
 
-          {expensesData.expenses.length === 0 ? (
+          {expensesData.expenses.filter((exp) => !exp.isDeleted && !exp.deleted && exp.deleted !== 'Y').length === 0 ? (
             <Text style={{ color: colors.textMuted, textAlign: 'center', paddingVertical: 32 }}>
               No expenses matching the selected property and user filters.
             </Text>
           ) : (
-            expensesData.expenses.map((exp) => (
+            expensesData.expenses.filter((exp) => !exp.isDeleted && !exp.deleted && exp.deleted !== 'Y').map((exp) => (
               <View key={exp.id} style={styles.expenseCard}>
                 <View style={styles.expensePropTag}>
                   <Ionicons name="business-outline" size={12} color={colors.primary} />

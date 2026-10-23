@@ -47,7 +47,7 @@ export const exportExpensesToPdf = async ({ property, expenses = [], settlements
 
   const kpis = [
     { label: 'TOTAL EXPENDITURE', val: `INR ${data.totalSpend.toLocaleString('en-IN', { minimumFractionDigits: 2 })}` },
-    { label: 'TRANSACTIONS', val: `${expenses.length} Logged Expenses` },
+    { label: 'TRANSACTIONS', val: `${data.expensesRows.length} Logged Expenses` },
     { label: 'MANAGERS INVOLVED', val: `${data.managerRows.length} Property Managers` },
   ];
 

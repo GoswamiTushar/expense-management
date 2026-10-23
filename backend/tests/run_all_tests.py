@@ -23,6 +23,7 @@ from tests.test_ledger_math import run_tests as run_ledger_math
 from tests.test_settlements_api import run_tests as run_settlements_api
 from tests.test_exhaustive_expenses import run_exhaustive_expense_tests
 from tests.test_exhaustive_settlements import run_exhaustive_settlement_tests
+from tests.test_expense_deletion import run_tests as run_expense_deletion_tests
 from tests.test_e2e_full_workflow import run_e2e_tests
 
 async def main():
@@ -36,6 +37,7 @@ async def main():
         ("Settlements API Lifecycle & Quarantined Balances", run_settlements_api),
         ("Exhaustive Expenses Handling, Splits & Edge-Cases", run_exhaustive_expense_tests),
         ("Exhaustive Settlements, Overpayments & Security", run_exhaustive_settlement_tests),
+        ("Two-Tier Expense Soft-Deletion & 5-Min Approval System", run_expense_deletion_tests),
         ("Multi-User E2E Real Workflow (Tushar, Rashi, Joy, Admin)", run_e2e_tests),
     ]
 

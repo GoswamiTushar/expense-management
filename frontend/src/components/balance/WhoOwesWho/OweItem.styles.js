@@ -58,6 +58,7 @@ export const createOweItemStyles = (tColors = colors, isDark = true) =>
     right: {
       alignItems: 'flex-end',
       gap: 5,
+      flexShrink: 0,
     },
     amount: {
       fontSize: 14.5,

@@ -11,7 +11,10 @@ import { getCategoryById } from '../../theme/categories';
  * @returns {string}  HTML string for all per-person tables
  */
 export const buildPersonTables = (managers = [], expenses = []) => {
-  if (!managers.length || !expenses.length) return '';
+  const activeExpenses = expenses.filter(
+    (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+  );
+  if (!managers.length || !activeExpenses.length) return '';
 
   const totalManagers = managers.length;
 
@@ -20,7 +23,7 @@ export const buildPersonTables = (managers = [], expenses = []) => {
     const accent = accentColors[managerIdx % accentColors.length];
 
     // Expenses where this manager paid OR is in the split list
-    const relevant = expenses.filter(
+    const relevant = activeExpenses.filter(
       (e) => e.paidBy === manager.id || (e.splitAmong || []).includes(manager.id)
     );
 

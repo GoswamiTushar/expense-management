@@ -32,8 +32,11 @@ export const createHeaderStyles = (tColors = colors, isDark = true) =>
       marginBottom: 12,
     },
     brandBox: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
+      minWidth: 0,
+      marginRight: 10,
     },
     brandIcon: {
       width: 34,
@@ -104,6 +107,7 @@ export const createHeaderStyles = (tColors = colors, isDark = true) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 7,
+      flexShrink: 0,
     },
     iconBtn: {
       width: 34,

@@ -39,8 +39,19 @@ async def calculate_property_balances(property_id: str, current_user_id: str = "
         if m_id and m_id not in user_map:
             user_map[m_id] = m.get("name") or "Partner"
 
-    # 2. Fetch all expenses for property
-    expenses = await db.expenses.find({"propertyId": property_id}).to_list(5000)
+    # 2. Fetch all active (non-deleted) expenses for property
+    raw_expenses = await db.expenses.find({
+        "propertyId": property_id,
+        "isDeleted": {"$nin": [True, "Y", "y"]},
+        "deleted": {"$nin": [True, "Y", "y"]},
+    }).to_list(5000)
+    expenses = [
+        e for e in raw_expenses
+        if not e.get("isDeleted")
+        and not e.get("deleted")
+        and str(e.get("deleted", "")).upper() != "Y"
+        and str(e.get("isDeleted", "")).upper() != "Y"
+    ]
     total_expenses = sum(float(e.get("amount") or 0) for e in expenses)
 
     # 3. Initialize Expense Debts matrix: debts[debtor][creditor]

@@ -25,13 +25,16 @@ export default function PropertyManagersModal({
       property.managers?.map((id) => userMap[id] || { id, name: id }) ||
       [];
 
-    const totalInvested = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const activeExpenses = expenses.filter(
+      (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+    );
+    const totalInvested = activeExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
     const count = managersList.length || 1;
     const fairShare = totalInvested / count;
 
     const list = managersList.map((m) => {
       const mId = String(m.id || m._id || m);
-      const paid = expenses
+      const paid = activeExpenses
         .filter((e) => String(e.paidBy) === mId)
         .reduce((sum, e) => sum + Number(e.amount || 0), 0);
 

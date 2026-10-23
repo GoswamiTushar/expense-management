@@ -212,12 +212,16 @@ export default function SettlementsPage({
               size={15}
               color={scope === 'RAISED' ? tColors.textDark : tColors.textMuted}
             />
-            <Text style={[styles.scopeTabText, scope === 'RAISED' && styles.scopeTabTextActive]}>
+            <Text
+              style={[styles.scopeTabText, scope === 'RAISED' && styles.scopeTabTextActive]}
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.15}
+            >
               Raised by Me
             </Text>
             {pendingOutgoingCount > 0 && (
               <View style={styles.scopeBadge}>
-                <Text style={styles.scopeBadgeText}>{pendingOutgoingCount}</Text>
+                <Text style={styles.scopeBadgeText} maxFontSizeMultiplier={1.15}>{pendingOutgoingCount}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -233,12 +237,16 @@ export default function SettlementsPage({
               size={15}
               color={scope === 'RECEIVED' ? tColors.textDark : tColors.textMuted}
             />
-            <Text style={[styles.scopeTabText, scope === 'RECEIVED' && styles.scopeTabTextActive]}>
+            <Text
+              style={[styles.scopeTabText, scope === 'RECEIVED' && styles.scopeTabTextActive]}
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.15}
+            >
               Received
             </Text>
             {pendingIncomingCount > 0 && (
               <View style={styles.scopeBadge}>
-                <Text style={styles.scopeBadgeText}>{pendingIncomingCount}</Text>
+                <Text style={styles.scopeBadgeText} maxFontSizeMultiplier={1.15}>{pendingIncomingCount}</Text>
               </View>
             )}
           </TouchableOpacity>
@@ -254,7 +262,11 @@ export default function SettlementsPage({
               size={15}
               color={scope === 'AUDIT' ? tColors.textDark : tColors.textMuted}
             />
-            <Text style={[styles.scopeTabText, scope === 'AUDIT' && styles.scopeTabTextActive]}>
+            <Text
+              style={[styles.scopeTabText, scope === 'AUDIT' && styles.scopeTabTextActive]}
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.15}
+            >
               Audit Trail
             </Text>
           </TouchableOpacity>

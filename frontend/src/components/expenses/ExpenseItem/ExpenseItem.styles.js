@@ -84,6 +84,7 @@ export const createExpenseItemStyles = (tColors = colors, isDark = true) =>
     },
     right: {
       alignItems: 'flex-end',
+      flexShrink: 0,
     },
     amount: {
       color: tColors.textDark,
@@ -104,6 +105,24 @@ export const createExpenseItemStyles = (tColors = colors, isDark = true) =>
       color: isDark ? '#9D9CFF' : '#5E5CE6',
       fontSize: 10.5,
       fontWeight: '600',
+    },
+    deletionBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      backgroundColor: isDark ? 'rgba(245, 158, 11, 0.16)' : '#FEF3C7',
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 6,
+      marginTop: 3,
+      alignSelf: 'flex-start',
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(245, 158, 11, 0.35)' : '#FDE68A',
+    },
+    deletionBadgeText: {
+      color: isDark ? '#FBBF24' : '#B45309',
+      fontSize: 10,
+      fontWeight: '700',
     },
   });
 

@@ -18,6 +18,9 @@ export const buildSettlementTable = (managers = [], debts = []) => {
 };
 
 export const buildExpensesTable = (expenses = [], userMap = {}) => {
+  const activeExpenses = expenses.filter(
+    (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+  );
   const getName = (id) => userMap[id]?.name || id;
   const headers = [
     makeTh('Date', '#E11D48', '110px'), makeTh('Title', '#E11D48', '200px'),
@@ -26,7 +29,7 @@ export const buildExpensesTable = (expenses = [], userMap = {}) => {
     makeTh('Share / Person', '#E11D48', '140px'), makeTh('Notes', '#E11D48', '200px'),
   ].join('');
 
-  const rows = expenses.map((exp, i) => {
+  const rows = activeExpenses.map((exp, i) => {
     const bg = i % 2 === 0 ? '#ffffff' : '#F8FAFC';
     const d = new Date(exp.date || exp.createdAt);
     const dateStr = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : 'N/A';

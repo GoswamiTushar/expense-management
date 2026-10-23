@@ -9,17 +9,20 @@ import { categories, getCategoryById } from '../../theme/categories';
  * @returns {string} HTML table string
  */
 export const buildCategoryTable = (expenses = []) => {
-  if (!expenses || expenses.length === 0) {
+  const activeExpenses = expenses.filter(
+    (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+  );
+  if (!activeExpenses || activeExpenses.length === 0) {
     return `<table ${TABLE_STYLE}>${sectionTitle('3. Category-Wise Spending Summary', '#0D9488', 5)}<tr>${makeTd('No expenses logged yet.', false, '#ffffff', false)}</tr></table>`;
   }
 
-  const grandTotal = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-  const totalCount = expenses.length;
+  const grandTotal = activeExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const totalCount = activeExpenses.length;
 
   // Group by canonical category
   const categoryStats = {};
 
-  expenses.forEach((e) => {
+  activeExpenses.forEach((e) => {
     const rawCat = e.category || 'Other';
     const catObj = getCategoryById(rawCat);
     const catKey = catObj?.id || rawCat;
@@ -72,13 +75,16 @@ export const buildCategoryTable = (expenses = []) => {
  * @returns {string} HTML string containing individual tables for all categories
  */
 export const buildCategoryDetailTables = (expenses = [], userMap = {}) => {
+  const activeExpenses = expenses.filter(
+    (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+  );
   const getName = (id) => userMap[id]?.name || id;
 
   // Gather all predefined categories in standard order, plus any non-standard ones from expenses
   const allCategoryList = [...categories];
   const knownIds = new Set(categories.map((c) => c.id.toLowerCase()));
 
-  expenses.forEach((e) => {
+  activeExpenses.forEach((e) => {
     if (e.category) {
       const catObj = getCategoryById(e.category);
       if (catObj && !knownIds.has(catObj.id.toLowerCase())) {
@@ -90,7 +96,7 @@ export const buildCategoryDetailTables = (expenses = [], userMap = {}) => {
 
   const tables = allCategoryList.map((cat, idx) => {
     // Filter expenses matching this category
-    const catExpenses = expenses.filter((e) => {
+    const catExpenses = activeExpenses.filter((e) => {
       const matched = getCategoryById(e.category || 'Other');
       return matched.id === cat.id;
     });

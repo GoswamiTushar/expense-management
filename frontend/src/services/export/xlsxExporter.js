@@ -9,11 +9,14 @@ import { calculatePropertyDebts } from '../../utils/excel/excelDebts';
  * Builds structured data and exports a genuine .xlsx workbook
  */
 export const generateWorkbookData = ({ property, expenses = [], settlements = [], userMap = {} }) => {
+  const activeExpenses = expenses.filter(
+    (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+  );
   const managers = property?.managerDetails || property?.managers?.map((id) => userMap[id] || { id, name: id }) || [];
   const getName = (id) => userMap[id]?.name || id;
 
   // 1. Expenses Sheet
-  const expensesRows = expenses.map((exp, idx) => {
+  const expensesRows = activeExpenses.map((exp, idx) => {
     const d = new Date(exp.date || exp.createdAt);
     const dateStr = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : 'N/A';
     const timeStr = !isNaN(d.getTime()) ? d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : '';
@@ -39,8 +42,8 @@ export const generateWorkbookData = ({ property, expenses = [], settlements = []
 
   // 2. Manager Summary Sheet
   const managerRows = managers.map((m, idx) => {
-    const paid = expenses.filter((e) => e.paidBy === m.id).reduce((s, e) => s + Number(e.amount || 0), 0);
-    const share = expenses.reduce((s, e) => {
+    const paid = activeExpenses.filter((e) => e.paidBy === m.id).reduce((s, e) => s + Number(e.amount || 0), 0);
+    const share = activeExpenses.reduce((s, e) => {
       const splits = e.splitAmong || [];
       if (!splits.includes(m.id)) return s;
       return s + (Number(e.sharePerPerson) || (Number(e.amount || 0) / (splits.length || 1)));
@@ -60,9 +63,9 @@ export const generateWorkbookData = ({ property, expenses = [], settlements = []
   });
 
   // 3. Category Breakdown Sheet
-  const totalSpend = expenses.reduce((s, e) => s + Number(e.amount || 0), 0);
+  const totalSpend = activeExpenses.reduce((s, e) => s + Number(e.amount || 0), 0);
   const catMap = {};
-  expenses.forEach((e) => {
+  activeExpenses.forEach((e) => {
     const cat = e.category || 'other';
     if (!catMap[cat]) catMap[cat] = { count: 0, total: 0 };
     catMap[cat].count += 1;
@@ -83,7 +86,7 @@ export const generateWorkbookData = ({ property, expenses = [], settlements = []
   });
 
   // 4. Pairwise Debts & Settlements Sheet
-  const debts = calculatePropertyDebts(managers, expenses, settlements, userMap);
+  const debts = calculatePropertyDebts(managers, activeExpenses, settlements, userMap);
   const debtsRows = debts.map((d, idx) => ({
     '#': idx + 1,
     'Debtor (Who Pays)': d.from,

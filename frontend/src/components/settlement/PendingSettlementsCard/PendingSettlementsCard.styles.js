@@ -57,6 +57,7 @@ export const createPendingSettlementsStyles = (tColors = colors, isDark = true) 
       fontSize: 13.5,
       fontWeight: '700',
       letterSpacing: -0.2,
+      flexShrink: 1,
     },
     badge: {
       backgroundColor: isDark ? 'rgba(255, 159, 10, 0.20)' : 'rgba(217, 119, 6, 0.14)',
@@ -65,6 +66,7 @@ export const createPendingSettlementsStyles = (tColors = colors, isDark = true) 
       paddingVertical: 2,
       borderWidth: 1,
       borderColor: isDark ? 'rgba(255, 159, 10, 0.35)' : 'rgba(217, 119, 6, 0.25)',
+      flexShrink: 0,
     },
     badgeText: {
       color: tColors.warning,
@@ -75,6 +77,7 @@ export const createPendingSettlementsStyles = (tColors = colors, isDark = true) 
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
+      flexShrink: 0,
     },
     collapsedAmount: {
       color: tColors.success,

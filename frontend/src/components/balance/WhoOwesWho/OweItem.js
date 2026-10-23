@@ -23,28 +23,32 @@ export default function OweItem({ user, amount, isOwedByMe, onSettle }) {
         <Avatar name={user.name} initials={user.initials} color={user.color} size={36} />
         <View style={{ flex: 1 }}>
           <View style={styles.nameRow}>
-            <Text style={styles.name} numberOfLines={1}>{user.name}</Text>
+            <Text style={styles.name} numberOfLines={1} maxFontSizeMultiplier={1.25}>{user.name}</Text>
             {user.role && (
               <View style={styles.roleBadge}>
-                <Text style={styles.roleText}>{user.role === 'admin' ? 'Lead' : 'Co-host'}</Text>
+                <Text style={styles.roleText} maxFontSizeMultiplier={1.2}>{user.role === 'admin' ? 'Lead' : 'Co-host'}</Text>
               </View>
             )}
           </View>
-          <Text style={styles.sub} numberOfLines={1}>
+          <Text style={styles.sub} numberOfLines={1} maxFontSizeMultiplier={1.25}>
             {isOwedByMe ? 'You owe • Tap to settle up' : 'Pending payment to you'}
           </Text>
         </View>
       </View>
 
       <View style={styles.right}>
-        <Text style={[styles.amount, { color: isOwedByMe ? tColors.tertiary : tColors.success }]}>
+        <Text
+          style={[styles.amount, { color: isOwedByMe ? tColors.tertiary : tColors.success }]}
+          numberOfLines={1}
+          maxFontSizeMultiplier={1.25}
+        >
           {isOwedByMe ? formatCurrency(amount) : `+${formatCurrency(amount)}`}
         </Text>
 
         {isOwedByMe && (
           <View style={styles.payBtn}>
             <Ionicons name="card-outline" size={12} color="#FFFFFF" />
-            <Text style={styles.btnText}>Settle Up</Text>
+            <Text style={styles.btnText} numberOfLines={1} maxFontSizeMultiplier={1.2}>Settle Up</Text>
           </View>
         )}
       </View>

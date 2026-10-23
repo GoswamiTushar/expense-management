@@ -22,7 +22,11 @@ export const computeBalances = (expenses = [], settlements = [], managers = [], 
     });
   });
 
-  expenses.forEach((exp) => {
+  const activeExpenses = expenses.filter(
+    (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+  );
+
+  activeExpenses.forEach((exp) => {
     const payer = String(exp.paidBy || '');
     const rawSplits = exp.splitAmong || mList;
     const splitAmong = rawSplits.map((s) => String(s.id || s._id || s));
@@ -105,7 +109,7 @@ export const computeBalances = (expenses = [], settlements = [], managers = [], 
     });
   }
 
-  const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+  const totalExpenses = activeExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
 
   return {
     currentUserNet: Math.round(currentUserNet * 100) / 100,

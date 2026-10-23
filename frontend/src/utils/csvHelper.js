@@ -2,6 +2,9 @@
  * Builds standard RFC 4180 CSV string from expense records.
  */
 export const buildExpenseCsv = (expenses = [], users = [], propertyName = '') => {
+  const activeExpenses = expenses.filter(
+    (e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y'
+  );
   const getUserName = (id) => users.find((u) => u._id === id)?.name || id;
 
   const headers = [
@@ -18,7 +21,7 @@ export const buildExpenseCsv = (expenses = [], users = [], propertyName = '') =>
     'Notes',
   ];
 
-  const rows = expenses.map((exp) => {
+  const rows = activeExpenses.map((exp) => {
     const d = new Date(exp.date || exp.createdAt);
     const dateStr = d.toISOString().split('T')[0];
     const timeStr = d.toTimeString().split(' ')[0];

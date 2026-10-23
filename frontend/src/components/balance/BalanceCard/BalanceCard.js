@@ -12,8 +12,6 @@ export default function BalanceCard({
   expenses = [],
   userMap = {},
   currentUser,
-  onAddExpense,
-  onSettleUp,
 }) {
   const { colors: tColors, isDark } = useTheme();
   const styles = useMemo(() => createBalanceCardStyles(tColors, isDark), [tColors, isDark]);
@@ -42,37 +40,46 @@ export default function BalanceCard({
     ? 'Pending reimbursement to co-managers'
     : 'Zero pending dues on this property';
 
-  const btnIconColor = isDark ? '#0C0E14' : '#FFFFFF';
-
   return (
     <>
       <View style={styles.card}>
         <View style={styles.topRow}>
           <View style={[styles.statusPill, { backgroundColor: badgeBg, borderColor: badgeBorder }]}>
             <View style={[styles.dot, { backgroundColor: badgeColor }]} />
-            <Text style={[styles.statusText, { color: badgeColor }]}>{statusTitle}</Text>
+            <Text
+              style={[styles.statusText, { color: badgeColor }]}
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.2}
+            >
+              {statusTitle}
+            </Text>
           </View>
           <TouchableOpacity
             style={styles.managerCountBtn}
             onPress={() => setShowManagersModal(true)}
             activeOpacity={0.75}
           >
-            <Text style={styles.managerCount}>
+            <Text
+              style={styles.managerCount}
+              numberOfLines={1}
+              maxFontSizeMultiplier={1.2}
+            >
               {property?.managers?.length || 2} Managers (Equal Split)
             </Text>
             <Ionicons name="information-circle-outline" size={13} color={tColors.textMuted} />
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.amount}>{net === 0 ? '₹0' : formatCurrency(Math.abs(net))}</Text>
-        <Text style={styles.sub}>{subText}</Text>
-
-        <View style={styles.actionsRow}>
-          <TouchableOpacity style={styles.addBtn} onPress={onAddExpense} activeOpacity={0.85}>
-            <Ionicons name="add-circle" size={18} color={btnIconColor} />
-            <Text style={styles.btnText}>Log New Expense</Text>
-          </TouchableOpacity>
-        </View>
+        <Text
+          style={styles.amount}
+          numberOfLines={1}
+          maxFontSizeMultiplier={1.25}
+        >
+          {net === 0 ? '₹0' : formatCurrency(Math.abs(net))}
+        </Text>
+        <Text style={styles.sub} maxFontSizeMultiplier={1.3}>
+          {subText}
+        </Text>
       </View>
 
       <PropertyManagersModal

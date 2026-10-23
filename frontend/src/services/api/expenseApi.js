@@ -11,7 +11,9 @@ export const getExpensesByProperty = async (propertyId) => {
     return list;
   } catch (_) {
     const cached = await AsyncStorage.getItem(`${STORAGE_KEY}_${propertyId}`);
-    return cached ? JSON.parse(cached) : [];
+    if (!cached) return [];
+    const parsed = JSON.parse(cached);
+    return parsed.filter(e => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y');
   }
 };
 
@@ -61,6 +63,46 @@ export const updateExpense = async (expenseId, payload, propertyId) => {
   return updated;
 };
 
-export const deleteExpense = async (expenseId) => {
-  return await apiClient(`/expenses/${expenseId}`, { method: 'DELETE' });
+export const deleteExpense = async (expenseId, reason, propertyId) => {
+  const res = await apiClient(`/expenses/${expenseId}`, {
+    method: 'DELETE',
+    body: reason ? { reason } : undefined,
+  });
+  if (res?.status === 'deleted' && propertyId) {
+    const cached = await AsyncStorage.getItem(`${STORAGE_KEY}_${propertyId}`);
+    if (cached) {
+      const list = JSON.parse(cached);
+      const next = list.filter((e) => (e._id !== expenseId && e.id !== expenseId));
+      await AsyncStorage.setItem(`${STORAGE_KEY}_${propertyId}`, JSON.stringify(next));
+    }
+  }
+  return res;
+};
+
+export const approveDeleteExpense = async (expenseId, propertyId) => {
+  const res = await apiClient(`/expenses/${expenseId}/approve-delete`, {
+    method: 'PATCH',
+  });
+  if (res?.status === 'deleted' && propertyId) {
+    const cached = await AsyncStorage.getItem(`${STORAGE_KEY}_${propertyId}`);
+    if (cached) {
+      const list = JSON.parse(cached);
+      const next = list.filter((e) => (e._id !== expenseId && e.id !== expenseId));
+      await AsyncStorage.setItem(`${STORAGE_KEY}_${propertyId}`, JSON.stringify(next));
+    }
+  }
+  return res;
+};
+
+export const rejectDeleteExpense = async (expenseId, reason) => {
+  return await apiClient(`/expenses/${expenseId}/reject-delete`, {
+    method: 'PATCH',
+    body: reason ? { reason } : undefined,
+  });
+};
+
+export const cancelDeleteExpense = async (expenseId) => {
+  return await apiClient(`/expenses/${expenseId}/cancel-delete`, {
+    method: 'PATCH',
+  });
 };

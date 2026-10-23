@@ -8,7 +8,14 @@ import BottomNav from '../common/BottomNav/BottomNav';
 import AppModals from '../common/AppModals/AppModals';
 import DashboardContent from './DashboardContent';
 import SettlementsPage from '../settlement/SettlementsPage/SettlementsPage';
-import { createExpense, updateExpense } from '../../services/api/expenseApi';
+import {
+  createExpense,
+  updateExpense,
+  deleteExpense,
+  approveDeleteExpense,
+  rejectDeleteExpense,
+  cancelDeleteExpense,
+} from '../../services/api/expenseApi';
 import {
   createSettlement,
   updateSettlement,
@@ -23,6 +30,7 @@ import {
   sendExpenseEditNotification,
   sendSettlementPushNotification,
 } from '../../services/notifications/pushService';
+import { toastEmitter } from '../../services/notifications/toastEmitter';
 
 export default function MainDashboard({ data, onLogout }) {
   const { colors: tColors, isDark } = useTheme();
@@ -90,6 +98,79 @@ export default function MainDashboard({ data, onLogout }) {
 
     data.refresh();
     return updated;
+  };
+
+  const onDeleteExpense = async (expenseId, reason) => {
+    const propId = data.activeProperty?.id || data.activeProperty?._id;
+    const res = await deleteExpense(expenseId, reason, propId);
+    if (res?.status === 'deleted') {
+      data.setExpenses((prev) => prev.filter((item) => (item.id !== expenseId && item._id !== expenseId)));
+      data.setTotalExpenseCount((prev) => Math.max(0, (data.totalExpenseCount || prev) - 1));
+      toastEmitter.emit('Expense Deleted', res.message || 'Expense removed from ledger.', 'success');
+    } else if (res?.status === 'pending_approval') {
+      data.setExpenses((prev) =>
+        prev.map((item) =>
+          item.id === expenseId || item._id === expenseId
+            ? {
+                ...item,
+                deleteStatus: 'pending_approval',
+                deleteReason: reason,
+                deleteRequestedBy: data.currentUser?._id || data.currentUser?.id,
+                deleteRequestedByName: data.currentUser?.name || 'Manager',
+              }
+            : item
+        )
+      );
+      toastEmitter.emit('Approval Sent', 'Deletion request sent to co-managers.', 'info');
+    }
+    data.refresh();
+    return res;
+  };
+
+  const onApproveDeleteExpense = async (expenseId) => {
+    const propId = data.activeProperty?.id || data.activeProperty?._id;
+    const res = await approveDeleteExpense(expenseId, propId);
+    if (res?.status === 'deleted') {
+      data.setExpenses((prev) => prev.filter((item) => (item.id !== expenseId && item._id !== expenseId)));
+      data.setTotalExpenseCount((prev) => Math.max(0, (data.totalExpenseCount || prev) - 1));
+      toastEmitter.emit('Deletion Approved', res.message || 'Expense deleted from ledger.', 'success');
+    }
+    data.refresh();
+    return res;
+  };
+
+  const onRejectDeleteExpense = async (expenseId, reason) => {
+    const res = await rejectDeleteExpense(expenseId, reason);
+    data.setExpenses((prev) =>
+      prev.map((item) =>
+        item.id === expenseId || item._id === expenseId
+          ? {
+              ...item,
+              deleteStatus: 'rejected',
+              deleteRejectedBy: data.currentUser?._id || data.currentUser?.id,
+              deleteRejectedByName: data.currentUser?.name || 'Manager',
+              deleteRejectionReason: reason,
+            }
+          : item
+      )
+    );
+    toastEmitter.emit('Request Rejected', 'Deletion request rejected. Expense remains active.', 'info');
+    data.refresh();
+    return res;
+  };
+
+  const onCancelDeleteExpense = async (expenseId) => {
+    const res = await cancelDeleteExpense(expenseId);
+    data.setExpenses((prev) =>
+      prev.map((item) =>
+        item.id === expenseId || item._id === expenseId
+          ? { ...item, deleteStatus: null }
+          : item
+      )
+    );
+    toastEmitter.emit('Request Cancelled', 'Deletion request cancelled.', 'info');
+    data.refresh();
+    return res;
   };
 
   const onSettle = async (s) => {
@@ -276,6 +357,10 @@ export default function MainDashboard({ data, onLogout }) {
         onMarkNotificationsRead={data.markNotificationsAsRead}
         onAddExpense={onAddExpense}
         onUpdateExpense={onUpdateExpense}
+        onDeleteExpense={onDeleteExpense}
+        onApproveDeleteExpense={onApproveDeleteExpense}
+        onRejectDeleteExpense={onRejectDeleteExpense}
+        onCancelDeleteExpense={onCancelDeleteExpense}
         onSettle={onSettle}
         onUpdateSettlement={onUpdateSettlement}
         onConfirmSettlement={onConfirmSettlement}

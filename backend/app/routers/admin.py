@@ -203,7 +203,10 @@ async def query_admin_expenses(
     Filter 2: Onboarded User
     """
     db = get_db()
-    query: Dict[str, Any] = {}
+    query: Dict[str, Any] = {
+        "isDeleted": {"$nin": [True, "Y", "y"]},
+        "deleted": {"$nin": [True, "Y", "y"]},
+    }
 
     if propertyId and propertyId.lower() != "all":
         query["propertyId"] = propertyId
@@ -215,7 +218,14 @@ async def query_admin_expenses(
             {"splitAmong": userId},
         ]
 
-    expenses = await db.expenses.find(query).sort("createdAt", -1).to_list(2000)
+    raw_expenses = await db.expenses.find(query).sort("createdAt", -1).to_list(2000)
+    expenses = [
+        e for e in raw_expenses
+        if not e.get("isDeleted")
+        and not e.get("deleted")
+        and str(e.get("deleted", "")).upper() != "Y"
+        and str(e.get("isDeleted", "")).upper() != "Y"
+    ]
 
     # Fetch property map and user map to enrich expense details
     props = await db.properties.find({}).to_list(500)

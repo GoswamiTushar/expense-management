@@ -24,6 +24,10 @@ export default function AppModals({
   onMarkNotificationsRead,
   onAddExpense,
   onUpdateExpense,
+  onDeleteExpense,
+  onApproveDeleteExpense,
+  onRejectDeleteExpense,
+  onCancelDeleteExpense,
   onSettle,
   onUpdateSettlement,
   onConfirmSettlement,
@@ -62,8 +66,13 @@ export default function AppModals({
         expense={selectedExpense}
         onClose={close}
         onSave={onUpdateExpense}
+        onDelete={onDeleteExpense}
+        onApproveDelete={onApproveDeleteExpense}
+        onRejectDelete={onRejectDeleteExpense}
+        onCancelDelete={onCancelDeleteExpense}
         currentUser={data.currentUser}
         userMap={userMap}
+        property={data.activeProperty}
       />
       <SettleUpModal
         visible={activeModal === 'showSettle'}
