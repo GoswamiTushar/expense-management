@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import { CONFIG } from '../../config/urls';
 import { toastEmitter } from './toastEmitter';
@@ -51,11 +52,13 @@ export const registerForPushNotifications = async () => {
   }
 
   try {
-    const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId: '1b341bdf-3b39-4323-8d4b-8cc8d99ee036',
-    });
+    const projectId =
+      Constants?.expoConfig?.extra?.eas?.projectId ||
+      Constants?.easConfig?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync(
+      projectId ? { projectId } : undefined
+    );
     const token = tokenData.data;
-    console.log('[Push] Expo token:', token);
 
     // Register token on backend so co-managers can push to this device
     try {

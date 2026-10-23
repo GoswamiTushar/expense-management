@@ -112,7 +112,7 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="e.g. Tushar Goswami"
+            placeholder="e.g. Alex Sharma"
             placeholderTextColor={tColors.textDim}
           />
 

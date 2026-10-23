@@ -9,7 +9,7 @@ export default function AuthFormInputs({ isSignUp, name, setName, email, setEmai
       {isSignUp && (
         <>
           <Text style={styles.label}>FULL NAME</Text>
-          <TextInput style={styles.input} placeholder="e.g. Tushar Goswami" placeholderTextColor={colors.textDim} value={name} onChangeText={setName} />
+          <TextInput style={styles.input} placeholder="e.g. Alex Sharma" placeholderTextColor={colors.textDim} value={name} onChangeText={setName} />
         </>
       )}
       <Text style={styles.label}>{isSignUp ? 'EMAIL ADDRESS' : 'EMAIL OR USERNAME'}</Text>
