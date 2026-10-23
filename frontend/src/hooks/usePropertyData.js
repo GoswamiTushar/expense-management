@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getProperties } from '../services/api/propertyApi';
+import { getProperties, archiveProperty } from '../services/api/propertyApi';
 import { getExpensesByProperty, getExpensesPaginated } from '../services/api/expenseApi';
 import {
   getSettlementsByProperty,
@@ -218,6 +218,25 @@ export const usePropertyData = (currentUser) => {
         )
       : null);
 
+  const archiveGroup = async (propertyId, isArchived = true) => {
+    try {
+      const updated = await archiveProperty(propertyId, isArchived);
+      setProperties((prev) =>
+        prev.map((p) => ((p._id || p.id) === propertyId ? { ...p, ...updated } : p))
+      );
+      setActiveProperty((curr) => {
+        if ((curr?._id || curr?.id) === propertyId) {
+          return { ...curr, ...updated };
+        }
+        return curr;
+      });
+      return updated;
+    } catch (err) {
+      console.error('Error archiving group:', err);
+      throw err;
+    }
+  };
+
   return {
     loading,
     loadingDetails,
@@ -227,6 +246,7 @@ export const usePropertyData = (currentUser) => {
     setProperties,
     activeProperty,
     setActiveProperty,
+    archiveGroup,
     expenses,
     setExpenses,
     totalExpenseCount,

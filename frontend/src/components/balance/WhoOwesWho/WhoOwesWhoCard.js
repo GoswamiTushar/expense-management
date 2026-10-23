@@ -19,7 +19,7 @@ export default function WhoOwesWhoCard({ balanceData, onSettleWithUser, userMap 
           <Ionicons name="checkmark-circle" size={24} color={tColors.success} />
           <View>
             <Text style={styles.settledTitle}>Zero Pending Dues</Text>
-            <Text style={styles.settledSub}>All balances on this property are fully settled!</Text>
+            <Text style={styles.settledSub}>All balances in this group are fully settled!</Text>
           </View>
         </View>
       </View>
@@ -31,7 +31,7 @@ export default function WhoOwesWhoCard({ balanceData, onSettleWithUser, userMap 
       <View style={styles.headerRow}>
         <View style={styles.headerLeft}>
           <Ionicons name="swap-horizontal" size={16} color={tColors.primary} />
-          <Text style={styles.title}>Manager Balances</Text>
+          <Text style={styles.title}>Member Balances</Text>
         </View>
       </View>
       <View style={styles.list}>

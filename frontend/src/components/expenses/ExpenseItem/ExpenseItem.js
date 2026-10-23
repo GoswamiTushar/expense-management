@@ -23,8 +23,20 @@ export default function ExpenseItem({ expense, userMap = {}, onPress }) {
   const rawPayer =
     expense.payerName && expense.payerName !== 'Manager'
       ? expense.payerName
-      : userMap[expense.paidBy]?.name || expense.payerName || 'Manager';
-  const payer = rawPayer || 'Manager';
+      : userMap[expense.paidBy]?.name || expense.payerName || 'Member';
+  const payer = rawPayer || 'Member';
+
+  const rawLogger =
+    expense.loggedByName && expense.loggedByName !== 'Manager'
+      ? expense.loggedByName
+      : userMap[expense.loggedBy]?.name || expense.loggedByName;
+  const logger = rawLogger || 'Partner';
+
+  const isLoggedOnBehalf = Boolean(
+    expense.loggedBy &&
+    expense.paidBy &&
+    String(expense.loggedBy) !== String(expense.paidBy)
+  );
 
   const isPendingDelete = expense.deleteStatus === 'pending_approval';
 
@@ -45,12 +57,20 @@ export default function ExpenseItem({ expense, userMap = {}, onPress }) {
           <View style={styles.payerRow}>
             <Ionicons name="person-circle-outline" size={13} color={tColors.info} />
             <Text style={styles.payerText} numberOfLines={1}>
-              Logged by <Text style={styles.payerHighlight}>{payer}</Text>
+              {isLoggedOnBehalf ? (
+                <>
+                  Logged by <Text style={styles.payerHighlight}>{logger}</Text> for <Text style={styles.payerHighlight}>{payer}</Text>
+                </>
+              ) : (
+                <>
+                  Paid by <Text style={styles.payerHighlight}>{payer}</Text>
+                </>
+              )}
             </Text>
           </View>
           <View style={styles.subRow}>
             <Text style={styles.sub} numberOfLines={1}>
-              {formatDate(expense.date || expense.createdAt)} • {splitCount} managers
+              {formatDate(expense.date || expense.createdAt)} • {splitCount} {splitCount === 1 ? 'person' : 'people'}
             </Text>
             {hasReceipt && (
               <Ionicons name="camera-outline" size={12} color={tColors.textDim} style={styles.receiptIcon} />

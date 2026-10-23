@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StatusBar, View, ActivityIndicator } from 'react-native';
+import { StatusBar, View, Text, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './src/styles/app.styles';
 import { colors } from './src/theme/colors';
@@ -14,6 +14,7 @@ import MainDashboard from './src/components/dashboard/MainDashboard';
 import AdminDashboard from './src/components/admin/AdminDashboard/AdminDashboard';
 import { AcceptInviteModal } from './src/components/auth/AcceptInviteModal/AcceptInviteModal';
 import { registerForPushNotifications } from './src/services/notifications/pushService';
+import AppSplashScreen from './src/components/common/AppSplashScreen/AppSplashScreen';
 
 import { FAVICON_DATA_URI } from './src/utils/faviconBase64';
 
@@ -31,13 +32,14 @@ function AppContent() {
   // Auth state lives here — single source of truth
   const [currentUser, setCurrentUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true); // true while checking stored session
+  const [splashFinished, setSplashFinished] = useState(false);
   const [params] = useState(getParams);
   const [showAcceptInvite, setShowAcceptInvite] = useState(Boolean(params.invite));
 
   // Set web page title & favicon dynamically for website use
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      document.title = 'Airbnb Manager | Expense & Settlement Hub';
+      document.title = 'SplitLedger | Shared Expenses & Settlements';
       try {
         let link = document.querySelector("link[rel*='icon']");
         if (!link) {
@@ -46,7 +48,7 @@ function AppContent() {
           document.head.appendChild(link);
         }
         link.type = 'image/png';
-        link.href = FAVICON_DATA_URI;
+        link.href = '/favicon.png';
       } catch (_) {}
     }
   }, []);
@@ -84,15 +86,6 @@ function AppContent() {
     data.reload();
   };
 
-  // Show a minimal loading state while we read the keychain
-  if (authLoading) {
-    return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: tColors.bgDark, justifyContent: 'center', alignItems: 'center' }]}>
-        <ActivityIndicator size="large" color={tColors.primary} />
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: tColors.bgDark }]} edges={['top', 'left', 'right']}>
       <StatusBar
@@ -124,6 +117,12 @@ function AppContent() {
         <MainDashboard
           data={{ ...data, currentUser, setCurrentUser }}
           onLogout={handleLogout}
+        />
+      )}
+      {!splashFinished && (
+        <AppSplashScreen
+          isReady={!authLoading}
+          onAnimationComplete={() => setSplashFinished(true)}
         />
       )}
     </SafeAreaView>

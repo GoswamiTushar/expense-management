@@ -1,35 +1,48 @@
 {
   "expo": {
-    "name": "expense-management",
+    "name": "Ledger",
     "slug": "expense-management",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "scheme": "airbnbexpenses",
+    "userInterfaceStyle": "dark",
+    "scheme": "ledger",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0C1325"
+    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tushar.airbnbexpenses",
+      "bundleIdentifier": "com.tushar.ledger",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "androidStatusBar": {
       "barStyle": "light-content",
-      "backgroundColor": "#1E293B"
+      "backgroundColor": "#0C1325"
     },
     "android": {
-      "package": "com.tushar.airbnbexpenses",
+      "package": "com.tushar.ledger",
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0C1325",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "themeColor": "#0C1325",
+      "backgroundColor": "#0C1325",
+      "bundler": "metro",
+      "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#0C1325"
+      }
     },
     "plugins": [
       "expo-sharing",
@@ -38,10 +51,10 @@
         "expo-notifications",
         {
           "icon": "./assets/icon.png",
-          "color": "#FF385C",
+          "color": "#6366F1",
           "sounds": [],
           "androidMode": "default",
-          "androidCollapsedTitle": "Airbnb Manager"
+          "androidCollapsedTitle": "Ledger"
         }
       ]
     ],

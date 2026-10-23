@@ -38,24 +38,24 @@ export default function DashboardContent({
   const renderLoading = () => (
     <View style={[styles.emptyBox, { paddingVertical: 64 }]}>
       <ActivityIndicator size="large" color={tColors.primary} />
-      <Text style={[styles.emptyTitle, { marginTop: 18 }]}>Loading Airbnb Workspace...</Text>
+      <Text style={[styles.emptyTitle, { marginTop: 18 }]}>Loading Workspace...</Text>
       <Text style={styles.emptySub}>
-        Connecting to database and loading properties, balances & expenses.
+        Connecting to database and loading expenses & balances.
       </Text>
     </View>
   );
 
   const renderEmpty = () => (
     <View style={styles.emptyBox}>
-      <Ionicons name="business" size={44} color={tColors.primary} />
-      <Text style={styles.emptyTitle}>No Properties Configured</Text>
+      <Ionicons name="folder-open-outline" size={44} color={tColors.primary} />
+      <Text style={styles.emptyTitle}>No Group Selected</Text>
       <Text style={styles.emptySub}>
-        Create your Airbnb property or join a partner's property using an invite code.
+        Create a group (trips, flatmates, or vacation rentals) or join with an invite code.
       </Text>
       <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
         <TouchableOpacity style={styles.emptyBtn} onPress={() => setM('showAddProp', true)} activeOpacity={0.85}>
           <Ionicons name="add" size={16} color="#FFFFFF" />
-          <Text style={styles.emptyBtnText}>Create Property</Text>
+          <Text style={styles.emptyBtnText}>Create New</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.emptyBtn, { backgroundColor: tColors.info }]}
@@ -96,6 +96,46 @@ export default function DashboardContent({
         renderEmpty()
       ) : (
         <>
+          {data.activeProperty?.isArchived && (
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: isDark ? 'rgba(255, 159, 10, 0.16)' : '#FFF3E0',
+                borderWidth: 1,
+                borderColor: isDark ? 'rgba(255, 159, 10, 0.35)' : '#FFE0B2',
+                borderRadius: 14,
+                paddingHorizontal: 14,
+                paddingVertical: 10,
+                marginBottom: 14,
+              }}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+                <Ionicons name="archive-outline" size={18} color="#FF9F0A" />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: isDark ? '#FFD60A' : '#E65100' }}>
+                    Archived Group
+                  </Text>
+                  <Text style={{ fontSize: 11.5, color: isDark ? '#D1D5DB' : '#5D4037' }}>
+                    Balances and logs are preserved.
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                onPress={() => data.archiveGroup?.(data.activeProperty?._id || data.activeProperty?.id, false)}
+                style={{
+                  backgroundColor: '#34C759',
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderRadius: 8,
+                  marginLeft: 8,
+                }}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: '700' }}>Unarchive</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <BalanceCard
             property={data.activeProperty}
             balanceData={data.balanceData}
@@ -126,7 +166,7 @@ export default function DashboardContent({
                 Logged Expenses ({data.totalExpenseCount || data.expenses.length})
               </Text>
               <Text style={styles.sub}>
-                {data.totalExpenseCount || data.expenses.length} expenses • Splitwise split
+                {data.totalExpenseCount || data.expenses.length} expenses
               </Text>
             </View>
             <View style={styles.headerActions}>
@@ -142,7 +182,7 @@ export default function DashboardContent({
           {data.loadingDetails && (
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 10 }}>
               <ActivityIndicator size="small" color={tColors.primary} />
-              <Text style={{ fontSize: 12, color: tColors.textMuted }}>Syncing property expenses...</Text>
+              <Text style={{ fontSize: 12, color: tColors.textMuted }}>Syncing expenses...</Text>
             </View>
           )}
 

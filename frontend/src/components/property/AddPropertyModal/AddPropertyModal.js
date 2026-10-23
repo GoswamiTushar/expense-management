@@ -59,7 +59,7 @@ export default function AddPropertyModal({ visible, onClose, onSubmit, currentUs
   if (!visible) return null;
 
   const handleCreate = async () => {
-    if (!name.trim()) return alert('Enter a property name.');
+    if (!name.trim()) return alert('Enter a name for the group.');
     setLoading(true);
     try {
       await onSubmit({ name: name.trim(), location: location.trim() || 'India', managers: [currentUser?._id].filter(Boolean), otaLinks });
@@ -77,17 +77,17 @@ export default function AddPropertyModal({ visible, onClose, onSubmit, currentUs
           </TouchableWithoutFeedback>
           <Animated.View style={[styles.sheet, { transform: [{ translateY: slideAnim }] }]}>
             <View style={styles.header}>
-              <Text style={styles.title}>Add Airbnb Property</Text>
+              <Text style={styles.title}>Create Group</Text>
               <TouchableOpacity onPress={() => handleClose()}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.label}>PROPERTY NAME</Text>
-              <TextInput style={styles.input} placeholder="e.g. Mountain Haven Villa, Goa Retreat" placeholderTextColor={colors.textDim} value={name} onChangeText={setName} />
-              <Text style={styles.label}>ADDRESS / CITY</Text>
-              <TextInput style={styles.input} placeholder="e.g. Calangute, Goa, India" placeholderTextColor={colors.textDim} value={location} onChangeText={setLocation} />
+              <Text style={styles.label}>NAME</Text>
+              <TextInput style={styles.input} placeholder="e.g. Goa Trip, Flat 402, Mountain Stay" placeholderTextColor={colors.textDim} value={name} onChangeText={setName} />
+              <Text style={styles.label}>LOCATION / DESCRIPTION (OPTIONAL)</Text>
+              <TextInput style={styles.input} placeholder="e.g. Goa, Bangalore, Manali" placeholderTextColor={colors.textDim} value={location} onChangeText={setLocation} />
               <OtaLinksField otaLinks={otaLinks} onChangeLinks={setOtaLinks} />
               <TouchableOpacity style={styles.submitBtn} onPress={handleCreate} disabled={loading} activeOpacity={0.8}>
-                {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.submitText}>Create Property</Text>}
+                {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.submitText}>Create Group</Text>}
               </TouchableOpacity>
             </ScrollView>
           </Animated.View>

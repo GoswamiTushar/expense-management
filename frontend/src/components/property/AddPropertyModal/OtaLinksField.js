@@ -12,7 +12,7 @@ export default function OtaLinksField({ otaLinks = {}, onChangeLinks }) {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.label}>POSTED LISTING LINKS (AIRBNB, AGODA, ETC.)</Text>
+        <Text style={styles.label}>ATTACHED BOOKING LINKS (OPTIONAL)</Text>
         <TouchableOpacity onPress={() => setOpen(!open)}>
           <Text style={styles.toggleText}>{open ? 'Hide Links' : '+ Add Links'}</Text>
         </TouchableOpacity>

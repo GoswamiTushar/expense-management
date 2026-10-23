@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 from fastapi import APIRouter, HTTPException, Depends
 from app.database import get_db
-from app.models.property import PropertyCreate, PropertyResponse
+from app.models.property import PropertyCreate, PropertyResponse, ArchivePropertyRequest
 from app.deps import get_current_user
 
 router = APIRouter(prefix="/api/properties", tags=["Properties"])
@@ -64,3 +64,29 @@ async def add_manager(property_id: str, payload: dict, current_user: dict = Depe
     prop = await get_db().properties.find_one({"_id": property_id})
     await attach_managers([prop])
     return PropertyResponse(id=prop["_id"], **prop)
+
+@router.patch("/{property_id}/archive", response_model=PropertyResponse)
+async def toggle_archive_property(
+    property_id: str,
+    payload: ArchivePropertyRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    user_id = str(current_user.get("id") or current_user.get("_id") or "")
+    prop = await get_db().properties.find_one({"_id": property_id})
+    if not prop:
+        raise HTTPException(status_code=404, detail="Group not found")
+    managers = [str(m) for m in prop.get("managers", [])]
+    is_admin = current_user.get("role") == "admin"
+    if user_id not in managers and not is_admin:
+        raise HTTPException(status_code=403, detail="Only members of this group can archive or unarchive it")
+
+    now = datetime.utcnow().isoformat()
+    update_data = {
+        "isArchived": bool(payload.isArchived),
+        "archivedAt": now if payload.isArchived else None,
+        "archivedBy": user_id if payload.isArchived else None,
+    }
+    await get_db().properties.update_one({"_id": property_id}, {"$set": update_data})
+    updated = await get_db().properties.find_one({"_id": property_id})
+    await attach_managers([updated])
+    return PropertyResponse(id=updated["_id"], **updated)

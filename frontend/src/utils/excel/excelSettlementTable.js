@@ -36,7 +36,10 @@ export const buildExpensesTable = (expenses = [], userMap = {}) => {
     const splitNames = (exp.splitAmong || []).map(getName).join(', ') || 'All';
     const share = exp.sharePerPerson || Math.round((Number(exp.amount || 0) / ((exp.splitAmong || []).length || 1)) * 100) / 100;
     const catLabel = getCategoryById(exp.category)?.label || exp.category || 'General';
-    return `<tr>${makeTd(dateStr, false, bg)}${makeTd(exp.title || 'Untitled', false, bg, true)}${makeTd(catLabel, false, bg)}${makeTd(formatInr(exp.amount), true, bg, true)}${makeTd(getName(exp.paidBy), false, bg, true)}${makeTd(splitNames, false, bg)}${makeTd(formatInr(share), true, bg)}${makeTd(exp.notes || '-', false, bg)}</tr>`;
+    const payerDisplay = (exp.loggedBy && String(exp.loggedBy) !== String(exp.paidBy))
+      ? `${getName(exp.paidBy)} (Logged by ${getName(exp.loggedBy)})`
+      : getName(exp.paidBy);
+    return `<tr>${makeTd(dateStr, false, bg)}${makeTd(exp.title || 'Untitled', false, bg, true)}${makeTd(catLabel, false, bg)}${makeTd(formatInr(exp.amount), true, bg, true)}${makeTd(payerDisplay, false, bg, true)}${makeTd(splitNames, false, bg)}${makeTd(formatInr(share), true, bg)}${makeTd(exp.notes || '-', false, bg)}</tr>`;
   }).join('');
 
   return `<table ${TABLE_STYLE}>${sectionTitle('5. Itemized Expenses Record', '#E11D48', 8)}<tr>${headers}</tr>${rows}</table>`;

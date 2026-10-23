@@ -1,7 +1,17 @@
-import React, { useMemo, useRef, useEffect } from 'react';
-import { View, Text, Modal, TouchableOpacity, ScrollView, Animated, Platform, TouchableWithoutFeedback } from 'react-native';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  Modal,
+  TouchableOpacity,
+  ScrollView,
+  Animated,
+  Platform,
+  TouchableWithoutFeedback,
+  Alert,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { createPropertyPickerStyles, styles as defaultStyles } from './PropertyPickerModal.styles';
+import { createPropertyPickerStyles } from './PropertyPickerModal.styles';
 import { useTheme } from '../../../context/ThemeContext';
 
 export default function PropertyPickerModal({
@@ -10,6 +20,7 @@ export default function PropertyPickerModal({
   properties = [],
   activeProperty,
   onSelectProperty,
+  onArchiveProperty,
   onOpenAddProperty,
   onOpenJoinInvite,
   onOpenInvitePartner,
@@ -17,11 +28,15 @@ export default function PropertyPickerModal({
   const { colors, isDark } = useTheme();
   const styles = useMemo(() => createPropertyPickerStyles(colors, isDark), [colors, isDark]);
 
+  const [currentTab, setCurrentTab] = useState('active'); // 'active' | 'archived'
+  const [confirmTarget, setConfirmTarget] = useState(null); // { prop, shouldArchive }
+
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.92)).current;
 
   useEffect(() => {
     if (visible) {
+      setConfirmTarget(null);
       fadeAnim.setValue(0);
       scaleAnim.setValue(0.92);
       Animated.parallel([
@@ -41,6 +56,7 @@ export default function PropertyPickerModal({
   }, [visible]);
 
   const handleClose = (callback) => {
+    setConfirmTarget(null);
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
@@ -58,6 +74,21 @@ export default function PropertyPickerModal({
     });
   };
 
+  const activeProps = useMemo(
+    () => properties.filter((p) => !p.isArchived),
+    [properties]
+  );
+  const archivedProps = useMemo(
+    () => properties.filter((p) => Boolean(p.isArchived)),
+    [properties]
+  );
+
+  const displayedProps = currentTab === 'active' ? activeProps : archivedProps;
+
+  const handleToggleArchive = (prop, shouldArchive) => {
+    setConfirmTarget({ prop, shouldArchive });
+  };
+
   if (!visible) return null;
 
   return (
@@ -68,56 +99,145 @@ export default function PropertyPickerModal({
         </TouchableWithoutFeedback>
         <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
           <View style={styles.header}>
-            <Text style={styles.title}>Airbnb Properties</Text>
+            <Text style={styles.title}>Switch Group</Text>
             <TouchableOpacity onPress={() => handleClose()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="close" size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
-          <ScrollView showsVerticalScrollIndicator={false}>
-            {properties.length === 0 ? (
-              <View style={{ paddingVertical: 20, alignItems: 'center' }}>
-                <Text style={{ color: colors.textMuted, fontSize: 13 }}>
-                  No properties configured yet.
+
+          {/* Segmented Active / Archived Tab Selector */}
+          <View style={styles.tabRow}>
+            <TouchableOpacity
+              style={[styles.tabBtn, currentTab === 'active' && styles.tabBtnActive]}
+              onPress={() => setCurrentTab('active')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.tabText, currentTab === 'active' && styles.tabTextActive]}>
+                Active
+              </Text>
+              <View style={[styles.tabBadge, currentTab === 'active' && styles.tabBadgeActive]}>
+                <Text style={[styles.tabBadgeText, currentTab === 'active' && styles.tabBadgeTextActive]}>
+                  {activeProps.length}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.tabBtn, currentTab === 'archived' && styles.tabBtnActive]}
+              onPress={() => setCurrentTab('archived')}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.tabText, currentTab === 'archived' && styles.tabTextActive]}>
+                Archived
+              </Text>
+              <View style={[styles.tabBadge, currentTab === 'archived' && styles.tabBadgeActive]}>
+                <Text style={[styles.tabBadgeText, currentTab === 'archived' && styles.tabBadgeTextActive]}>
+                  {archivedProps.length}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={{ maxHeight: 280 }} showsVerticalScrollIndicator={false}>
+            {displayedProps.length === 0 ? (
+              <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+                <Ionicons
+                  name={currentTab === 'active' ? 'albums-outline' : 'archive-outline'}
+                  size={32}
+                  color={colors.textMuted}
+                  style={{ marginBottom: 6, opacity: 0.6 }}
+                />
+                <Text style={{ color: colors.textMuted, fontSize: 13, textAlign: 'center' }}>
+                  {currentTab === 'active'
+                    ? 'No active groups found.'
+                    : 'No archived groups yet.\nPast trips or closed groups you archive appear here.'}
                 </Text>
               </View>
             ) : (
-              properties.map((prop) => {
-                const active = prop._id === activeProperty?._id;
+              displayedProps.map((prop) => {
+                const propId = prop._id || prop.id;
+                const active = propId === (activeProperty?._id || activeProperty?.id);
+                const isArchived = Boolean(prop.isArchived);
+
                 return (
-                  <TouchableOpacity
-                    key={prop._id}
+                  <View
+                    key={propId}
                     style={[styles.item, active && styles.itemActive]}
-                    onPress={() => {
-                      handleClose(() => onSelectProperty(prop));
-                    }}
                   >
-                    <View style={{ flex: 1 }}>
+                    <TouchableOpacity
+                      style={{ flex: 1, marginRight: 8 }}
+                      onPress={() => {
+                        handleClose(() => onSelectProperty(prop));
+                      }}
+                      activeOpacity={0.7}
+                    >
                       <Text style={[styles.name, active && { color: colors.primary }]}>
                         {prop.name}
                       </Text>
-                      <Text style={styles.loc}>{prop.location}</Text>
-                    </View>
+                      {prop.location ? (
+                        <Text style={styles.loc}>{prop.location}</Text>
+                      ) : null}
+                      {isArchived && (
+                        <View style={styles.archivedBadge}>
+                          <Ionicons name="archive-outline" size={10} color="#FF9F0A" />
+                          <Text style={styles.archivedBadgeText}>Archived</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <TouchableOpacity
-                        style={styles.inviteBtn}
-                        onPress={(e) => {
-                          e.stopPropagation?.();
-                          handleClose(() => onOpenInvitePartner?.(prop));
-                        }}
-                        activeOpacity={0.75}
-                      >
-                        <Ionicons name="person-add-outline" size={13} color={colors.primary} />
-                        <Text style={styles.inviteBtnText}>Invite</Text>
-                      </TouchableOpacity>
+                      {!isArchived ? (
+                        <>
+                          <TouchableOpacity
+                            style={styles.inviteBtn}
+                            onPress={() => {
+                              handleClose(() => onOpenInvitePartner?.(prop));
+                            }}
+                            activeOpacity={0.75}
+                          >
+                            <Ionicons name="person-add-outline" size={13} color={colors.primary} />
+                            <Text style={styles.inviteBtnText}>Invite</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={styles.actionIconBtn}
+                            onPress={() => {
+                              handleToggleArchive(prop, true);
+                            }}
+                            title="Archive group"
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons name="archive-outline" size={15} color={colors.textMuted} />
+                          </TouchableOpacity>
+                        </>
+                      ) : (
+                        <TouchableOpacity
+                          style={styles.restoreBtn}
+                          onPress={() => {
+                            handleToggleArchive(prop, false);
+                          }}
+                          activeOpacity={0.75}
+                        >
+                          <Ionicons name="refresh-outline" size={13} color="#34C759" />
+                          <Text style={styles.restoreBtnText}>Restore</Text>
+                        </TouchableOpacity>
+                      )}
+
                       {active && (
-                        <Ionicons name="checkmark-circle" size={18} color={colors.primary} />
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={18}
+                          color={colors.primary}
+                          style={{ marginLeft: 6 }}
+                        />
                       )}
                     </View>
-                  </TouchableOpacity>
+                  </View>
                 );
               })
             )}
           </ScrollView>
+
           <TouchableOpacity
             style={styles.addBtn}
             onPress={() => {
@@ -125,7 +245,7 @@ export default function PropertyPickerModal({
             }}
           >
             <Ionicons name="add-circle" size={17} color={colors.white} />
-            <Text style={styles.addText}>+ Add New Property</Text>
+            <Text style={styles.addText}>+ Create New Group</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.addBtn, { backgroundColor: '#0284C7', marginTop: 8 }]}
@@ -134,8 +254,60 @@ export default function PropertyPickerModal({
             }}
           >
             <Ionicons name="key" size={17} color={colors.white} />
-            <Text style={styles.addText}>Join via Invite Code</Text>
+            <Text style={styles.addText}>Join with Invite Code</Text>
           </TouchableOpacity>
+
+          {/* In-Card Custom Confirmation Modal */}
+          {confirmTarget && (
+            <View style={styles.confirmOverlay}>
+              <View style={styles.confirmBox}>
+                <Ionicons
+                  name={confirmTarget.shouldArchive ? 'archive-outline' : 'refresh-outline'}
+                  size={32}
+                  color={confirmTarget.shouldArchive ? '#FF9F0A' : '#34C759'}
+                />
+                <Text style={styles.confirmTitle}>
+                  {confirmTarget.shouldArchive ? 'Archive Group?' : 'Restore Group?'}
+                </Text>
+                <Text style={styles.confirmSub}>
+                  {confirmTarget.shouldArchive
+                    ? `Archive "${confirmTarget.prop.name}"? It will be moved to the Archived tab with all balances preserved.`
+                    : `Restore "${confirmTarget.prop.name}" back to your active groups list?`}
+                </Text>
+                <View style={styles.confirmBtnRow}>
+                  <TouchableOpacity
+                    style={styles.confirmCancelBtn}
+                    onPress={() => setConfirmTarget(null)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.confirmCancelText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.confirmActionBtn,
+                      { backgroundColor: confirmTarget.shouldArchive ? '#FF9F0A' : '#34C759' },
+                    ]}
+                    onPress={async () => {
+                      const { prop, shouldArchive } = confirmTarget;
+                      setConfirmTarget(null);
+                      try {
+                        if (onArchiveProperty) {
+                          await onArchiveProperty(prop._id || prop.id, shouldArchive);
+                        }
+                      } catch (err) {
+                        console.error('Failed to toggle archive:', err);
+                      }
+                    }}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={styles.confirmActionText}>
+                      {confirmTarget.shouldArchive ? 'Archive' : 'Restore'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          )}
         </Animated.View>
       </Animated.View>
     </Modal>

@@ -40,7 +40,7 @@ export default function ExportButton({
     setShowOptions(false);
     setExporting(true);
 
-    const propSlug = (property?.name || 'airbnb').toLowerCase().replace(/[^a-z0-9]+/g, '_');
+    const propSlug = (property?.name || 'expenses').toLowerCase().replace(/[^a-z0-9]+/g, '_');
     const timestamp = Date.now();
 
     try {

@@ -12,7 +12,7 @@ export default function ExpenseList({ expenses = [], userMap = {}, onSelectExpen
         <Ionicons name="receipt-outline" size={36} color={colors.textDim} />
         <Text style={styles.emptyTitle}>No Expenses Found</Text>
         <Text style={styles.emptySub}>
-          Tap 'Log Expense' to add property rent, electricity, maintenance or supplies.
+          Tap '+ Add Expense' to log bills, groceries, trip expenses or rent.
         </Text>
       </View>
     );

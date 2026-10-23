@@ -14,11 +14,17 @@ class PropertyCreate(BaseModel):
     managers: List[str] = []
     otaLinks: Dict[str, str] = {}
 
+class ArchivePropertyRequest(BaseModel):
+    isArchived: bool = True
+
 class PropertyResponse(BaseModel):
     id: str
     name: str
     location: str
     managers: List[str]
     managerDetails: Optional[List[ManagerInfo]] = []
-    otaLinks: Dict[str, str] = {}
-    createdAt: str
+    otaLinks: Optional[Dict[str, str]] = {}
+    createdAt: Optional[str] = ""
+    isArchived: Optional[bool] = False
+    archivedAt: Optional[str] = None
+    archivedBy: Optional[str] = None

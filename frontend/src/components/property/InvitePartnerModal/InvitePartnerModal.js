@@ -61,7 +61,7 @@ export default function InvitePartnerModal({ visible, onClose, property, current
     if (!email.trim() || !email.includes('@')) return alert('Please enter a valid email address.');
     setLoading(true);
     try {
-      const res = await createPropertyInvite({ propertyId: property?._id, propertyName: property?.name, invitedBy: currentUser?.name || 'Property Owner', email: email.trim(), inviterEmail: currentUser?.email || '' });
+      const res = await createPropertyInvite({ propertyId: property?._id, propertyName: property?.name, invitedBy: currentUser?.name || 'Group Member', email: email.trim(), inviterEmail: currentUser?.email || '' });
       setInvite(res);
     } catch (err) { alert(err.message); }
     finally { setLoading(false); }
@@ -69,7 +69,7 @@ export default function InvitePartnerModal({ visible, onClose, property, current
 
   const handleSendEmail = () => {
     if (!invite) return;
-    const s = encodeURIComponent(`Invitation to manage ${property?.name}`);
+    const s = encodeURIComponent(`Invitation to join ${property?.name}`);
     const b = encodeURIComponent(`Join "${property?.name}". Code: ${invite.code}\n\nBest,\n${currentUser?.name}`);
     Linking.openURL(`mailto:${invite.email}?subject=${s}&body=${b}`);
   };
@@ -82,17 +82,17 @@ export default function InvitePartnerModal({ visible, onClose, property, current
         </TouchableWithoutFeedback>
         <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
           <View style={styles.header}>
-            <Text style={styles.title}>Invite Co-Manager</Text>
+            <Text style={styles.title}>Invite Member</Text>
             <TouchableOpacity onPress={() => handleClose()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Ionicons name="close" size={20} color={colors.textMuted} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.sub}>Invite your friend to {property?.name}.</Text>
-          <Text style={styles.label}>FRIEND'S EMAIL ADDRESS</Text>
+          <Text style={styles.sub}>Invite someone to join {property?.name}.</Text>
+          <Text style={styles.label}>EMAIL ADDRESS</Text>
           <TextInput style={styles.input} placeholder="friend@example.com" placeholderTextColor={colors.textDim} keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
           {!invite ? (
             <TouchableOpacity style={styles.genBtn} onPress={handleCreate} disabled={loading} activeOpacity={0.8}>
-              {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.genText}>Generate Partner Invite</Text>}
+              {loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.genText}>Generate Invite Code</Text>}
             </TouchableOpacity>
           ) : ( <InviteCodeDisplay code={invite.code} onSendEmail={handleSendEmail} /> )}
         </Animated.View>

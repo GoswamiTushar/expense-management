@@ -43,7 +43,7 @@ export default function PropertyManagersModal({
       const diff = paid - fairShare;
 
       const userObj = userMap[mId] || m;
-      const name = userObj.name || m.name || 'Co-Manager';
+      const name = userObj.name || m.name || 'Member';
       const phone = userObj.phone || m.phone || userObj.email || m.email || 'N/A';
       const isCurrent = currentUser && (currentUser._id === mId || currentUser.id === mId);
 
@@ -75,9 +75,9 @@ export default function PropertyManagersModal({
 
           <View style={styles.headerRow}>
             <View>
-              <Text style={styles.title}>Property Co-Managers</Text>
+              <Text style={styles.title}>Group Members</Text>
               <Text style={styles.sub}>
-                {property?.name || 'Property'} • {managerStats.managers.length} Managers (Equal Split)
+                {property?.name || 'Group'} • {managerStats.managers.length} Members (Equal Split)
               </Text>
             </View>
             <TouchableOpacity style={styles.closeBtn} onPress={onClose} activeOpacity={0.7}>
@@ -88,11 +88,11 @@ export default function PropertyManagersModal({
           {/* Investment Benchmark Summary */}
           <View style={styles.summaryCard}>
             <View style={styles.summaryTopRow}>
-              <Text style={styles.summaryLabel}>Total Capital Invested</Text>
+              <Text style={styles.summaryLabel}>Total Expenses Paid</Text>
               <Text style={styles.summaryTotal}>₹{formatCurrency(managerStats.totalInvested)}</Text>
             </View>
             <Text style={styles.benchmarkText}>
-              Equal benchmark: ₹{formatCurrency(managerStats.fairShare)} per manager (
+              Equal benchmark: ₹{formatCurrency(managerStats.fairShare)} per member (
               {(100 / (managerStats.managers.length || 1)).toFixed(1)}%)
             </Text>
           </View>
@@ -155,7 +155,7 @@ export default function PropertyManagersModal({
 
                   <View style={styles.cardBottomRow}>
                     <Text style={styles.investedAmountText}>
-                      ₹{formatCurrency(m.paid)} invested
+                      ₹{formatCurrency(m.paid)} paid
                     </Text>
                     <Text
                       style={[

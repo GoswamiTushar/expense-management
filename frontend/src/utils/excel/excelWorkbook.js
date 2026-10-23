@@ -17,8 +17,8 @@ export const buildExcelHtml = ({ property, expenses = [], settlements = [], user
 
   const banner = `
     <div style="background-color: #0F172A; color: #FFFFFF; padding: 18px 24px; font-family: Calibri, Arial, sans-serif; border-radius: 6px; margin-bottom: 20px;">
-      <h1 style="margin: 0 0 6px 0; font-size: 20pt; font-weight: bold; color: #FFFFFF;">AIRBNB EXPENSE &amp; SETTLEMENT REPORT</h1>
-      <p style="margin: 0; font-size: 12pt; color: #94A3B8;">${property?.name || 'Property'} • Generated on ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+      <h1 style="margin: 0 0 6px 0; font-size: 20pt; font-weight: bold; color: #FFFFFF;">SHARED EXPENSE &amp; SETTLEMENT REPORT</h1>
+      <p style="margin: 0; font-size: 12pt; color: #94A3B8;">${property?.name || 'Group / Property'} • Generated on ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
     </div>
   `;
 

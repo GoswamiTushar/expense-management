@@ -35,10 +35,10 @@ export default function BalanceCard({
     : isDark ? 'rgba(94, 92, 230, 0.35)' : 'rgba(94, 92, 230, 0.20)';
 
   const subText = isOwed
-    ? 'Co-managers owe you for logged expenses'
+    ? 'Group members owe you for logged expenses'
     : owes
-    ? 'Pending reimbursement to co-managers'
-    : 'Zero pending dues on this property';
+    ? 'Pending reimbursement to group members'
+    : 'All balances in this group are settled';
 
   return (
     <>
@@ -64,7 +64,7 @@ export default function BalanceCard({
               numberOfLines={1}
               maxFontSizeMultiplier={1.2}
             >
-              {property?.managers?.length || 2} Managers (Equal Split)
+              {property?.managers?.length || 2} Members (Equal Split)
             </Text>
             <Ionicons name="information-circle-outline" size={13} color={tColors.textMuted} />
           </TouchableOpacity>

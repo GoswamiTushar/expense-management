@@ -116,14 +116,27 @@ export default function EditExpenseModal({
 
   const currentUserId = String(currentUser?._id || currentUser?.id || '');
   const paidById = String(expense.paidBy || '');
-  const isCreator = currentUserId === paidById;
+  const loggedById = String(expense.loggedBy || '');
+  const isCreator = currentUserId === paidById || (loggedById !== '' && currentUserId === loggedById);
   const isAdmin = currentUser?.role === 'admin';
 
   const rawPayer =
     expense.payerName && expense.payerName !== 'Manager'
       ? expense.payerName
-      : userMap[expense.paidBy]?.name || expense.payerName || 'Manager';
-  const payerName = rawPayer || 'Manager';
+      : userMap[expense.paidBy]?.name || expense.payerName || 'Member';
+  const payerName = rawPayer || 'Member';
+
+  const rawLogger =
+    expense.loggedByName && expense.loggedByName !== 'Manager'
+      ? expense.loggedByName
+      : userMap[expense.loggedBy]?.name || expense.loggedByName;
+  const loggerName = rawLogger || 'Partner';
+
+  const isLoggedOnBehalf = Boolean(
+    expense.loggedBy &&
+    expense.paidBy &&
+    String(expense.loggedBy) !== String(expense.paidBy)
+  );
 
   const getExpenseAgeMinutes = (exp) => {
     let createdMs = 0;
@@ -286,7 +299,9 @@ export default function EditExpenseModal({
               <View style={styles.titleBox}>
                 <Text style={styles.modalTitle}>Expense Details &amp; Edit</Text>
                 <Text style={styles.modalSub}>
-                  Logged by {payerName} • {formatDateTime(expense.createdAt || expense.date)}
+                  {isLoggedOnBehalf
+                    ? `Logged by ${loggerName} for ${payerName}`
+                    : `Paid by ${payerName}`} • {formatDateTime(expense.createdAt || expense.date)}
                 </Text>
               </View>
               <View style={styles.headerRightActions}>
@@ -317,8 +332,8 @@ export default function EditExpenseModal({
                   </View>
                   <Text style={styles.bannerText}>
                     {isDeleteRequester
-                      ? `You requested to delete this expense (${expense.deleteReason || 'Wrong or test entry'}). Waiting for approval from other property managers.`
-                      : `${expense.deleteRequestedByName || 'A manager'} requested to delete this expense (${expense.deleteReason || 'Wrong or test entry'}). Approve or reject this request below.`
+                      ? `You requested to delete this expense (${expense.deleteReason || 'Wrong or test entry'}). Waiting for approval from other group members.`
+                      : `${expense.deleteRequestedByName || 'A member'} requested to delete this expense (${expense.deleteReason || 'Wrong or test entry'}). Approve or reject this request below.`
                     }
                   </Text>
 
@@ -399,8 +414,8 @@ export default function EditExpenseModal({
                   </View>
                   <Text style={styles.deleteCardDesc}>
                     {isDirectDeleteEligible
-                      ? 'This expense was logged less than 5 minutes ago (or you are the sole manager / admin). You can delete it directly. It will be immediately removed from the ledger and balances.'
-                      : 'This expense was logged over 5 minutes ago. To prevent discrepancies, deletion requires approval from other property co-managers.'
+                      ? 'This expense was logged less than 5 minutes ago (or you are the sole member / admin). You can delete it directly. It will be immediately removed from the ledger and balances.'
+                      : 'This expense was logged over 5 minutes ago. To prevent discrepancies, deletion requires approval from other group members.'
                     }
                   </Text>
 

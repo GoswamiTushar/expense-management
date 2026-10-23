@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createHeaderStyles } from './Header.styles';
 import { useTheme } from '../../../context/ThemeContext';
@@ -24,8 +24,8 @@ export default function Header({
   const styles = useMemo(() => createHeaderStyles(tColors, isDark), [tColors, isDark]);
 
   const propTitle = activeProperty
-    ? `${activeProperty.name} • ${activeProperty.location || 'Properties'}`
-    : 'Select or Add Property';
+    ? `${activeProperty.name}${activeProperty.location ? ` • ${activeProperty.location}` : ''}`
+    : 'Select Group';
 
   const isSubPage = Boolean(onBack);
 
@@ -59,15 +59,19 @@ export default function Header({
         ) : (
           /* Default Home Brand Box */
           <View style={styles.brandBox}>
-            <View style={styles.brandIcon}>
-              <Ionicons name="home" size={16} color={tColors.white} />
+            <View style={[styles.brandIcon, { backgroundColor: 'transparent', overflow: 'hidden' }]}>
+              <Image
+                source={require('../../../../assets/icon.png')}
+                style={{ width: 28, height: 28, borderRadius: 7 }}
+                resizeMode="cover"
+              />
             </View>
             <View style={{ flex: 1, minWidth: 0 }}>
               <Text style={styles.brandTitle} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-                Airbnb Manager
+                Ledger
               </Text>
               <Text style={styles.brandSub} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-                Expense & Settlement Hub
+                SPLIT • TRACK • SETTLE
               </Text>
             </View>
           </View>

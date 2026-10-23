@@ -6,8 +6,8 @@ export const buildOverviewTable = (property, expenses = []) => {
   );
   const total = activeExpenses.reduce((s, e) => s + Number(e.amount || 0), 0);
   const rows = [
-    `<tr>${makeTd('Property Name', false, '#F8FAFC', true)}${makeTd(property?.name || 'Airbnb Property')}${makeTd('Total Spent', false, '#F8FAFC', true)}${makeTd(formatInr(total), true, '#ffffff', true)}</tr>`,
-    `<tr>${makeTd('Location', false, '#F8FAFC', true)}${makeTd(property?.location || 'N/A')}${makeTd('Total Expenses', false, '#F8FAFC', true)}${makeTd(activeExpenses.length, true)}</tr>`,
+    `<tr>${makeTd('Group / Property', false, '#F8FAFC', true)}${makeTd(property?.name || 'Workspace')}${makeTd('Total Spent', false, '#F8FAFC', true)}${makeTd(formatInr(total), true, '#ffffff', true)}</tr>`,
+    `<tr>${makeTd('Location / Notes', false, '#F8FAFC', true)}${makeTd(property?.location || 'N/A')}${makeTd('Total Expenses', false, '#F8FAFC', true)}${makeTd(activeExpenses.length, true)}</tr>`,
   ];
   return `<table ${TABLE_STYLE}>${sectionTitle('1. Property Overview & Metrics', '#0F766E', 4)}${rows.join('')}</table>`;
 };

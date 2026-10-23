@@ -91,6 +91,7 @@ export default function AppModals({
         properties={data.properties}
         activeProperty={data.activeProperty}
         onSelectProperty={data.setActiveProperty}
+        onArchiveProperty={data.archiveGroup}
         onOpenAddProperty={() => setM('showAddProp')}
         onOpenJoinInvite={() => setM('showAcceptInvite')}
         onOpenInvitePartner={(prop) => {

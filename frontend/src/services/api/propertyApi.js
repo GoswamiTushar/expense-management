@@ -36,3 +36,17 @@ export const addManagerToProperty = async (propertyId, userId) => {
     body: { userId },
   });
 };
+
+export const archiveProperty = async (propertyId, isArchived = true) => {
+  const updated = await apiClient(`/properties/${propertyId}/archive`, {
+    method: 'PATCH',
+    body: { isArchived },
+  });
+  const cached = await AsyncStorage.getItem(STORAGE_KEY);
+  if (cached) {
+    const list = JSON.parse(cached);
+    const updatedList = list.map((p) => (p._id === propertyId || p.id === propertyId ? updated : p));
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedList));
+  }
+  return updated;
+};

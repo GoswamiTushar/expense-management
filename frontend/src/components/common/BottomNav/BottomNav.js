@@ -87,7 +87,7 @@ export default function BottomNav({
         </Text>
       </TouchableOpacity>
 
-      {/* 4. Partners Tab (Opens Invite Modal without resetting base screen tab) */}
+      {/* 4. Members Tab (Opens Invite Modal without resetting base screen tab) */}
       <TouchableOpacity
         style={styles.tabItem}
         onPress={() => {
@@ -101,7 +101,7 @@ export default function BottomNav({
           color={inactiveColor}
         />
         <Text style={styles.tabLabel} numberOfLines={1} maxFontSizeMultiplier={1.2}>
-          Partners
+          Members
         </Text>
       </TouchableOpacity>
 

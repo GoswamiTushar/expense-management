@@ -24,6 +24,8 @@ from tests.test_settlements_api import run_tests as run_settlements_api
 from tests.test_exhaustive_expenses import run_exhaustive_expense_tests
 from tests.test_exhaustive_settlements import run_exhaustive_settlement_tests
 from tests.test_expense_deletion import run_tests as run_expense_deletion_tests
+from tests.test_on_behalf_expense import run_on_behalf_tests
+from tests.test_archive_property import run_archive_tests
 from tests.test_e2e_full_workflow import run_e2e_tests
 
 async def main():
@@ -38,6 +40,8 @@ async def main():
         ("Exhaustive Expenses Handling, Splits & Edge-Cases", run_exhaustive_expense_tests),
         ("Exhaustive Settlements, Overpayments & Security", run_exhaustive_settlement_tests),
         ("Two-Tier Expense Soft-Deletion & 5-Min Approval System", run_expense_deletion_tests),
+        ("On-Behalf Expense Logging & Debt Attribution", run_on_behalf_tests),
+        ("Group Archive & Unarchive Lifecycle & Permissions", run_archive_tests),
         ("Multi-User E2E Real Workflow (Tushar, Rashi, Joy, Admin)", run_e2e_tests),
     ]
 

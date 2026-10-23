@@ -102,7 +102,10 @@ async def list_expenses(
 async def create_expense(payload: ExpenseCreate, current_user: dict = Depends(get_current_user)):
     now = datetime.utcnow().isoformat() + "Z"
     actor_name = current_user.get("name") or payload.payerName or "Manager"
-    actor_id = current_user.get("id") or current_user.get("_id") or payload.paidBy
+    actor_id = str(current_user.get("id") or current_user.get("_id") or payload.paidBy)
+    payer_id = str(payload.paidBy)
+    payer_name = payload.payerName or "Member"
+    is_on_behalf = (actor_id != payer_id)
 
     amount = round(float(payload.amount), 2)
     if amount <= 0:
@@ -117,15 +120,18 @@ async def create_expense(payload: ExpenseCreate, current_user: dict = Depends(ge
         )
 
     initial_audit = [{
-        "action": "Created expense",
+        "action": f"Logged expense on behalf of {payer_name}" if is_on_behalf else "Created expense",
         "actorId": actor_id,
         "actorName": actor_name,
         "timestamp": now,
+        "notes": f"Paid by {payer_name}" if is_on_behalf else "",
     }]
 
     dump = payload.model_dump()
     dump["amount"] = amount
     dump["sharePerPerson"] = round(amount / len(payload.splitAmong), 2)
+    dump["loggedBy"] = actor_id
+    dump["loggedByName"] = actor_name
     if not dump.get("auditLog"):
         dump["auditLog"] = initial_audit
 
@@ -139,10 +145,15 @@ async def create_expense(payload: ExpenseCreate, current_user: dict = Depends(ge
     await get_db().expenses.insert_one(exp)
 
     # Record notification for all property co-managers
+    notif_body = (
+        f"{actor_name} logged '{exp.get('title')}' on behalf of {payer_name} for ₹{amount:,.2f}"
+        if is_on_behalf
+        else f"{actor_name} logged '{exp.get('title')}' for ₹{amount:,.2f}"
+    )
     await record_notification(
         property_id=exp.get("propertyId"),
         title="New Expense Added",
-        body=f"{actor_name} logged '{exp.get('title')}' for ₹{amount:,.2f}",
+        body=notif_body,
         actor_id=actor_id,
         actor_name=actor_name,
         notif_type="expense_created",
@@ -172,7 +183,8 @@ async def update_expense(
     now = datetime.utcnow().isoformat() + "Z"
 
     paid_by = str(existing.get("paidBy", ""))
-    is_creator = (user_id == paid_by)
+    logged_by = str(existing.get("loggedBy", ""))
+    is_creator = (user_id == paid_by or (logged_by != "" and user_id == logged_by))
 
     # Permission check: amount editing is strictly restricted to the creator
     if payload.amount is not None:
@@ -330,10 +342,11 @@ async def delete_expense(
     managers = [str(m) for m in (prop.get("managers") or [])] if prop else []
 
     is_payer = (str(exp.get("paidBy", "")) == user_id)
+    is_logger = (str(exp.get("loggedBy", "")) == user_id)
     is_manager = (user_id in managers)
     is_admin = (user_role == "admin")
 
-    if not (is_payer or is_manager or is_admin):
+    if not (is_payer or is_logger or is_manager or is_admin):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not authorized to delete this expense.",

@@ -20,7 +20,7 @@ export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser, in
     setLoading(true);
     try {
       const res = await acceptPropertyInvite({ inviteCode: code, userId: currentUser?._id, name, password });
-      Alert.alert('Success', 'You joined the property!');
+      Alert.alert('Success', 'You joined the group!');
       onSuccess?.(res);
       onClose();
     } catch (err) { Alert.alert('Join Failed', err.message || 'Invalid code.'); }
@@ -31,8 +31,8 @@ export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser, in
     <Modal visible={true} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={styles.card}>
-          <View style={styles.header}><Text style={styles.title}>Join Property via Invite</Text><TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity></View>
-          <Text style={styles.sub}>{currentUser ? 'Enter code to add property to your account.' : 'Only for users who received an invite code.'}</Text>
+          <View style={styles.header}><Text style={styles.title}>Join via Invite Code</Text><TouchableOpacity onPress={onClose}><Ionicons name="close" size={20} color={colors.textMuted} /></TouchableOpacity></View>
+          <Text style={styles.sub}>{currentUser ? 'Enter the invite code to join this group.' : 'Only for members who received an invite code.'}</Text>
           <Text style={styles.label}>INVITE CODE</Text>
           <TextInput style={styles.input} placeholder="INV-XXXXX" placeholderTextColor={colors.textMuted} autoCapitalize="characters" value={code} onChangeText={setCode} />
           {!currentUser && (
@@ -42,7 +42,7 @@ export const AcceptInviteModal = ({ visible, onClose, onSuccess, currentUser, in
               <TextInput style={[styles.input, { marginTop: 6 }]} placeholder="••••••••" placeholderTextColor={colors.textMuted} secureTextEntry value={password} onChangeText={setPassword} />
             </>
           )}
-          <TouchableOpacity style={styles.joinBtn} onPress={handleJoin} disabled={loading}>{loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Join Property</Text>}</TouchableOpacity>
+          <TouchableOpacity style={styles.joinBtn} onPress={handleJoin} disabled={loading}>{loading ? <ActivityIndicator color={colors.white} /> : <Text style={styles.btnText}>Join Group</Text>}</TouchableOpacity>
         </View>
       </View>
     </Modal>

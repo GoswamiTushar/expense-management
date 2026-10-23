@@ -15,6 +15,7 @@ import { colors } from '../../../theme/colors';
 export default function CategoryPickerField({
   selectedCategory,
   onSelectCategory,
+  suggestedCategory = null,
   label = 'CATEGORY',
   required = true,
 }) {
@@ -34,6 +35,10 @@ export default function CategoryPickerField({
     setModalVisible(false);
     setSearch('');
   };
+
+  const showSuggestionChip =
+    Boolean(suggestedCategory) &&
+    (!selectedCategory || selectedCategory !== suggestedCategory.id);
 
   return (
     <View style={styles.container}>
@@ -64,6 +69,23 @@ export default function CategoryPickerField({
         </View>
         <Ionicons name="chevron-down" size={16} color={colors.textMuted} />
       </TouchableOpacity>
+
+      {/* 1-tap Smart Suggestion Chip */}
+      {showSuggestionChip && (
+        <TouchableOpacity
+          style={styles.suggestionChip}
+          onPress={() => onSelectCategory(suggestedCategory.id)}
+          activeOpacity={0.75}
+        >
+          <Ionicons name="sparkles" size={13} color="#F59E0B" />
+          <Text style={styles.suggestionText}>
+            Suggested: <Text style={{ fontWeight: '700', color: suggestedCategory.color }}>{suggestedCategory.label}</Text>
+          </Text>
+          <View style={styles.suggestionApplyBtn}>
+            <Text style={styles.suggestionApplyText}>Use</Text>
+          </View>
+        </TouchableOpacity>
+      )}
 
       {/* Searchable dropdown modal */}
       <Modal
