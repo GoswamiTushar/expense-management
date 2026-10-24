@@ -4,7 +4,9 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from './src/styles/app.styles';
 import { colors } from './src/theme/colors';
 import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { FeedbackProvider } from './src/context/FeedbackContext';
 import { usePropertyData } from './src/hooks/usePropertyData';
+
 import { logoutUser } from './src/services/api/authApi';
 import { getDeviceUserProfile } from './src/services/storage/sessionStore';
 import Toast from './src/components/common/Toast/Toast';
@@ -159,8 +161,11 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <ThemeProvider>
-        <AppContent />
+        <FeedbackProvider>
+          <AppContent />
+        </FeedbackProvider>
       </ThemeProvider>
     </SafeAreaProvider>
   );
 }
+

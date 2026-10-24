@@ -127,7 +127,47 @@ export const createEditProfileStyles = (tColors = colors, isDark = true) =>
       color: tColors.textDark,
       fontWeight: '700',
     },
+    feedbackSection: {
+      marginTop: 14,
+      marginBottom: 4,
+    },
+    feedbackRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: isDark ? '#0F1219' : 'rgba(15, 23, 42, 0.04)',
+      borderRadius: 14,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      borderWidth: 1,
+      borderColor: isDark ? '#232838' : 'rgba(15, 23, 42, 0.06)',
+    },
+    feedbackInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      flex: 1,
+      marginRight: 10,
+    },
+    feedbackIconBox: {
+      width: 32,
+      height: 32,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    feedbackTitle: {
+      color: tColors.textDark,
+      fontSize: 13,
+      fontWeight: '650',
+    },
+    feedbackSub: {
+      color: tColors.textMuted,
+      fontSize: 10.5,
+      marginTop: 1,
+    },
     saveBtn: {
+
       backgroundColor: isDark ? '#5E5CE6' : '#0F172A',
       paddingVertical: 12,
       borderRadius: 14,

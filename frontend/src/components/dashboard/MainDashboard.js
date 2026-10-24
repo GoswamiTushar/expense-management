@@ -32,6 +32,7 @@ import {
 } from '../../services/notifications/pushService';
 import { toastEmitter } from '../../services/notifications/toastEmitter';
 import { useHardwareBack } from '../../hooks/useHardwareBack';
+import { feedback } from '../../services/feedback/feedbackService';
 
 export default function MainDashboard({ data, onLogout }) {
   const { colors: tColors, isDark } = useTheme();
@@ -44,15 +45,27 @@ export default function MainDashboard({ data, onLogout }) {
   const [settlementToEdit, setSettlementToEdit] = useState(null);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
-  const setM = (k) => setActiveModal(k || null);
+
+  const handleSelectTab = (tab) => {
+    if (tab !== activeTab) {
+      feedback.tabSwitch();
+    }
+    setActiveTab(tab);
+  };
+
+  const setM = (k) => {
+    if (k) feedback.drawer();
+    setActiveModal(k || null);
+  };
 
   // Native Android hardware & PWA gesture back button handler
   useHardwareBack({
     activeModal,
     onCloseModal: () => setM(null),
     activeTab,
-    onSelectTab: setActiveTab,
+    onSelectTab: handleSelectTab,
   });
+
 
   const pageAnim = useRef(new Animated.Value(1)).current;
 
@@ -68,6 +81,7 @@ export default function MainDashboard({ data, onLogout }) {
 
   const onAddExpense = async (exp) => {
     const res = await createExpense(exp);
+    feedback.success();
     data.setExpenses((p) => [res, ...p]);
     const coManagers = (data.activeProperty?.managerDetails || []).filter(
       (m) => String(m.id) !== String(data.currentUser?._id)
@@ -85,6 +99,7 @@ export default function MainDashboard({ data, onLogout }) {
 
   const onUpdateExpense = async (expenseId, payload) => {
     const updated = await updateExpense(expenseId, payload, data.activeProperty?.id || data.activeProperty?._id);
+    feedback.pop();
     data.setExpenses((prev) =>
       prev.map((item) => (item.id === expenseId || item._id === expenseId ? updated : item))
     );
@@ -113,11 +128,13 @@ export default function MainDashboard({ data, onLogout }) {
   const onDeleteExpense = async (expenseId, reason) => {
     const propId = data.activeProperty?.id || data.activeProperty?._id;
     const res = await deleteExpense(expenseId, reason, propId);
+    feedback.delete();
     if (res?.status === 'deleted') {
       data.setExpenses((prev) => prev.filter((item) => (item.id !== expenseId && item._id !== expenseId)));
       data.setTotalExpenseCount((prev) => Math.max(0, (data.totalExpenseCount || prev) - 1));
       toastEmitter.emit('Expense Deleted', res.message || 'Expense removed from ledger.', 'success');
     } else if (res?.status === 'pending_approval') {
+
       data.setExpenses((prev) =>
         prev.map((item) =>
           item.id === expenseId || item._id === expenseId
@@ -185,6 +202,7 @@ export default function MainDashboard({ data, onLogout }) {
 
   const onSettle = async (s) => {
     const res = await createSettlement(s);
+    feedback.confirm();
     data.setSettlements((p) => [res, ...p]);
     const coManagers = (data.activeProperty?.managerDetails || []).filter(
       (m) => String(m.id) !== String(data.currentUser?._id)
@@ -201,8 +219,10 @@ export default function MainDashboard({ data, onLogout }) {
 
   const onConfirmSettlement = async (settlementId) => {
     await confirmSettlement(settlementId);
+    feedback.confirm();
     data.refresh();
   };
+
 
   const onUpdateSettlement = async (settlementId, updates) => {
     const updated = await updateSettlement(settlementId, updates);
@@ -336,7 +356,7 @@ export default function MainDashboard({ data, onLogout }) {
             onRejectSettlement={onRejectSettlement}
             onCancelSettlement={onCancelSettlement}
             onEditSettlement={onEditSettlement}
-            onOpenSettlements={() => setActiveTab('settle')}
+            onOpenSettlements={() => handleSelectTab('settle')}
             onSelectExpense={(exp) => {
               setSelectedExpense(exp);
               setM('showEditExpense');
@@ -347,12 +367,13 @@ export default function MainDashboard({ data, onLogout }) {
       {data.activeProperty && (
         <BottomNav
           activeTab={activeTab}
-          onSelectTab={setActiveTab}
+          onSelectTab={handleSelectTab}
           onAddExpense={() => setM('showAdd')}
           onOpenSettle={() => {
-            setActiveTab('settle');
+            handleSelectTab('settle');
           }}
           onOpenPartners={() => setM('showInvitePartner')}
+
           onOpenAudit={() => setM('showAudit')}
         />
       )}

@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, Text, Modal, TouchableOpacity, TextInput, Animated, Platform, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, TextInput, Animated, Platform, TouchableWithoutFeedback, Switch } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createEditProfileStyles } from './EditProfileModal.styles';
 import { useTheme } from '../../../context/ThemeContext';
+import { useFeedback } from '../../../context/FeedbackContext';
 
 export default function EditProfileModal({ visible, onClose, currentUser, onSaveProfile, onLogout }) {
   const [name, setName] = useState('');
   const [upiId, setUpiId] = useState('');
   const { theme, setTheme, isDark, colors: tColors } = useTheme();
+  const { hapticsEnabled, soundsEnabled, setHapticsEnabled, setSoundsEnabled, feedback } = useFeedback();
+
 
   const styles = useMemo(() => createEditProfileStyles(tColors, isDark), [tColors, isDark]);
 
@@ -58,6 +61,7 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
 
   const handleSave = () => {
     if (!name.trim()) return alert('Please enter your name.');
+    feedback.success();
     onSaveProfile({
       ...currentUser,
       name: name.trim(),
@@ -66,6 +70,7 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
     });
     handleClose();
   };
+
 
   return (
     <Modal visible={true} transparent onRequestClose={() => handleClose()}>
@@ -89,7 +94,10 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
             <View style={styles.segmentedControl}>
               <TouchableOpacity
                 style={[styles.segmentBtn, !isDark && styles.segmentBtnActive]}
-                onPress={() => setTheme('light')}
+                onPress={() => {
+                  setTheme('light');
+                  feedback.toggle();
+                }}
                 activeOpacity={0.8}
               >
                 <Ionicons name={!isDark ? "sunny" : "sunny-outline"} size={16} color={!isDark ? tColors.primary : tColors.textMuted} />
@@ -98,7 +106,10 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
 
               <TouchableOpacity
                 style={[styles.segmentBtn, isDark && styles.segmentBtnActive]}
-                onPress={() => setTheme('dark')}
+                onPress={() => {
+                  setTheme('dark');
+                  feedback.toggle();
+                }}
                 activeOpacity={0.8}
               >
                 <Ionicons name={isDark ? "moon" : "moon-outline"} size={15} color={isDark ? tColors.primary : tColors.textMuted} />
@@ -106,6 +117,53 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
               </TouchableOpacity>
             </View>
           </View>
+
+          {/* In-App Haptics & Sound Settings */}
+          <View style={styles.feedbackSection}>
+            <Text style={styles.label}>FEEDBACK &amp; AUDIO</Text>
+            <View style={styles.feedbackRow}>
+              <View style={styles.feedbackInfo}>
+                <View style={[styles.feedbackIconBox, { backgroundColor: isDark ? 'rgba(56, 189, 248, 0.12)' : 'rgba(10, 132, 255, 0.10)' }]}>
+                  <Ionicons name="phone-portrait-outline" size={16} color="#38BDF8" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.feedbackTitle}>Haptic Vibrations</Text>
+                  <Text style={styles.feedbackSub}>Tactile pulse on taps, gestures &amp; settlements</Text>
+                </View>
+              </View>
+              <Switch
+                value={hapticsEnabled}
+                onValueChange={(val) => {
+                  setHapticsEnabled(val);
+                  if (val) feedback.tap();
+                }}
+                trackColor={{ false: isDark ? '#232838' : '#CBD5E1', true: tColors.primary }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+
+            <View style={[styles.feedbackRow, { marginTop: 8 }]}>
+              <View style={styles.feedbackInfo}>
+                <View style={[styles.feedbackIconBox, { backgroundColor: isDark ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.10)' }]}>
+                  <Ionicons name="volume-high-outline" size={16} color="#10B981" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.feedbackTitle}>In-App Sound Effects</Text>
+                  <Text style={styles.feedbackSub}>Subtle native audio for actions &amp; alerts</Text>
+                </View>
+              </View>
+              <Switch
+                value={soundsEnabled}
+                onValueChange={(val) => {
+                  setSoundsEnabled(val);
+                  if (val) feedback.success();
+                }}
+                trackColor={{ false: isDark ? '#232838' : '#CBD5E1', true: tColors.primary }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+          </View>
+
 
           <Text style={styles.label}>YOUR FULL NAME</Text>
           <TextInput

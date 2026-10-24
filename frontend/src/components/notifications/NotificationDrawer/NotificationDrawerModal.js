@@ -16,8 +16,10 @@ import { createNotificationStyles, styles as defaultStyles } from './Notificatio
 import { useTheme } from '../../../context/ThemeContext';
 import { formatDateTime } from '../../../utils/date';
 import { requestBrowserNotificationPermission } from '../../../services/notifications/pushService';
+import { feedback } from '../../../services/feedback/feedbackService';
 
 export default function NotificationDrawerModal({
+
   visible,
   onClose,
   notifications = [],
@@ -174,13 +176,17 @@ export default function NotificationDrawerModal({
               {unreadList.length > 0 && onMarkAllRead && (
                 <TouchableOpacity
                   style={styles.markReadBtn}
-                  onPress={onMarkAllRead}
+                  onPress={() => {
+                    feedback.pop();
+                    onMarkAllRead();
+                  }}
                   activeOpacity={0.7}
                 >
                   <Ionicons name="checkmark-done" size={13} color="#38BDF8" />
                   <Text style={styles.markReadText}>Mark read</Text>
                 </TouchableOpacity>
               )}
+
               <TouchableOpacity onPress={() => handleClose()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                 <Ionicons name="close" size={20} color={colors.textMuted} />
               </TouchableOpacity>
@@ -243,7 +249,10 @@ export default function NotificationDrawerModal({
                   </View>
                 );
               })
+            )}
           </ScrollView>
+
+
 
           {/* Bottom Pull / Drag Indicator Handle */}
           <View {...panResponder.panHandlers} style={styles.bottomHandleBar}>

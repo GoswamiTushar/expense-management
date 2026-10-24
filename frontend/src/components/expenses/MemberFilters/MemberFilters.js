@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { ScrollView, TouchableOpacity, Text, View, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../../context/ThemeContext';
+import { feedback } from '../../../services/feedback/feedbackService';
 
 export default function MemberFilters({
   members = [],
@@ -11,9 +12,17 @@ export default function MemberFilters({
 }) {
   const { colors: tColors, isDark } = useTheme();
 
+  const handleSelect = (id) => {
+    if (selectedMember !== id) {
+      feedback.pop();
+    }
+    onSelectMember(id);
+  };
+
   if (!members || members.length <= 1) {
     return null; // No need to filter if there's only 1 or 0 members
   }
+
 
   return (
     <View style={localStyles.wrapper}>
@@ -52,7 +61,7 @@ export default function MemberFilters({
               },
             ],
           ]}
-          onPress={() => onSelectMember('ALL')}
+          onPress={() => handleSelect('ALL')}
           activeOpacity={0.8}
         >
           <Ionicons
@@ -103,9 +112,10 @@ export default function MemberFilters({
                   },
                 ],
               ]}
-              onPress={() => onSelectMember(isSelected ? 'ALL' : m.id)}
+              onPress={() => handleSelect(isSelected ? 'ALL' : m.id)}
               activeOpacity={0.8}
             >
+
               {/* Mini Avatar Initial */}
               <View
                 style={[
