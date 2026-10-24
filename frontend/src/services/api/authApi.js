@@ -60,8 +60,35 @@ export const updateProfile = async ({ name, upiId }) => {
   return user;
 };
 
+export const requestPasswordReset = async ({ email }) => {
+  return await apiClient('/auth/forgot-password', {
+    method: 'POST',
+    body: { email },
+  });
+};
+
+export const verifyResetOtp = async ({ email, otp }) => {
+  return await apiClient('/auth/verify-reset-otp', {
+    method: 'POST',
+    body: { email, otp },
+  });
+};
+
+export const resetPassword = async ({ email, otp, newPassword }) => {
+  const res = await apiClient('/auth/reset-password', {
+    method: 'POST',
+    body: { email, otp, newPassword },
+  });
+  // Response: { status, message, user, accessToken, refreshToken }
+  const user = normalizeUser(res.user);
+  await saveTokens({ accessToken: res.accessToken, refreshToken: res.refreshToken });
+  await saveDeviceUserProfile(user);
+  return user;
+};
+
 export const logoutUser = async () => {
   await clearTokens();
   await clearDeviceUserProfile();
 };
+
 

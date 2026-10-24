@@ -36,9 +36,13 @@ export const createEditExpenseStyles = (tColors = colors, isDark = true) => {
             backdropFilter: glass.backdropFilter,
             WebkitBackdropFilter: glass.backdropFilter,
             boxShadow: `0 -12px 36px rgba(0, 0, 0, ${isDark ? '0.5' : '0.12'}), inset 0 1px 1px 0 ${glass.borderTopColor}`,
+            willChange: 'transform, opacity',
+            transform: 'translateZ(0)',
+            WebkitTransform: 'translateZ(0)',
           }
         : {}),
     },
+
     dragHandle: {
       width: 40,
       height: 5,

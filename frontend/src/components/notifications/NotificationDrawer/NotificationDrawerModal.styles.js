@@ -7,10 +7,10 @@ export const createNotificationStyles = (tColors = colors, isDark = true) => {
   return StyleSheet.create({
     backdrop: {
       flex: 1,
-      backgroundColor: isDark ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0.36)',
-      justifyContent: 'center',
+      backgroundColor: isDark ? 'rgba(0,0,0,0.68)' : 'rgba(0,0,0,0.34)',
+      justifyContent: 'flex-start',
       alignItems: 'center',
-      paddingHorizontal: 16,
+      paddingHorizontal: 0,
       ...(Platform.OS === 'web'
         ? {
             backdropFilter: 'blur(16px)',
@@ -20,14 +20,19 @@ export const createNotificationStyles = (tColors = colors, isDark = true) => {
     },
     card: {
       backgroundColor: glass.backgroundColor,
-      borderRadius: 26,
-      padding: 22,
+      borderTopLeftRadius: 0,
+      borderTopRightRadius: 0,
+      borderBottomLeftRadius: 28,
+      borderBottomRightRadius: 28,
+      paddingHorizontal: 20,
+      paddingTop: Platform.OS === 'ios' ? 48 : Platform.OS === 'android' ? 38 : 22,
+      paddingBottom: 14,
       width: '100%',
-      maxWidth: 480,
+      maxWidth: 560,
       maxHeight: '82%',
       borderWidth: 1,
+      borderTopWidth: 0,
       borderColor: glass.borderColor,
-      borderTopColor: glass.borderTopColor,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 16 },
       shadowOpacity: isDark ? 0.5 : 0.12,
@@ -38,9 +43,26 @@ export const createNotificationStyles = (tColors = colors, isDark = true) => {
             backdropFilter: glass.backdropFilter,
             WebkitBackdropFilter: glass.backdropFilter,
             boxShadow: `${glass.boxShadow}, 0 24px 48px -12px rgba(0, 0, 0, ${isDark ? '0.6' : '0.12'})`,
+            willChange: 'transform, opacity',
+            transform: 'translateZ(0)',
+            WebkitTransform: 'translateZ(0)',
           }
         : {}),
     },
+    bottomHandleBar: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingTop: 12,
+      paddingBottom: 4,
+      width: '100%',
+    },
+    bottomHandlePill: {
+      width: 44,
+      height: 5,
+      borderRadius: 3,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(0, 0, 0, 0.18)',
+    },
+
     header: {
       flexDirection: 'row',
       alignItems: 'center',

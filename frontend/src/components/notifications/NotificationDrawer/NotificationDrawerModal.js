@@ -8,6 +8,7 @@ import {
   Platform,
   Animated,
   Easing,
+  PanResponder,
   TouchableWithoutFeedback,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -28,41 +29,19 @@ export default function NotificationDrawerModal({
   const [browserPerm, setBrowserPerm] = useState('granted');
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.92)).current;
-
-  useEffect(() => {
-    if (visible) {
-      fadeAnim.setValue(0);
-      scaleAnim.setValue(0.92);
-      Animated.parallel([
-        Animated.timing(fadeAnim, {
-          toValue: 1,
-          duration: 280,
-          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-          useNativeDriver: Platform.OS !== 'web',
-        }),
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          damping: 28,
-          mass: 0.9,
-          stiffness: 220,
-          useNativeDriver: Platform.OS !== 'web',
-        }),
-      ]).start();
-    }
-  }, [visible]);
+  const slideAnim = useRef(new Animated.Value(-650)).current;
 
   const handleClose = (callback) => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 200,
+        duration: 180,
         useNativeDriver: Platform.OS !== 'web',
       }),
-      Animated.timing(scaleAnim, {
-        toValue: 0.94,
-        duration: 200,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+      Animated.timing(slideAnim, {
+        toValue: -650,
+        duration: 220,
+        easing: Easing.in(Easing.cubic),
         useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start(() => {
@@ -70,6 +49,76 @@ export default function NotificationDrawerModal({
       if (typeof callback === 'function') callback();
     });
   };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, { dy, dx }) => {
+        return dy < -6 && Math.abs(dy) > Math.abs(dx) * 1.1;
+      },
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) => {
+        return dy < -10 && Math.abs(dy) > Math.abs(dx) * 1.4;
+      },
+      onPanResponderGrant: () => {
+        slideAnim.setOffset(slideAnim.__getValue ? slideAnim.__getValue() : 0);
+        slideAnim.setValue(0);
+      },
+      onPanResponderMove: (_, { dy }) => {
+        if (dy > 0) return; // Prevent dragging downwards past dock
+        slideAnim.setValue(dy);
+      },
+      onPanResponderRelease: (_, { dy, vy }) => {
+        slideAnim.flattenOffset();
+        if (dy < -50 || vy < -0.3) {
+          handleClose();
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            damping: 26,
+            mass: 0.8,
+            stiffness: 280,
+            useNativeDriver: Platform.OS !== 'web',
+          }).start();
+        }
+      },
+      onPanResponderTerminate: (_, { dy }) => {
+        slideAnim.flattenOffset();
+        if (dy < -50) {
+          handleClose();
+        } else {
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            damping: 26,
+            mass: 0.8,
+            stiffness: 280,
+            useNativeDriver: Platform.OS !== 'web',
+          }).start();
+        }
+      },
+    })
+  ).current;
+
+  useEffect(() => {
+    if (visible) {
+      fadeAnim.setValue(0);
+      slideAnim.setValue(-650);
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 220,
+          easing: Easing.bezier(0.16, 1, 0.3, 1),
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+        Animated.spring(slideAnim, {
+          toValue: 0,
+          damping: 26,
+          mass: 0.8,
+          stiffness: 280,
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]).start();
+    }
+  }, [visible]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
@@ -109,9 +158,9 @@ export default function NotificationDrawerModal({
         <TouchableWithoutFeedback onPress={() => handleClose()}>
           <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} />
         </TouchableWithoutFeedback>
-        <Animated.View style={[styles.card, { transform: [{ scale: scaleAnim }] }]}>
+        <Animated.View style={[styles.card, { transform: [{ translateY: slideAnim }] }]}>
           {/* Header */}
-          <View style={styles.header}>
+          <View {...panResponder.panHandlers} style={styles.header}>
             <View style={styles.titleGroup}>
               <Ionicons name="notifications" size={18} color={colors.primary} />
               <Text style={styles.title}>Activity &amp; Alerts</Text>
@@ -137,6 +186,7 @@ export default function NotificationDrawerModal({
               </TouchableOpacity>
             </View>
           </View>
+
 
           {/* Browser System Notification Permission Callout (if default) */}
           {Platform.OS === 'web' && browserPerm === 'default' && (
@@ -193,10 +243,15 @@ export default function NotificationDrawerModal({
                   </View>
                 );
               })
-            )}
           </ScrollView>
+
+          {/* Bottom Pull / Drag Indicator Handle */}
+          <View {...panResponder.panHandlers} style={styles.bottomHandleBar}>
+            <View style={styles.bottomHandlePill} />
+          </View>
         </Animated.View>
       </Animated.View>
     </Modal>
   );
 }
+

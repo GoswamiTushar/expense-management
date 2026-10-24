@@ -14,7 +14,11 @@ export const useHardwareBack = ({
   onSelectTab,
 }) => {
   const lastBackPress = useRef(0);
-  const pushedStateRef = useRef(false);
+  const activeModalRef = useRef(activeModal);
+  const activeTabRef = useRef(activeTab);
+
+  activeModalRef.current = activeModal;
+  activeTabRef.current = activeTab;
 
   // 1. Android Native Back Button Handler
   useEffect(() => {
@@ -22,13 +26,13 @@ export const useHardwareBack = ({
 
     const onBackPress = () => {
       // Priority 1: Close active modal/drawer
-      if (activeModal) {
+      if (activeModalRef.current) {
         onCloseModal?.();
         return true;
       }
 
       // Priority 2: Return from sub-tab to Home
-      if (activeTab !== 'home') {
+      if (activeTabRef.current !== 'home') {
         onSelectTab?.('home');
         return true;
       }
@@ -46,29 +50,70 @@ export const useHardwareBack = ({
 
     const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => sub.remove();
-  }, [activeModal, onCloseModal, activeTab, onSelectTab]);
+  }, [onCloseModal, onSelectTab]);
 
-  // 2. Web / PWA Browser & Gesture Back Navigation Sync
+  // 2. Web / PWA Browser & Gesture Back Navigation Trap
   useEffect(() => {
     if (Platform.OS !== 'web' || typeof window === 'undefined') return;
 
-    if (activeModal) {
-      // Push history state so Android gesture or browser back dismisses the modal
-      window.history.pushState({ modalOpen: true }, '');
-      pushedStateRef.current = true;
+    // Ensure initial sentinel state is present so PWA doesn't immediately close on back swipe
+    if (!window.history.state || !window.history.state.ledgerHome) {
+      window.history.replaceState({ ledgerRoot: true }, '');
+      window.history.pushState({ ledgerHome: true }, '');
     }
 
-    const handlePopState = (event) => {
-      if (activeModal) {
+    const handlePopState = () => {
+      // Priority 1: Close active modal/drawer
+      if (activeModalRef.current) {
         onCloseModal?.();
-      } else if (activeTab !== 'home') {
-        onSelectTab?.('home');
+        return;
       }
+
+      // Priority 2: Return from sub-tab to Home
+      if (activeTabRef.current !== 'home') {
+        onSelectTab?.('home');
+        // Keep a history buffer
+        window.history.pushState({ ledgerHome: true }, '');
+        return;
+      }
+
+      // Priority 3: Root screen double-back within 2s to exit
+      const now = Date.now();
+      if (now - lastBackPress.current < 2000) {
+        // Double-back confirmed within 2 seconds: allow PWA/browser to exit
+        if (window.history.length > 1) {
+          window.history.back();
+        }
+        return;
+      }
+
+      // First back press on Home: trap and ask user to press back again
+      lastBackPress.current = now;
+      toastEmitter.emit('Press Back Again', 'Tap back again to exit Ledger.', 'info');
+      window.history.pushState({ ledgerHome: true }, '');
     };
 
     window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
-  }, [activeModal, onCloseModal, activeTab, onSelectTab]);
+  }, [onCloseModal, onSelectTab]);
+
+  // Sync modal and tab pushes to browser history so swipe-back dismisses them first
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+
+    if (activeModal) {
+      window.history.pushState({ ledgerModal: true }, '');
+    }
+  }, [activeModal]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || typeof window === 'undefined') return;
+
+    if (activeTab !== 'home') {
+      window.history.pushState({ ledgerTab: activeTab }, '');
+    }
+  }, [activeTab]);
 };
+

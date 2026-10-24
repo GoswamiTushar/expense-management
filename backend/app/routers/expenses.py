@@ -23,6 +23,7 @@ class PaginatedExpensesResponse(BaseModel):
     skip: int
     limit: int
     hasMore: bool
+    expenseCountsByMember: Optional[dict[str, int]] = None
 
 def _get_expense_created_timestamp(exp: dict) -> float:
     """Parse creation timestamp from createdAt ISO or fallback to exp_<millis> ID."""
@@ -56,6 +57,18 @@ async def list_expenses_paginated(
     query["deleted"] = {"$nin": [True, "Y", "y"]}
 
     total = await get_db().expenses.count_documents(query)
+
+    # Count total expenses logged by each member directly via DB aggregation query
+    pipeline = [
+        {"$match": query},
+        {"$group": {"_id": "$paidBy", "count": {"$sum": 1}}},
+    ]
+    member_counts = {}
+    async for doc in get_db().expenses.aggregate(pipeline):
+        pid = doc.get("_id")
+        if pid:
+            member_counts[str(pid)] = int(doc.get("count", 0))
+
     docs = await get_db().expenses.find(query).sort("createdAt", -1).skip(skip).to_list(limit)
     res = []
     for e in docs:
@@ -72,6 +85,7 @@ async def list_expenses_paginated(
         skip=skip,
         limit=limit,
         hasMore=(skip + len(res)) < total,
+        expenseCountsByMember=member_counts,
     )
 
 @router.get("", response_model=List[ExpenseResponse])

@@ -143,6 +143,18 @@ export const createAuthStyles = (tColors = colors, isDark = true) =>
       fontSize: 13,
       fontWeight: '600',
     },
+    forgotPasswordRow: {
+      alignSelf: 'flex-end',
+      marginTop: 8,
+      marginBottom: 4,
+      paddingVertical: 4,
+    },
+    forgotPasswordText: {
+      color: '#38BDF8',
+      fontSize: 12.5,
+      fontWeight: '600',
+    },
   });
+
 
 export const styles = createAuthStyles(colors, true);

@@ -18,6 +18,18 @@ class VerifyOtpRequest(BaseModel):
 class ResendOtpRequest(BaseModel):
     email: EmailStr
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class VerifyResetOtpRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+class ResetPasswordRequest(BaseModel):
+    email: EmailStr
+    otp: str
+    newPassword: str
+
 class UserResponse(BaseModel):
     id: str
     name: str
@@ -26,3 +38,4 @@ class UserResponse(BaseModel):
     initials: str
     color: str
     role: Optional[str] = "user"
+

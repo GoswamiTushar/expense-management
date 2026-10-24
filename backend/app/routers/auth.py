@@ -1,12 +1,21 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+import time
 from typing import Optional
 from pydantic import BaseModel
 from app.database import get_db
-from app.models.user import UserLogin, UserResponse
+from app.models.user import (
+    UserLogin,
+    UserResponse,
+    ForgotPasswordRequest,
+    VerifyResetOtpRequest,
+    ResetPasswordRequest,
+)
 from app.services.security import verify_password, hash_password, create_access_token, create_refresh_token
+from app.services.otp_service import generate_otp, send_password_reset_otp
 from app.deps import get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["Auth"])
+
 
 @router.post("/signin")
 async def signin(payload: UserLogin):
@@ -99,3 +108,99 @@ async def register_push_token(payload: PushTokenRequest, current_user: dict = De
         {"$addToSet": {"pushTokens": token}}
     )
     return {"success": True}
+
+
+@router.post("/forgot-password")
+async def forgot_password(payload: ForgotPasswordRequest, bg: BackgroundTasks):
+    """
+    Initiate a forgot-password flow by generating a 6-digit OTP and
+    emailing it to the registered user.
+    """
+    db = get_db()
+    email = payload.email.lower().strip()
+    user = await db.users.find_one({"email": email})
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No account found with email '{email}'. Please check your spelling or sign up."
+        )
+
+    otp = generate_otp()
+    doc = {
+        "email": email,
+        "otp": otp,
+        "expiresAt": time.time() + 600,
+        "verified": False,
+        "updatedAt": time.time(),
+    }
+    await db.password_resets.update_one({"email": email}, {"$set": doc}, upsert=True)
+    bg.add_task(send_password_reset_otp, email, otp)
+    return {
+        "status": "otp_sent",
+        "email": email,
+        "message": "A 6-digit confirmation code has been sent to your email."
+    }
+
+
+@router.post("/verify-reset-otp")
+async def verify_reset_otp(payload: VerifyResetOtpRequest):
+    """
+    Verify the 6-digit OTP provided by the user before letting them reset their password.
+    """
+    db = get_db()
+    email = payload.email.lower().strip()
+    record = await db.password_resets.find_one({"email": email})
+    if not record or record.get("expiresAt", 0) < time.time():
+        raise HTTPException(status_code=400, detail="Confirmation code expired. Please request a new code.")
+
+    if record.get("otp") != payload.otp.strip():
+        raise HTTPException(status_code=400, detail="Invalid 6-digit confirmation code. Please try again.")
+
+    await db.password_resets.update_one(
+        {"_id": record["_id"]},
+        {"$set": {"verified": True, "verifiedAt": time.time()}}
+    )
+    return {
+        "status": "otp_verified",
+        "email": email,
+        "message": "Confirmation successful. You may now enter your new password."
+    }
+
+
+@router.post("/reset-password")
+async def reset_password(payload: ResetPasswordRequest):
+    """
+    Confirm OTP and securely update user password to new password.
+    Returns session tokens to automatically sign in the user.
+    """
+    db = get_db()
+    email = payload.email.lower().strip()
+    new_pw = payload.newPassword.strip()
+    if len(new_pw) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters long.")
+
+    record = await db.password_resets.find_one({"email": email})
+    if not record or record.get("expiresAt", 0) < time.time():
+        raise HTTPException(status_code=400, detail="Password reset session expired. Please start over.")
+
+    if not record.get("verified") and record.get("otp") != payload.otp.strip():
+        raise HTTPException(status_code=400, detail="Invalid confirmation code.")
+
+    user = await db.users.find_one({"email": email})
+    if not user:
+        raise HTTPException(status_code=404, detail="User account not found.")
+
+    new_hash = hash_password(new_pw)
+    await db.users.update_one({"_id": user["_id"]}, {"$set": {"password": new_hash}})
+    await db.password_resets.delete_one({"_id": record["_id"]})
+
+    user["password"] = new_hash
+    user_data = UserResponse(id=user["_id"], **user).model_dump()
+    return {
+        "status": "password_reset_success",
+        "message": "Password reset successfully.",
+        "user": user_data,
+        "accessToken": create_access_token(user["_id"]),
+        "refreshToken": create_refresh_token(user["_id"]),
+    }
+

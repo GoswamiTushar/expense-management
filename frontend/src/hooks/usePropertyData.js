@@ -27,6 +27,7 @@ export const usePropertyData = (currentUser) => {
   const [activeProperty, setActiveProperty] = useState(null);
   const [expenses, setExpenses] = useState([]);
   const [totalExpenseCount, setTotalExpenseCount] = useState(0);
+  const [expenseCountsByMember, setExpenseCountsByMember] = useState({});
   const [hasMoreExpenses, setHasMoreExpenses] = useState(false);
   const [loadingMoreExpenses, setLoadingMoreExpenses] = useState(false);
 
@@ -44,6 +45,7 @@ export const usePropertyData = (currentUser) => {
     if (!propId) {
       setExpenses([]);
       setTotalExpenseCount(0);
+      setExpenseCountsByMember({});
       setHasMoreExpenses(false);
       setSettlements([]);
       setTotalSettlementCount(0);
@@ -62,6 +64,7 @@ export const usePropertyData = (currentUser) => {
       ]);
       setExpenses(expPage.items || []);
       setTotalExpenseCount(expPage.total || 0);
+      setExpenseCountsByMember(expPage.expenseCountsByMember || {});
       setHasMoreExpenses(Boolean(expPage.hasMore));
 
       setSettlements(setPage.items || []);
@@ -251,6 +254,8 @@ export const usePropertyData = (currentUser) => {
     setExpenses,
     totalExpenseCount,
     setTotalExpenseCount,
+    expenseCountsByMember,
+    setExpenseCountsByMember,
     hasMoreExpenses,
     loadingMoreExpenses,
     loadMoreExpenses,

@@ -67,20 +67,21 @@ export default function EditExpenseModal({
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 280,
-          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+          duration: 220,
+          easing: Easing.bezier(0.16, 1, 0.3, 1),
           useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
-          damping: 28,
-          mass: 0.9,
-          stiffness: 220,
+          damping: 26,
+          mass: 0.8,
+          stiffness: 280,
           useNativeDriver: Platform.OS !== 'web',
         }),
       ]).start();
     }
   }, [visible, expense]);
+
 
   const handleClose = () => {
     if (loading || actionLoading) return;

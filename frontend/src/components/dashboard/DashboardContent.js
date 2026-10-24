@@ -56,16 +56,8 @@ export default function DashboardContent({
     return list;
   }, [data.currentUser, data.activeProperty]);
 
-  const expenseCountsByMember = useMemo(() => {
-    const counts = {};
-    (data.expenses || []).forEach((e) => {
-      if (!e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y') {
-        const pid = String(e.paidBy || '');
-        if (pid) counts[pid] = (counts[pid] || 0) + 1;
-      }
-    });
-    return counts;
-  }, [data.expenses]);
+  // Exact database-aggregated expense counts across entire group collection
+  const expenseCountsByMember = data.expenseCountsByMember || {};
 
   const filtered = useMemo(() => {
     return (data.expenses || [])

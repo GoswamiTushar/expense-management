@@ -14,6 +14,7 @@ import { signUpUser, signInUser } from '../../../services/api/authApi';
 import AuthHeader from './AuthHeader';
 import AuthFormInputs from './AuthFormInputs';
 import OtpVerificationModal from '../OtpVerificationModal/OtpVerificationModal';
+import ForgotPasswordModal from '../ForgotPasswordModal/ForgotPasswordModal';
 
 export default function AuthScreen({
   onAuthSuccess,
@@ -29,8 +30,10 @@ export default function AuthScreen({
   const [password, setPassword] = useState('');
   const [upiId, setUpiId] = useState('');
   const [showOtp, setShowOtp] = useState(Boolean(initialOtp && initialEmail));
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [slowNotice, setSlowNotice] = useState(false);
+
 
   const handleSubmit = async () => {
     if (!email.trim() || !password.trim()) return alert('Please enter email and password.');
@@ -82,6 +85,15 @@ export default function AuthScreen({
             setUpiId={setUpiId}
             styles={styles}
           />
+          {!isSignUp && (
+            <TouchableOpacity
+              style={styles.forgotPasswordRow}
+              onPress={() => setShowForgotPassword(true)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.forgotPasswordText}>Forgot password?</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={[styles.submitBtn, loading && { opacity: 0.85 }]}
             onPress={handleSubmit}
@@ -134,7 +146,14 @@ export default function AuthScreen({
             onClose={() => setShowOtp(false)}
             onSuccess={onAuthSuccess}
           />
+          <ForgotPasswordModal
+            visible={showForgotPassword}
+            initialEmail={email}
+            onClose={() => setShowForgotPassword(false)}
+            onSuccess={onAuthSuccess}
+          />
         </View>
+
       </ScrollView>
     </KeyboardAvoidingView>
   );

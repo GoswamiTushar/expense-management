@@ -10,8 +10,8 @@ export const createHeaderStyles = (tColors = colors, isDark = true) =>
       paddingHorizontal: 18,
       borderBottomWidth: 1,
       borderBottomColor: isDark ? '#232838' : 'rgba(15, 23, 42, 0.08)',
-      borderTopWidth: 1,
-      borderTopColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(255, 255, 255, 0.95)',
+      borderTopWidth: 0,
+      borderTopColor: 'transparent',
       ...(Platform.OS === 'web'
         ? {
             backdropFilter: 'blur(36px) saturate(200%) contrast(104%)',
@@ -20,8 +20,8 @@ export const createHeaderStyles = (tColors = colors, isDark = true) =>
             top: 0,
             zIndex: 100,
             boxShadow: isDark
-              ? 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.10), 0 12px 28px -6px rgba(0, 0, 0, 0.55)'
-              : 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.95), 0 8px 24px -4px rgba(15, 23, 42, 0.05)',
+              ? '0 12px 28px -6px rgba(0, 0, 0, 0.55)'
+              : '0 8px 24px -4px rgba(15, 23, 42, 0.05)',
           }
         : {}),
     },

@@ -52,16 +52,16 @@ export const useSwipeDown = (slideAnim, onClose, options = {}) => {
 
       onPanResponderRelease: (_, { dy, vy }) => {
         slideAnim.flattenOffset();
-        // If dragged down > 70px or flicked with velocity > 0.35 → dismiss
-        if (dy > 70 || vy > 0.35) {
+        // If dragged down > 55px or flicked with velocity > 0.30 → dismiss
+        if (dy > 55 || vy > 0.30) {
           onClose();
         } else {
-          // Relaxed, fluid spring physics back to open position
+          // Native-feel, fluid spring physics back to open position
           Animated.spring(slideAnim, {
             toValue: 0,
-            damping: 28,
-            mass: 0.9,
-            stiffness: 220,
+            damping: 26,
+            mass: 0.8,
+            stiffness: 280,
             useNativeDriver: Platform.OS !== 'web',
           }).start();
         }
@@ -69,18 +69,19 @@ export const useSwipeDown = (slideAnim, onClose, options = {}) => {
 
       onPanResponderTerminate: (_, { dy }) => {
         slideAnim.flattenOffset();
-        if (dy > 70) {
+        if (dy > 55) {
           onClose();
         } else {
           Animated.spring(slideAnim, {
             toValue: 0,
-            damping: 28,
-            mass: 0.9,
-            stiffness: 220,
+            damping: 26,
+            mass: 0.8,
+            stiffness: 280,
             useNativeDriver: Platform.OS !== 'web',
           }).start();
         }
       },
+
     })
   ).current;
 
