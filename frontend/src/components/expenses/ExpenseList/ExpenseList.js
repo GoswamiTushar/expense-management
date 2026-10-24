@@ -5,7 +5,7 @@ import { styles } from './ExpenseList.styles';
 import { colors } from '../../../theme/colors';
 import ExpenseItem from '../ExpenseItem/ExpenseItem';
 
-export default function ExpenseList({ expenses = [], userMap = {}, onSelectExpense }) {
+function ExpenseList({ expenses = [], userMap = {}, onSelectExpense }) {
   if (expenses.length === 0) {
     return (
       <View style={styles.emptyBox}>
@@ -31,3 +31,5 @@ export default function ExpenseList({ expenses = [], userMap = {}, onSelectExpen
     </View>
   );
 }
+
+export default React.memo(ExpenseList);

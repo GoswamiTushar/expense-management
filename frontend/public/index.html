@@ -7,8 +7,8 @@
     <title>Ledger | Split • Track • Settle</title>
 
     <!-- PWA Primary Colors & Display Settings -->
-    <meta name="theme-color" content="#0C1325" />
-    <meta name="background-color" content="#0C1325" />
+    <meta name="theme-color" content="#0F121A" />
+    <meta name="background-color" content="#0C0E14" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Ledger" />
 
@@ -30,31 +30,42 @@
       html,
       body {
         height: 100%;
-        background-color: #0C1325 !important;
+        background-color: #0C0E14 !important;
         color-scheme: dark;
         -webkit-tap-highlight-color: transparent;
       }
       /* These styles disable body scrolling if you are using <ScrollView> */
       body {
         overflow: hidden;
-        background-color: #0C1325 !important;
+        background-color: #0C0E14 !important;
       }
       /* These styles make the root element full-height and dark */
       #root {
         display: flex;
         height: 100%;
         flex: 1;
-        background-color: #0C1325 !important;
+        background-color: #0C0E14 !important;
       }
     </style>
   </head>
 
-  <body style="background-color: #0C1325;">
+  <body style="background-color: #0C0E14;">
     <!-- Use static rendering with Expo Router to support running without JavaScript. -->
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>
     <!-- The root element for your Expo app. -->
-    <div id="root" style="background-color: #0C1325;"></div>
+    <div id="root" style="background-color: #0C0E14;"></div>
+
+    <script>
+      // Register Service Worker for true OS notifications on mobile web / PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js').catch(function(err) {
+            console.log('[SW] Registration notice:', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

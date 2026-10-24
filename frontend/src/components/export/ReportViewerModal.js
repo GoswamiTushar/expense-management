@@ -7,6 +7,7 @@ import {
   Platform,
   SafeAreaView,
   ActivityIndicator,
+  BackHandler,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createReportViewerStyles } from './ReportViewerModal.styles';
@@ -29,6 +30,26 @@ export default function ReportViewerModal({
   const [internalPdfUrl, setInternalPdfUrl] = useState(pdfBlobUrl);
   const [generatingPdf, setGeneratingPdf] = useState(false);
   const iframeRef = useRef(null);
+
+  // Close ReportViewer on native back button / Android gesture
+  useEffect(() => {
+    if (!visible) return;
+
+    if (Platform.OS === 'android') {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        onClose();
+        return true;
+      });
+      return () => sub.remove();
+    }
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.history.pushState({ reportViewer: true }, '');
+      const handlePop = () => onClose();
+      window.addEventListener('popstate', handlePop);
+      return () => window.removeEventListener('popstate', handlePop);
+    }
+  }, [visible, onClose]);
 
   // Sync active mode and pdf url when modal opens or format changes
   useEffect(() => {

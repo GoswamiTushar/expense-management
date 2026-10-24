@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0C1325"
+      "backgroundColor": "#0C0E14"
     },
     "ios": {
       "supportsTablet": true,
@@ -21,13 +21,13 @@
     },
     "androidStatusBar": {
       "barStyle": "light-content",
-      "backgroundColor": "#0C1325"
+      "backgroundColor": "#0C0E14"
     },
     "android": {
       "package": "com.tushar.ledger",
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
-        "backgroundColor": "#0C1325",
+        "backgroundColor": "#0C0E14",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -35,13 +35,13 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "themeColor": "#0C1325",
-      "backgroundColor": "#0C1325",
+      "themeColor": "#0C0E14",
+      "backgroundColor": "#0C0E14",
       "bundler": "metro",
       "splash": {
         "image": "./assets/splash-icon.png",
         "resizeMode": "contain",
-        "backgroundColor": "#0C1325"
+        "backgroundColor": "#0C0E14"
       }
     },
     "plugins": [

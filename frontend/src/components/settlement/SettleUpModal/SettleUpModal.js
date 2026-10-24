@@ -63,18 +63,20 @@ export default function SettleUpModal({
   const slideAnim = useRef(new Animated.Value(600)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  const scrollOffset = useRef(0);
+
   const handleClose = () => {
     if (submitting) return;
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 180,
+        duration: 200,
         useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(slideAnim, {
         toValue: 600,
-        duration: 220,
-        easing: Easing.in(Easing.cubic),
+        duration: 240,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start(() => {
@@ -82,10 +84,14 @@ export default function SettleUpModal({
     });
   };
 
-  const swipeHandlers = useSwipeDown(slideAnim, handleClose, submitting);
+  const swipeHandlers = useSwipeDown(slideAnim, handleClose, {
+    disabled: submitting,
+    isAtTop: () => scrollOffset.current <= 5,
+  });
 
   useEffect(() => {
     if (visible) {
+      scrollOffset.current = 0;
       if (settlementToEdit) {
         setAmount(String(settlementToEdit.amount || ''));
         setPaymentMode(settlementToEdit.paymentMode || 'Cash');
@@ -103,13 +109,13 @@ export default function SettleUpModal({
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 240,
-          easing: Easing.out(Easing.ease),
+          duration: 280,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
           useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
-          damping: 26,
+          damping: 28,
           mass: 0.9,
           stiffness: 220,
           useNativeDriver: Platform.OS !== 'web',
@@ -223,6 +229,7 @@ export default function SettleUpModal({
           </TouchableWithoutFeedback>
 
           <Animated.View
+            {...swipeHandlers}
             style={[
               styles.sheet,
               {
@@ -231,10 +238,10 @@ export default function SettleUpModal({
             ]}
           >
             {/* Top Drag Handle */}
-            <View {...swipeHandlers} style={styles.dragHandle} />
+            <View style={styles.dragHandle} />
 
             {/* Header */}
-            <View {...swipeHandlers} style={styles.header}>
+            <View style={styles.header}>
               <Text style={styles.title}>
                 {isEdit ? 'Edit Settlement Request' : 'Record Settlement'}
               </Text>
@@ -243,7 +250,13 @@ export default function SettleUpModal({
               </TouchableOpacity>
             </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            onScroll={(e) => {
+              scrollOffset.current = e.nativeEvent.contentOffset.y;
+            }}
+            scrollEventThrottle={16}
+          >
             {/* Target Information */}
             <View style={styles.targetBox}>
               <View>

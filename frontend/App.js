@@ -36,10 +36,10 @@ function AppContent() {
   const [params] = useState(getParams);
   const [showAcceptInvite, setShowAcceptInvite] = useState(Boolean(params.invite));
 
-  // Set web page title & favicon dynamically for website use
+  // Set web page title, favicon & dynamic system bar colors
   useEffect(() => {
     if (typeof document !== 'undefined') {
-      document.title = 'SplitLedger | Shared Expenses & Settlements';
+      document.title = 'Ledger | Split • Track • Settle';
       try {
         let link = document.querySelector("link[rel*='icon']");
         if (!link) {
@@ -49,9 +49,30 @@ function AppContent() {
         }
         link.type = 'image/png';
         link.href = '/favicon.png';
+
+        // 1. Dynamic Phone Notification Bar & Navbar Color matching adjacent elements
+        const topBarColor = isDark ? '#0F121A' : '#FFFFFF';
+        let metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (!metaTheme) {
+          metaTheme = document.createElement('meta');
+          metaTheme.name = 'theme-color';
+          document.head.appendChild(metaTheme);
+        }
+        metaTheme.content = topBarColor;
+
+        let metaApple = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (metaApple) {
+          metaApple.content = isDark ? 'black-translucent' : 'default';
+        }
+
+        const bgColor = isDark ? '#0C0E14' : '#F8FAFC';
+        document.body.style.backgroundColor = bgColor;
+        if (document.documentElement) {
+          document.documentElement.style.backgroundColor = bgColor;
+        }
       } catch (_) {}
     }
-  }, []);
+  }, [isDark]);
 
   // Check for a persisted session on app start (before rendering anything)
   useEffect(() => {
@@ -86,11 +107,16 @@ function AppContent() {
     data.reload();
   };
 
+  const barColor = isDark ? '#0F121A' : '#FFFFFF';
+
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: tColors.bgDark }]} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={[styles.safeArea, { backgroundColor: barColor }]}
+      edges={['top', 'left', 'right', 'bottom']}
+    >
       <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={isDark ? tColors.surfaceDark : tColors.bgDark}
+        backgroundColor={barColor}
       />
       <GlobalApiLoader />
       <Toast />

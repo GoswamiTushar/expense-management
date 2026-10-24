@@ -31,17 +31,19 @@ export default function ChronoAuditLogModal({
   const slideAnim = useRef(new Animated.Value(600)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  const scrollOffset = useRef(0);
+
   const handleClose = () => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 180,
+        duration: 200,
         useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(slideAnim, {
         toValue: 600,
-        duration: 220,
-        easing: Easing.in(Easing.cubic),
+        duration: 240,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start(() => {
@@ -49,22 +51,26 @@ export default function ChronoAuditLogModal({
     });
   };
 
-  const swipeHandlers = useSwipeDown(slideAnim, handleClose, false);
+  const swipeHandlers = useSwipeDown(slideAnim, handleClose, {
+    disabled: false,
+    isAtTop: () => scrollOffset.current <= 5,
+  });
 
   useEffect(() => {
     if (visible) {
+      scrollOffset.current = 0;
       slideAnim.setValue(600);
       fadeAnim.setValue(0);
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 240,
-          easing: Easing.out(Easing.ease),
+          duration: 280,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
           useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
-          damping: 26,
+          damping: 28,
           mass: 0.9,
           stiffness: 220,
           useNativeDriver: Platform.OS !== 'web',
@@ -87,6 +93,7 @@ export default function ChronoAuditLogModal({
         </TouchableWithoutFeedback>
 
         <Animated.View
+          {...swipeHandlers}
           style={[
             styles.sheet,
             {
@@ -95,9 +102,9 @@ export default function ChronoAuditLogModal({
           ]}
         >
           {/* Drag Handle */}
-          <View {...swipeHandlers} style={styles.dragHandle} />
+          <View style={styles.dragHandle} />
 
-          <View {...swipeHandlers} style={styles.header}>
+          <View style={styles.header}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 7 }}>
               <Ionicons name="time" size={18} color={colors.primary} />
               <Text style={styles.title}>Chronological Expense Log</Text>
@@ -114,6 +121,7 @@ export default function ChronoAuditLogModal({
             showsVerticalScrollIndicator={false}
             onScroll={({ nativeEvent }) => {
               const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+              scrollOffset.current = contentOffset.y;
               // Infinite scroll: auto load next batch seamlessly near end
               if (layoutMeasurement.height + contentOffset.y >= contentSize.height - 120) {
                 if (onLoadMore) {
@@ -121,7 +129,7 @@ export default function ChronoAuditLogModal({
                 }
               }
             }}
-            scrollEventThrottle={32}
+            scrollEventThrottle={16}
           >
             {sorted.length === 0 ? (
               <Text style={{ color: colors.textMuted, textAlign: 'center', paddingVertical: 24 }}>

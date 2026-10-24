@@ -53,25 +53,30 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
     });
   };
 
+  const scrollOffset = useRef(0);
   const form = useExpenseForm(property, currentUser, onSubmit, handleClose, visible);
-  const swipeHandlers = useSwipeDown(slideAnim, handleClose, form.submitting);
+  const swipeHandlers = useSwipeDown(slideAnim, handleClose, {
+    disabled: form.submitting,
+    isAtTop: () => scrollOffset.current <= 5,
+  });
   const suggestedCategory = useMemo(() => suggestCategoryFromTitle(form.title), [form.title]);
 
   useEffect(() => {
     if (visible) {
       setShowBehalfWarning(false);
+      scrollOffset.current = 0;
       slideAnim.setValue(600);
       fadeAnim.setValue(0);
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 240,
-          easing: Easing.out(Easing.ease),
+          duration: 280,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
           useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
-          damping: 26,
+          damping: 28,
           mass: 0.9,
           stiffness: 220,
           useNativeDriver: Platform.OS !== 'web',
@@ -110,6 +115,7 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
           </TouchableWithoutFeedback>
 
           <Animated.View
+            {...swipeHandlers}
             style={[
               styles.sheet,
               {
@@ -118,9 +124,9 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
             ]}
           >
             {/* Native Drag Pill — also swipeable */}
-            <View {...swipeHandlers} style={[styles.dragHandle, { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 8 }]} />
+            <View style={[styles.dragHandle, { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 8 }]} />
 
-            <View {...swipeHandlers} style={styles.header}>
+            <View style={styles.header}>
               <View>
                 <Text style={styles.title}>Log Expense</Text>
                 <Text style={styles.sub}>{property?.name || 'Group / Property'}</Text>
@@ -130,7 +136,14 @@ export default function AddExpenseModal({ visible, onClose, onSubmit, property, 
               </TouchableOpacity>
             </View>
 
-            <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.body}
+              showsVerticalScrollIndicator={false}
+              onScroll={(e) => {
+                scrollOffset.current = e.nativeEvent.contentOffset.y;
+              }}
+              scrollEventThrottle={16}
+            >
               <PayerPickerField
                 managers={property?.managers || []}
                 managerDetails={property?.managerDetails || []}

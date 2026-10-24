@@ -7,6 +7,7 @@ import BalanceCard from '../balance/BalanceCard/BalanceCard';
 import WhoOwesWhoCard from '../balance/WhoOwesWho/WhoOwesWhoCard';
 import PendingSettlementsCard from '../settlement/PendingSettlementsCard/PendingSettlementsCard';
 import CategoryFilters from '../expenses/CategoryFilters/CategoryFilters';
+import MemberFilters from '../expenses/MemberFilters/MemberFilters';
 import ExpenseList from '../expenses/ExpenseList/ExpenseList';
 import ExportButton from '../export/ExportButton';
 
@@ -14,6 +15,8 @@ export default function DashboardContent({
   data,
   cat,
   setCat,
+  selectedMember = 'ALL',
+  setSelectedMember = () => {},
   setM,
   setSettleWith,
   onConfirmSettlement,
@@ -26,14 +29,50 @@ export default function DashboardContent({
   const { colors: tColors, isDark } = useTheme();
   const styles = useMemo(() => createAppStyles(tColors, isDark), [tColors, isDark]);
 
-  const filtered = data.expenses
-    .filter((e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y')
-    .filter((e) => (cat === 'ALL' ? true : e.category === cat));
-  const userMap = {};
-  if (data.currentUser) userMap[data.currentUser._id || data.currentUser.id] = data.currentUser;
-  data.activeProperty?.managerDetails?.forEach((m) => {
-    userMap[m.id] = m;
-  });
+  const userMap = useMemo(() => {
+    const map = {};
+    if (data.currentUser) map[data.currentUser._id || data.currentUser.id] = data.currentUser;
+    data.activeProperty?.managerDetails?.forEach((m) => {
+      map[m.id] = m;
+    });
+    return map;
+  }, [data.currentUser, data.activeProperty]);
+
+  const members = useMemo(() => {
+    const list = [];
+    const seen = new Set();
+    if (data.currentUser) {
+      const id = String(data.currentUser._id || data.currentUser.id);
+      seen.add(id);
+      list.push({ id, name: data.currentUser.name || 'You', isMe: true });
+    }
+    (data.activeProperty?.managerDetails || []).forEach((m) => {
+      const id = String(m.id || m._id);
+      if (!seen.has(id)) {
+        seen.add(id);
+        list.push({ id, name: m.name || 'Member', isMe: false });
+      }
+    });
+    return list;
+  }, [data.currentUser, data.activeProperty]);
+
+  const expenseCountsByMember = useMemo(() => {
+    const counts = {};
+    (data.expenses || []).forEach((e) => {
+      if (!e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y') {
+        const pid = String(e.paidBy || '');
+        if (pid) counts[pid] = (counts[pid] || 0) + 1;
+      }
+    });
+    return counts;
+  }, [data.expenses]);
+
+  const filtered = useMemo(() => {
+    return (data.expenses || [])
+      .filter((e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y')
+      .filter((e) => (cat === 'ALL' ? true : e.category === cat))
+      .filter((e) => (selectedMember === 'ALL' ? true : String(e.paidBy) === String(selectedMember)));
+  }, [data.expenses, cat, selectedMember]);
 
   const renderLoading = () => (
     <View style={[styles.emptyBox, { paddingVertical: 64 }]}>
@@ -185,6 +224,14 @@ export default function DashboardContent({
               <Text style={{ fontSize: 12, color: tColors.textMuted }}>Syncing expenses...</Text>
             </View>
           )}
+
+          {/* Dynamic Group Member Filter */}
+          <MemberFilters
+            members={members}
+            selectedMember={selectedMember}
+            onSelectMember={setSelectedMember}
+            expenseCountsByMember={expenseCountsByMember}
+          />
 
           <CategoryFilters selectedCategory={cat} onSelectCategory={setCat} />
           <ExpenseList expenses={filtered} userMap={userMap} onSelectExpense={onSelectExpense} />

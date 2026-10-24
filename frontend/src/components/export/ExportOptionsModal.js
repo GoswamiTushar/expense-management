@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { View, Text, Modal, TouchableOpacity, Pressable } from 'react-native';
+import React, { useMemo, useEffect } from 'react';
+import { View, Text, Modal, TouchableOpacity, Pressable, Platform, BackHandler } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { createExportOptionsModalStyles } from './ExportOptionsModal.styles';
 import { useTheme } from '../../context/ThemeContext';
@@ -13,6 +13,25 @@ export default function ExportOptionsModal({
 }) {
   const { colors: tColors, isDark } = useTheme();
   const styles = useMemo(() => createExportOptionsModalStyles(tColors, isDark), [tColors, isDark]);
+
+  useEffect(() => {
+    if (!visible) return;
+
+    if (Platform.OS === 'android') {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        onClose();
+        return true;
+      });
+      return () => sub.remove();
+    }
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      window.history.pushState({ exportOptions: true }, '');
+      const handlePop = () => onClose();
+      window.addEventListener('popstate', handlePop);
+      return () => window.removeEventListener('popstate', handlePop);
+    }
+  }, [visible, onClose]);
 
   if (!visible) return null;
 

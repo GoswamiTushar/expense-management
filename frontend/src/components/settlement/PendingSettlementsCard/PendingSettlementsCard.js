@@ -26,7 +26,7 @@ const getModeIcon = (mode) => {
   return 'card-outline';
 };
 
-export default function PendingSettlementsCard({
+function PendingSettlementsCard({
   pendingIncoming = [],
   pendingOutgoing = [],
   onConfirm,
@@ -320,3 +320,5 @@ export default function PendingSettlementsCard({
     </View>
   );
 }
+
+export default React.memo(PendingSettlementsCard);

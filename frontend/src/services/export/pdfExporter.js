@@ -24,12 +24,12 @@ export const exportExpensesToPdf = async ({ property, expenses = [], settlements
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text('AIRBNB FINANCIAL & EXPENSE STATEMENT', margin + 16, currentY + 26);
+  doc.text('LEDGER FINANCIAL & EXPENSE STATEMENT', margin + 16, currentY + 26);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   doc.setTextColor(148, 163, 184); // #94A3B8
-  const propName = property?.name || 'Property Report';
+  const propName = property?.name || 'Group Report';
   const genDate = new Date().toLocaleDateString('en-IN', {
     day: 'numeric',
     month: 'short',
@@ -37,7 +37,7 @@ export const exportExpensesToPdf = async ({ property, expenses = [], settlements
     hour: '2-digit',
     minute: '2-digit',
   });
-  doc.text(`Property: ${propName} • Generated on ${genDate}`, margin + 16, currentY + 44);
+  doc.text(`Group / Property: ${propName} • Generated on ${genDate}`, margin + 16, currentY + 44);
 
   currentY += 72;
 
@@ -246,18 +246,23 @@ export const exportExpensesToPdf = async ({ property, expenses = [], settlements
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184);
     doc.text(
-      `Page ${i} of ${totalPages} • Airbnb Expense Manager Statement`,
+      `Page ${i} of ${totalPages} • Ledger Financial Statement`,
       margin,
       pageHeight - 16
     );
   }
 
-  const propSlug = (property?.name || 'airbnb').toLowerCase().replace(/[^a-z0-9]+/g, '_');
+  const propSlug = (property?.name || 'ledger').toLowerCase().replace(/[^a-z0-9]+/g, '_');
   const fileName = `expenses_${propSlug}_${Date.now()}.pdf`;
 
   if (Platform.OS === 'web') {
+    const pdfBlob = doc.output('blob');
+    let blobUrl = '';
+    if (typeof URL !== 'undefined' && URL.createObjectURL) {
+      blobUrl = URL.createObjectURL(pdfBlob);
+    }
     doc.save(fileName);
-    return { success: true, fileName, data, doc };
+    return { success: true, fileName, blob: pdfBlob, blobUrl, data, doc };
   }
 
   try {

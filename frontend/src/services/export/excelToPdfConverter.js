@@ -14,9 +14,12 @@ export const convertExcelHtmlToPdf = async (htmlContent, fileName) => {
     const container = document.createElement('div');
     container.innerHTML = htmlContent;
     container.style.position = 'fixed';
-    container.style.left = '-9999px';
+    container.style.left = '0';
     container.style.top = '0';
     container.style.width = '820px';
+    container.style.zIndex = '-9999';
+    container.style.opacity = '0.01'; // Visible to DOM canvas renderer without displaying to user
+    container.style.pointerEvents = 'none';
     container.style.backgroundColor = '#FFFFFF';
     container.style.fontFamily = 'Calibri, Arial, sans-serif';
     container.style.color = '#0F172A';

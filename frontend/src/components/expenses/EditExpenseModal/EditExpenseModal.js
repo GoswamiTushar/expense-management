@@ -53,8 +53,11 @@ export default function EditExpenseModal({
   const slideAnim = useRef(new Animated.Value(600)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  const scrollOffset = useRef(0);
+
   useEffect(() => {
     if (visible && expense) {
+      scrollOffset.current = 0;
       slideAnim.setValue(600);
       fadeAnim.setValue(0);
       setShowDeleteConfirm(false);
@@ -64,13 +67,13 @@ export default function EditExpenseModal({
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 240,
-          easing: Easing.out(Easing.ease),
+          duration: 280,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
           useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(slideAnim, {
           toValue: 0,
-          damping: 26,
+          damping: 28,
           mass: 0.9,
           stiffness: 220,
           useNativeDriver: Platform.OS !== 'web',
@@ -84,13 +87,13 @@ export default function EditExpenseModal({
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 180,
+        duration: 200,
         useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(slideAnim, {
         toValue: 600,
-        duration: 220,
-        easing: Easing.in(Easing.cubic),
+        duration: 240,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start(() => {
@@ -99,7 +102,10 @@ export default function EditExpenseModal({
   };
 
   // Must be above early-return so hook is called unconditionally
-  const swipeHandlers = useSwipeDown(slideAnim, handleClose, loading || actionLoading);
+  const swipeHandlers = useSwipeDown(slideAnim, handleClose, {
+    disabled: loading || actionLoading,
+    isAtTop: () => scrollOffset.current <= 5,
+  });
 
   useEffect(() => {
     if (expense) {
@@ -284,6 +290,7 @@ export default function EditExpenseModal({
           </TouchableWithoutFeedback>
 
           <Animated.View
+            {...swipeHandlers}
             style={[
               styles.sheet,
               {
@@ -292,10 +299,10 @@ export default function EditExpenseModal({
             ]}
           >
             {/* Native Drawer Drag Indicator */}
-            <View {...swipeHandlers} style={[styles.dragHandle, { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 8 }]} />
+            <View style={[styles.dragHandle, { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: 8 }]} />
 
             {/* Header */}
-            <View {...swipeHandlers} style={styles.header}>
+            <View style={styles.header}>
               <View style={styles.titleBox}>
                 <Text style={styles.modalTitle}>Expense Details &amp; Edit</Text>
                 <Text style={styles.modalSub}>
@@ -322,7 +329,14 @@ export default function EditExpenseModal({
               </View>
             </View>
 
-            <ScrollView style={styles.body} showsVerticalScrollIndicator={false}>
+            <ScrollView
+              style={styles.body}
+              showsVerticalScrollIndicator={false}
+              onScroll={(e) => {
+                scrollOffset.current = e.nativeEvent.contentOffset.y;
+              }}
+              scrollEventThrottle={16}
+            >
               {/* Pending Deletion Review Banner */}
               {isPendingDelete && (
                 <View style={styles.bannerAmber}>

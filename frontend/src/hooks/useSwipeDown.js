@@ -2,58 +2,79 @@ import { useRef } from 'react';
 import { PanResponder, Animated, Platform } from 'react-native';
 
 /**
- * useSwipeDown — attaches a PanResponder to a bottom-sheet Animated.Value
- * so the user can swipe the sheet down to dismiss it.
+ * useSwipeDown — attaches a fluid PanResponder to a bottom-sheet Animated.Value
+ * so the user can swipe down anywhere on the sheet (handle, header, body, or bottom)
+ * to dismiss it, feeling like a real iOS / Android bottom sheet.
  *
  * @param {Animated.Value} slideAnim   - The translateY value driving the sheet position
  * @param {Function}       onClose     - Callback that fully closes the sheet (with exit animation)
- * @param {boolean}        disabled    - When true (e.g. while submitting) swipe is blocked
- * @returns panHandlers to spread onto the drag-pill / header View
+ * @param {boolean|Object} options     - Boolean `disabled` or options `{ disabled, isAtTop }`
+ * @returns panHandlers to spread onto the sheet container and drag handle
  */
-export const useSwipeDown = (slideAnim, onClose, disabled = false) => {
+export const useSwipeDown = (slideAnim, onClose, options = {}) => {
+  const isOptionsObj = options && typeof options === 'object';
+  const disabled = isOptionsObj ? Boolean(options.disabled) : Boolean(options);
+  const isAtTop = isOptionsObj ? options.isAtTop : null;
+
   const dragStart = useRef(0);
 
   const panResponder = useRef(
     PanResponder.create({
-      // Only claim the gesture if user is moving downward
+      onStartShouldSetPanResponder: () => false,
+
+      // Claim the gesture if user is swiping down and is at the top of content
       onMoveShouldSetPanResponder: (_, { dy, dx }) => {
         if (disabled) return false;
-        return dy > 8 && Math.abs(dy) > Math.abs(dx);
+        if (isAtTop && typeof isAtTop === 'function' && !isAtTop()) {
+          return false;
+        }
+        return dy > 6 && Math.abs(dy) > Math.abs(dx) * 1.1;
       },
+
+      onMoveShouldSetPanResponderCapture: (_, { dy, dx }) => {
+        if (disabled) return false;
+        if (isAtTop && typeof isAtTop === 'function' && !isAtTop()) {
+          return false;
+        }
+        return dy > 10 && Math.abs(dy) > Math.abs(dx) * 1.4;
+      },
+
       onPanResponderGrant: () => {
-        // Record the current position as baseline
         dragStart.current = 0;
         slideAnim.setOffset(slideAnim.__getValue ? slideAnim.__getValue() : 0);
         slideAnim.setValue(0);
       },
+
       onPanResponderMove: (_, { dy }) => {
-        if (dy < 0) return; // ignore upward drags
+        if (dy < 0) return; // Ignore upward drags
         slideAnim.setValue(dy);
       },
+
       onPanResponderRelease: (_, { dy, vy }) => {
         slideAnim.flattenOffset();
-        // If dragged far enough or flicked fast → close
-        if (dy > 80 || vy > 0.5) {
+        // If dragged down > 70px or flicked with velocity > 0.35 → dismiss
+        if (dy > 70 || vy > 0.35) {
           onClose();
         } else {
-          // Snap back to open position
+          // Relaxed, fluid spring physics back to open position
           Animated.spring(slideAnim, {
             toValue: 0,
-            damping: 26,
+            damping: 28,
             mass: 0.9,
             stiffness: 220,
             useNativeDriver: Platform.OS !== 'web',
           }).start();
         }
       },
+
       onPanResponderTerminate: (_, { dy }) => {
         slideAnim.flattenOffset();
-        if (dy > 80) {
+        if (dy > 70) {
           onClose();
         } else {
           Animated.spring(slideAnim, {
             toValue: 0,
-            damping: 26,
+            damping: 28,
             mass: 0.9,
             stiffness: 220,
             useNativeDriver: Platform.OS !== 'web',

@@ -5,7 +5,7 @@ import { createWhoOwesWhoStyles } from './WhoOwesWhoCard.styles';
 import { useTheme } from '../../../context/ThemeContext';
 import OweItem from './OweItem';
 
-export default function WhoOwesWhoCard({ balanceData, onSettleWithUser, userMap = {} }) {
+function WhoOwesWhoCard({ balanceData, onSettleWithUser, userMap = {} }) {
   const { colors: tColors, isDark } = useTheme();
   const styles = useMemo(() => createWhoOwesWhoStyles(tColors, isDark), [tColors, isDark]);
 
@@ -57,3 +57,5 @@ export default function WhoOwesWhoCard({ balanceData, onSettleWithUser, userMap 
     </View>
   );
 }
+
+export default React.memo(WhoOwesWhoCard);

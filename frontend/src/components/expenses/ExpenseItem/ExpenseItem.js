@@ -7,7 +7,7 @@ import { getCategoryById } from '../../../theme/categories';
 import { formatCurrency } from '../../../utils/currency';
 import { formatDate } from '../../../utils/date';
 
-export default function ExpenseItem({ expense, userMap = {}, onPress }) {
+function ExpenseItem({ expense, userMap = {}, onPress }) {
   const { colors: tColors, isDark } = useTheme();
   const styles = useMemo(() => createExpenseItemStyles(tColors, isDark), [tColors, isDark]);
 
@@ -98,3 +98,5 @@ export default function ExpenseItem({ expense, userMap = {}, onPress }) {
     </TouchableOpacity>
   );
 }
+
+export default React.memo(ExpenseItem);

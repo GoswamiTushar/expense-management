@@ -6,7 +6,7 @@ import { useTheme } from '../../../context/ThemeContext';
 import { formatCurrency } from '../../../utils/currency';
 import PropertyManagersModal from '../../property/PropertyManagersModal/PropertyManagersModal';
 
-export default function BalanceCard({
+function BalanceCard({
   property,
   balanceData,
   expenses = [],
@@ -93,3 +93,5 @@ export default function BalanceCard({
     </>
   );
 }
+
+export default React.memo(BalanceCard);

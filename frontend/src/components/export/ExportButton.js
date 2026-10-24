@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createExportButtonStyles } from './ExportButton.styles';
 import { useTheme } from '../../context/ThemeContext';
 import { exportExpensesToExcel } from '../../services/export/excelExporter';
+import { exportExpensesToPdf } from '../../services/export/pdfExporter';
 import { convertExcelHtmlToPdf } from '../../services/export/excelToPdfConverter';
 import { buildExcelHtml } from '../../utils/excel/excelWorkbook';
 import ExportOptionsModal from './ExportOptionsModal';
@@ -40,9 +41,6 @@ export default function ExportButton({
     setShowOptions(false);
     setExporting(true);
 
-    const propSlug = (property?.name || 'expenses').toLowerCase().replace(/[^a-z0-9]+/g, '_');
-    const timestamp = Date.now();
-
     try {
       if (selectedFormat === 'excel') {
         const res = await exportExpensesToExcel({ property, expenses, settlements, userMap });
@@ -54,13 +52,11 @@ export default function ExportButton({
         });
         setShowViewer(true);
       } else {
-        const htmlContent = buildExcelHtml({ property, expenses, settlements, userMap });
-        const pdfFileName = `expenses_${propSlug}_${timestamp}.pdf`;
-        const res = await convertExcelHtmlToPdf(htmlContent, pdfFileName);
+        const res = await exportExpensesToPdf({ property, expenses, settlements, userMap });
         setViewerState({
           format: 'pdf',
           fileName: res.fileName,
-          htmlContent: htmlContent,
+          htmlContent: buildExcelHtml({ property, expenses, settlements, userMap }),
           pdfBlobUrl: res.blobUrl,
         });
         setShowViewer(true);
@@ -75,10 +71,7 @@ export default function ExportButton({
 
   // Helper for on-the-fly PDF generation if user starts in Excel preview and clicks PDF tab
   const handleGeneratePdf = async () => {
-    const propSlug = (property?.name || 'airbnb').toLowerCase().replace(/[^a-z0-9]+/g, '_');
-    const pdfFileName = `expenses_${propSlug}_${Date.now()}.pdf`;
-    const html = viewerState.htmlContent || buildExcelHtml({ property, expenses, settlements, userMap });
-    const res = await convertExcelHtmlToPdf(html, pdfFileName);
+    const res = await exportExpensesToPdf({ property, expenses, settlements, userMap });
     setViewerState((prev) => ({ ...prev, pdfBlobUrl: res.blobUrl }));
     return res.blobUrl;
   };

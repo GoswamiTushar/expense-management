@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Animated,
+  Easing,
   Platform,
   TouchableWithoutFeedback,
   Alert,
@@ -42,13 +43,15 @@ export default function PropertyPickerModal({
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 1,
-          duration: 220,
+          duration: 280,
+          easing: Easing.bezier(0.25, 0.1, 0.25, 1),
           useNativeDriver: Platform.OS !== 'web',
         }),
         Animated.spring(scaleAnim, {
           toValue: 1,
-          friction: 8,
-          tension: 120,
+          damping: 28,
+          mass: 0.9,
+          stiffness: 220,
           useNativeDriver: Platform.OS !== 'web',
         }),
       ]).start();
@@ -60,12 +63,13 @@ export default function PropertyPickerModal({
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 180,
+        duration: 200,
         useNativeDriver: Platform.OS !== 'web',
       }),
       Animated.timing(scaleAnim, {
         toValue: 0.94,
-        duration: 180,
+        duration: 200,
+        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
         useNativeDriver: Platform.OS !== 'web',
       }),
     ]).start(() => {

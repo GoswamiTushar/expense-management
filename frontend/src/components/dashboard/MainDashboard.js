@@ -31,6 +31,7 @@ import {
   sendSettlementPushNotification,
 } from '../../services/notifications/pushService';
 import { toastEmitter } from '../../services/notifications/toastEmitter';
+import { useHardwareBack } from '../../hooks/useHardwareBack';
 
 export default function MainDashboard({ data, onLogout }) {
   const { colors: tColors, isDark } = useTheme();
@@ -38,11 +39,20 @@ export default function MainDashboard({ data, onLogout }) {
 
   const [activeTab, setActiveTab] = useState('home');
   const [cat, setCat] = useState('ALL');
+  const [selectedMember, setSelectedMember] = useState('ALL');
   const [settleWith, setSettleWith] = useState(null);
   const [settlementToEdit, setSettlementToEdit] = useState(null);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
   const setM = (k) => setActiveModal(k || null);
+
+  // Native Android hardware & PWA gesture back button handler
+  useHardwareBack({
+    activeModal,
+    onCloseModal: () => setM(null),
+    activeTab,
+    onSelectTab: setActiveTab,
+  });
 
   const pageAnim = useRef(new Animated.Value(1)).current;
 
@@ -50,8 +60,8 @@ export default function MainDashboard({ data, onLogout }) {
     pageAnim.setValue(0);
     Animated.timing(pageAnim, {
       toValue: 1,
-      duration: 220,
-      easing: Easing.out(Easing.cubic),
+      duration: 260,
+      easing: Easing.bezier(0.25, 0.1, 0.25, 1),
       useNativeDriver: Platform.OS !== 'web',
     }).start();
   }, [activeTab]);
@@ -318,6 +328,8 @@ export default function MainDashboard({ data, onLogout }) {
             data={data}
             cat={cat}
             setCat={setCat}
+            selectedMember={selectedMember}
+            setSelectedMember={setSelectedMember}
             setM={setM}
             setSettleWith={setSettleWith}
             onConfirmSettlement={onConfirmSettlement}

@@ -94,38 +94,74 @@ export const requestBrowserNotificationPermission = async () => {
 };
 
 /**
- * Show a system notification on web/PWA (browser Notification API)
+ * Show a true OS-level system notification on Android/iOS mobile web, PWA & Desktop.
+ * Utilizes ServiceWorkerRegistration.showNotification() for mobile Chrome/Android tray alerts.
  */
-const triggerBrowserNotification = (title, body) => {
-  if (typeof window !== 'undefined' && 'Notification' in window) {
-    if (Notification.permission === 'granted') {
-      try {
-        new window.Notification(title, { body, icon: '/favicon.ico' });
-      } catch (err) {
-        console.warn('[Push] Browser notification error:', err);
+const triggerBrowserNotification = async (title, body) => {
+  if (typeof window === 'undefined' || !('Notification' in window)) return false;
+
+  if (Notification.permission !== 'granted') {
+    requestBrowserNotificationPermission();
+    return false;
+  }
+
+  // 1. Service Worker showNotification (guaranteed OS notification tray on Android Chrome / PWA)
+  if ('serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg && reg.showNotification) {
+        await reg.showNotification(title, {
+          body,
+          icon: '/icon-192.png',
+          badge: '/favicon.png',
+          vibrate: [200, 100, 200],
+          tag: 'ledger-notification',
+          renotify: true,
+        });
+        return true;
       }
+    } catch (err) {
+      console.warn('[Push] ServiceWorker notification notice:', err);
     }
+  }
+
+  // 2. Standard Web Notification constructor fallback
+  try {
+    new window.Notification(title, {
+      body,
+      icon: '/icon-192.png',
+      badge: '/favicon.png',
+    });
+    return true;
+  } catch (err) {
+    console.warn('[Push] Direct Notification constructor notice:', err);
+    return false;
   }
 };
 
 /**
  * Schedule a local notification on the device (shows immediately for real-time feedback).
- * Used when THIS device receives data via polling/websocket, not a push from server.
  */
-export const triggerSystemNotification = (title, body) => {
+export const triggerSystemNotification = async (title, body) => {
   if (Platform.OS === 'web') {
-    triggerBrowserNotification(title, body);
-    return;
+    return await triggerBrowserNotification(title, body);
   }
-  // Native: schedule immediate local notification
-  Notifications.scheduleNotificationAsync({
-    content: {
-      title,
-      body,
-      sound: true,
-    },
-    trigger: null, // null = show immediately
-  }).catch((err) => console.warn('[Push] Local notification error:', err));
+
+  // Native mobile: schedule immediate local OS notification
+  try {
+    await Notifications.scheduleNotificationAsync({
+      content: {
+        title,
+        body,
+        sound: true,
+      },
+      trigger: null, // null = show immediately in OS notification tray
+    });
+    return true;
+  } catch (err) {
+    console.warn('[Push] Local notification error:', err);
+    return false;
+  }
 };
 
 // ─── Dispatch push to co-managers via Expo Push API ──────────────────────────
@@ -152,14 +188,16 @@ export const sendExpensePushNotification = async ({
   shareAmount,
   recipients = [],
 }) => {
-  const notifTitle = `Airbnb Expense: ${property?.name || 'Property'}`;
-  const notifBody = `${payerName || 'Manager'} added ${formatCurrency(amount)} for "${title}". Share: ${formatCurrency(shareAmount)}.`;
+  const notifTitle = `Ledger Expense: ${property?.name || 'Group'}`;
+  const notifBody = `${payerName || 'Member'} added ${formatCurrency(amount)} for "${title}". Share: ${formatCurrency(shareAmount)}.`;
 
-  // 1. Fire in-app toast (always)
-  toastEmitter.emit(notifTitle, notifBody, 'expense');
+  // 1. Fire OS-level notification
+  const osDelivered = await triggerSystemNotification(notifTitle, notifBody);
 
-  // 2. Fire browser/local system notification for the SENDER's own device
-  triggerSystemNotification(notifTitle, notifBody);
+  // 2. If OS notifications aren't supported/permitted, fallback to in-app toast
+  if (!osDelivered) {
+    toastEmitter.emit(notifTitle, notifBody, 'expense');
+  }
 
   // 3. Send Expo push to all push tokens of co-managers (real device notifications)
   const messages = recipients.flatMap((u) =>
@@ -181,11 +219,13 @@ export const sendExpenseEditNotification = async ({
   summary,
   recipients = [],
 }) => {
-  const notifTitle = `Expense Edited: ${property?.name || 'Property'}`;
-  const notifBody = `${editorName || 'Manager'} updated ${summary || 'details'} for "${title}".`;
+  const notifTitle = `Expense Edited: ${property?.name || 'Group'}`;
+  const notifBody = `${editorName || 'Member'} updated ${summary || 'details'} for "${title}".`;
 
-  toastEmitter.emit(notifTitle, notifBody, 'edit');
-  triggerSystemNotification(notifTitle, notifBody);
+  const osDelivered = await triggerSystemNotification(notifTitle, notifBody);
+  if (!osDelivered) {
+    toastEmitter.emit(notifTitle, notifBody, 'edit');
+  }
 
   const messages = recipients.flatMap((u) =>
     (u.pushTokens || (u.expoPushToken ? [u.expoPushToken] : [])).map((token) => ({
@@ -206,11 +246,13 @@ export const sendSettlementPushNotification = async ({
   amount,
   recipients = [],
 }) => {
-  const notifTitle = `Settlement Completed: ${property?.name || 'Property'}`;
-  const notifBody = `${debtorName || 'Manager'} settled ${formatCurrency(amount)} with ${creditorName || 'Manager'}.`;
+  const notifTitle = `Settlement Completed: ${property?.name || 'Group'}`;
+  const notifBody = `${debtorName || 'Member'} settled ${formatCurrency(amount)} with ${creditorName || 'Member'}.`;
 
-  toastEmitter.emit(notifTitle, notifBody, 'settlement');
-  triggerSystemNotification(notifTitle, notifBody);
+  const osDelivered = await triggerSystemNotification(notifTitle, notifBody);
+  if (!osDelivered) {
+    toastEmitter.emit(notifTitle, notifBody, 'settlement');
+  }
 
   const messages = recipients.flatMap((u) =>
     (u.pushTokens || (u.expoPushToken ? [u.expoPushToken] : [])).map((token) => ({
