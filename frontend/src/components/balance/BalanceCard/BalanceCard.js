@@ -110,16 +110,17 @@ function BalanceCard({
 
         {/* 2. Personal Position: You Owe / Are Owed */}
         <View style={styles.personalSection}>
-          <View style={[styles.statusPill, { backgroundColor: badgeBg, borderColor: badgeBorder }]}>
-            <View style={[styles.dot, { backgroundColor: badgeColor }]} />
-            <Text style={[styles.statusText, { color: badgeColor }]} numberOfLines={1}>
-              {statusTitle}
+          <View style={styles.personalBalanceRow}>
+            <Text style={styles.amount} numberOfLines={1}>
+              {net === 0 ? '₹0' : formatCurrency(Math.abs(net))}
             </Text>
+            <View style={[styles.statusPill, { backgroundColor: badgeBg, borderColor: badgeBorder }]}>
+              <View style={[styles.dot, { backgroundColor: badgeColor }]} />
+              <Text style={[styles.statusText, { color: badgeColor }]} numberOfLines={1}>
+                {statusTitle}
+              </Text>
+            </View>
           </View>
-
-          <Text style={styles.amount} numberOfLines={1}>
-            {net === 0 ? '₹0' : formatCurrency(Math.abs(net))}
-          </Text>
           <Text style={styles.sub}>{subText}</Text>
         </View>
 

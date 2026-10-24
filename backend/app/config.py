@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     admin_username: str = os.getenv("ADMIN_USERNAME", "")
     admin_email: str = os.getenv("ADMIN_EMAIL", "")
     admin_password: str = os.getenv("ADMIN_PASSWORD", "")
+    # Web Push VAPID Keys
+    vapid_public_key: str = os.getenv("VAPID_PUBLIC_KEY", "")
+    vapid_private_key: str = os.getenv("VAPID_PRIVATE_KEY", "")
+    vapid_claims_email: str = os.getenv("VAPID_CLAIMS_EMAIL", "mailto:contact@tushargoswami.dev")
 
     class Config:
         env_file = ".env"

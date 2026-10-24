@@ -8,6 +8,7 @@ import PendingSettlementsCard from '../settlement/PendingSettlementsCard/Pending
 import ConsolidatedFilters, { getExpenseMonthKey } from '../expenses/ConsolidatedFilters/ConsolidatedFilters';
 import ExpenseList from '../expenses/ExpenseList/ExpenseList';
 import ExportButton from '../export/ExportButton';
+import NotificationPermissionBanner from '../common/NotificationPermissionBanner/NotificationPermissionBanner';
 
 export default function DashboardContent({
   data,
@@ -168,6 +169,7 @@ export default function DashboardContent({
               </TouchableOpacity>
             </View>
           )}
+          <NotificationPermissionBanner />
           <BalanceCard
             property={data.activeProperty}
             balanceData={data.balanceData}

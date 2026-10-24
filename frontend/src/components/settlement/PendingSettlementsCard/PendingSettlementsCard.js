@@ -211,6 +211,19 @@ function PendingSettlementsCard({
                       <Text style={styles.amountText}>{formatCurrency(s.amount)}</Text>
                     </View>
 
+                    {Boolean(s.verificationCode) && (
+                      <View style={styles.verificationCodeBox}>
+                        <View style={styles.codeBadge}>
+                          <Ionicons name="key" size={12} color="#F59E0B" />
+                          <Text style={styles.codeBadgeLabel}>NOTE CODE</Text>
+                          <Text style={styles.codeBadgeValue}>{s.verificationCode}</Text>
+                        </View>
+                        <Text style={styles.codeHintText}>
+                          Check your UPI app / bank SMS for this code
+                        </Text>
+                      </View>
+                    )}
+
                     {Boolean(s.notes) && (
                       <View style={styles.notesBox}>
                         <Ionicons
@@ -274,7 +287,7 @@ function PendingSettlementsCard({
             <Ionicons name="time" size={15} color={tColors.warning} />
             <Text style={styles.outgoingText}>
               You recorded <Text style={styles.highlight}>{formatCurrency(s.amount)}</Text> (
-              {s.paymentMode || 'Cash'}) to{' '}
+              {s.paymentMode || 'Cash'}{s.verificationCode ? ` • ${s.verificationCode}` : ''}) to{' '}
               <Text style={styles.highlight}>{s.paidToName || 'Partner'}</Text>. Awaiting their
               confirmation.
             </Text>

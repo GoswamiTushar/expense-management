@@ -29,6 +29,7 @@ import {
   sendExpensePushNotification,
   sendExpenseEditNotification,
   sendSettlementPushNotification,
+  sendSettlementRequestPushNotification,
 } from '../../services/notifications/pushService';
 import { toastEmitter } from '../../services/notifications/toastEmitter';
 import { useHardwareBack } from '../../hooks/useHardwareBack';
@@ -213,21 +214,44 @@ export default function MainDashboard({ data, onLogout }) {
     feedback.confirm();
     data.setSettlements((p) => [res, ...p]);
     const coManagers = (data.activeProperty?.managerDetails || []).filter(
-      (m) => String(m.id) !== String(data.currentUser?._id)
+      (m) => String(m.id || m._id) !== String(data.currentUser?._id || data.currentUser?.id)
     );
-    sendSettlementPushNotification({
-      property: data.activeProperty,
-      debtorName: data.currentUser?.name,
-      creditorName: settleWith?.user?.name,
-      amount: s.amount,
-      recipients: coManagers,
-    });
+    if (res?.status === 'pending') {
+      sendSettlementRequestPushNotification({
+        property: data.activeProperty,
+        payerName: data.currentUser?.name,
+        creditorName: settleWith?.user?.name,
+        amount: s.amount,
+        code: res.verificationCode,
+        recipients: coManagers,
+      });
+    } else {
+      sendSettlementPushNotification({
+        property: data.activeProperty,
+        debtorName: data.currentUser?.name,
+        creditorName: settleWith?.user?.name,
+        amount: s.amount,
+        approverName: data.currentUser?.name,
+        recipients: coManagers,
+      });
+    }
     data.refresh();
   };
 
   const onConfirmSettlement = async (settlementId) => {
-    await confirmSettlement(settlementId);
+    const confirmed = await confirmSettlement(settlementId);
     feedback.confirm();
+    const coManagers = (data.activeProperty?.managerDetails || []).filter(
+      (m) => String(m.id || m._id) !== String(data.currentUser?._id || data.currentUser?.id)
+    );
+    sendSettlementPushNotification({
+      property: data.activeProperty,
+      debtorName: confirmed?.settledByName || 'Member',
+      creditorName: confirmed?.paidToName || 'Member',
+      amount: confirmed?.amount || 0,
+      approverName: data.currentUser?.name || 'Partner',
+      recipients: coManagers,
+    });
     data.refresh();
   };
 

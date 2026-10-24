@@ -428,6 +428,37 @@ export default function SettlementHistoryModal({
                           <Ionicons name={modeIcon} size={11} color={tColors.primary} />
                           <Text style={styles.modeText}>{s.paymentMode || 'Cash'}</Text>
                         </View>
+                        {Boolean(s.verificationCode) && (
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              gap: 3,
+                              backgroundColor: isDark
+                                ? 'rgba(245, 158, 11, 0.15)'
+                                : 'rgba(245, 158, 11, 0.1)',
+                              paddingHorizontal: 6,
+                              paddingVertical: 2,
+                              borderRadius: 6,
+                              borderWidth: 1,
+                              borderColor: isDark
+                                ? 'rgba(245, 158, 11, 0.35)'
+                                : 'rgba(245, 158, 11, 0.25)',
+                            }}
+                          >
+                            <Ionicons name="key" size={10} color="#F59E0B" />
+                            <Text
+                              style={{
+                                color: isDark ? '#FEF3C7' : '#92400E',
+                                fontSize: 10.5,
+                                fontWeight: '700',
+                                letterSpacing: 0.5,
+                              }}
+                            >
+                              {s.verificationCode}
+                            </Text>
+                          </View>
+                        )}
                         {renderStatusBadge(s.status)}
                       </View>
 

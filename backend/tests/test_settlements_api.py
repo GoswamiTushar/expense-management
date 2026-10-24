@@ -144,6 +144,42 @@ async def run_tests():
         assert direct_data["confirmedBy"] == "user_b_test"
         print("[PASS] 9. Direct receipt recorded by receiver automatically confirmed.")
 
+        # 10. UPI settlement with explicit verificationCode
+        app.dependency_overrides[get_current_user] = lambda: user_a
+        res = await client.post("/api/settlements", json={
+            "propertyId": prop_id,
+            "settledBy": "user_a_test",
+            "settledByName": "Alice",
+            "paidTo": "user_b_test",
+            "paidToName": "Bob",
+            "amount": 1500.0,
+            "paymentMode": "UPI",
+            "verificationCode": "SPLIT-7K9X",
+            "notes": "Settled lunch",
+        })
+        assert res.status_code == 201
+        upi_data = res.json()
+        assert upi_data["status"] == "pending"
+        assert upi_data["verificationCode"] == "SPLIT-7K9X"
+        print("[PASS] 10. UPI settlement with explicit verificationCode 'SPLIT-7K9X' preserved.")
+
+        # 11. UPI settlement without verificationCode auto-generates SPLIT-XXXX code
+        res = await client.post("/api/settlements", json={
+            "propertyId": prop_id,
+            "settledBy": "user_a_test",
+            "settledByName": "Alice",
+            "paidTo": "user_b_test",
+            "paidToName": "Bob",
+            "amount": 750.0,
+            "paymentMode": "UPI",
+        })
+        assert res.status_code == 201
+        auto_upi_data = res.json()
+        assert auto_upi_data["status"] == "pending"
+        assert auto_upi_data["verificationCode"] is not None
+        assert auto_upi_data["verificationCode"].startswith("SPLIT-")
+        print(f"[PASS] 11. UPI settlement auto-generated verification code '{auto_upi_data['verificationCode']}'.")
+
         # Clean up test artifacts in local DB
         await get_db().properties.delete_many({"_id": prop_id})
         await get_db().settlements.delete_many({"propertyId": prop_id})

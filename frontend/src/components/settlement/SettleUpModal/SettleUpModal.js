@@ -17,7 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { createSettleUpStyles } from './SettleUpModal.styles';
 import { useTheme } from '../../../context/ThemeContext';
 import { formatCurrency } from '../../../utils/currency';
-import { openUpiApp } from '../../../services/upi/upiService';
+import { openUpiApp, generateSettlementCode } from '../../../services/upi/upiService';
 import { useSwipeDown } from '../../../hooks/useSwipeDown';
 
 const PAYMENT_MODES = [
@@ -47,6 +47,7 @@ export default function SettleUpModal({
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [launchedUpi, setLaunchedUpi] = useState(false);
+  const [verificationCode, setVerificationCode] = useState(() => generateSettlementCode());
 
   const isEdit = Boolean(settlementToEdit);
 
@@ -96,10 +97,14 @@ export default function SettleUpModal({
         setAmount(String(settlementToEdit.amount || ''));
         setPaymentMode(settlementToEdit.paymentMode || 'Cash');
         setNotes(settlementToEdit.notes || '');
+        if (settlementToEdit.verificationCode) {
+          setVerificationCode(settlementToEdit.verificationCode);
+        }
       } else {
         setAmount(defaultAmount > 0 ? String(defaultAmount) : '');
         setPaymentMode(creditor?.upiId ? 'UPI' : 'Cash');
         setNotes('');
+        setVerificationCode(generateSettlementCode());
       }
       setSubmitting(false);
       setLaunchedUpi(false);
@@ -177,7 +182,8 @@ export default function SettleUpModal({
       upiId,
       payeeName: creditorName,
       amount: parsedAmount,
-      note: `${property?.name || 'Property'} Settlement`,
+      note: `${property?.name || 'Group'} Settlement`,
+      verificationCode,
     });
     setLaunchedUpi(true);
   };
@@ -195,6 +201,7 @@ export default function SettleUpModal({
             amount: parsedAmount,
             paymentMode,
             notes: notes.trim(),
+            verificationCode: paymentMode === 'UPI' ? verificationCode : null,
           });
         }
       } else {
@@ -207,6 +214,7 @@ export default function SettleUpModal({
           amount: parsedAmount,
           paymentMode,
           notes: notes.trim(),
+          verificationCode: paymentMode === 'UPI' ? verificationCode : null,
         });
       }
       handleClose();
@@ -339,9 +347,31 @@ export default function SettleUpModal({
 
             {/* UPI Details if UPI selected */}
             {paymentMode === 'UPI' && (
-              <View style={styles.upiPill}>
-                <Ionicons name="card" size={13} color={tColors.info} />
-                <Text style={styles.upiText}>Payee UPI: {upiId}</Text>
+              <View style={styles.upiContainer}>
+                <View style={styles.upiPill}>
+                  <Ionicons name="card" size={13} color={tColors.info} />
+                  <Text style={styles.upiText}>Payee UPI: {upiId}</Text>
+                </View>
+
+                <View style={styles.secretCodeCard}>
+                  <View style={styles.secretCodeHeader}>
+                    <View style={styles.secretCodeBadge}>
+                      <Ionicons name="key" size={13} color="#F59E0B" />
+                      <Text style={styles.secretCodeBadgeText}>SECRET PAYMENT NOTE CODE</Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => setVerificationCode(generateSettlementCode())}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                      title="Regenerate Code"
+                    >
+                      <Ionicons name="refresh" size={14} color={tColors.textMuted} />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.secretCodeValue}>{verificationCode}</Text>
+                  <Text style={styles.secretCodeHint}>
+                    Pre-filled in your UPI note. {creditorName} will verify this code in their bank SMS/app to confirm receipt.
+                  </Text>
+                </View>
               </View>
             )}
 

@@ -1,4 +1,5 @@
 import time
+import asyncio
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -164,7 +165,7 @@ async def create_expense(payload: ExpenseCreate, current_user: dict = Depends(ge
         if is_on_behalf
         else f"{actor_name} logged '{exp.get('title')}' for ₹{amount:,.2f}"
     )
-    await record_notification(
+    asyncio.create_task(record_notification(
         property_id=exp.get("propertyId"),
         title="New Expense Added",
         body=notif_body,
@@ -172,7 +173,7 @@ async def create_expense(payload: ExpenseCreate, current_user: dict = Depends(ge
         actor_name=actor_name,
         notif_type="expense_created",
         data={"expenseId": exp["_id"], "amount": exp.get("amount")},
-    )
+    ))
 
     return ExpenseResponse(id=exp["_id"], **exp)
 
@@ -319,7 +320,7 @@ async def update_expense(
 
     if changed_items:
         desc = ", ".join(changed_items)
-        await record_notification(
+        asyncio.create_task(record_notification(
             property_id=existing.get("propertyId"),
             title="Expense Updated",
             body=f"{user_name} updated {desc} for '{existing.get('title')}'",
@@ -327,7 +328,7 @@ async def update_expense(
             actor_name=user_name,
             notif_type="expense_updated",
             data={"expenseId": expense_id},
-        )
+        ))
 
     return ExpenseResponse(id=existing["_id"], **existing)
 
@@ -400,7 +401,7 @@ async def delete_expense(
             },
         )
         if prop_id:
-            await record_notification(
+            asyncio.create_task(record_notification(
                 property_id=prop_id,
                 title="Expense Deleted",
                 body=f"{user_name} deleted '{exp.get('title')}' (₹{float(exp.get('amount', 0)):,.2f})",
@@ -408,7 +409,7 @@ async def delete_expense(
                 actor_name=user_name,
                 notif_type="expense_deleted",
                 data={"expenseId": expense_id},
-            )
+            ))
         return {
             "success": True,
             "status": "deleted",
@@ -445,7 +446,7 @@ async def delete_expense(
     )
 
     if prop_id:
-        await record_notification(
+        asyncio.create_task(record_notification(
             property_id=prop_id,
             title="Expense Deletion Request",
             body=f"{user_name} requested approval to delete '{exp.get('title')}' (₹{float(exp.get('amount', 0)):,.2f})",
@@ -453,7 +454,7 @@ async def delete_expense(
             actor_name=user_name,
             notif_type="expense_delete_requested",
             data={"expenseId": expense_id, "reason": reason},
-        )
+        ))
 
     return {
         "success": True,
@@ -524,7 +525,7 @@ async def approve_delete_expense(
     )
 
     if prop_id:
-        await record_notification(
+        asyncio.create_task(record_notification(
             property_id=prop_id,
             title="Expense Deletion Approved",
             body=f"{user_name} approved deletion of '{exp.get('title')}' (₹{float(exp.get('amount', 0)):,.2f})",
@@ -532,7 +533,7 @@ async def approve_delete_expense(
             actor_name=user_name,
             notif_type="expense_deleted",
             data={"expenseId": expense_id},
-        )
+        ))
 
     return {
         "success": True,
@@ -596,7 +597,7 @@ async def reject_delete_expense(
     )
 
     if prop_id:
-        await record_notification(
+        asyncio.create_task(record_notification(
             property_id=prop_id,
             title="Expense Deletion Rejected",
             body=f"{user_name} rejected the deletion request for '{exp.get('title')}': {reason}",
@@ -604,7 +605,7 @@ async def reject_delete_expense(
             actor_name=user_name,
             notif_type="expense_delete_rejected",
             data={"expenseId": expense_id, "reason": reason},
-        )
+        ))
 
     return {
         "success": True,

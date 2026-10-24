@@ -10,3 +10,4 @@ httpx
 google-auth
 email-validator
 python-jose[cryptography]
+pywebpush

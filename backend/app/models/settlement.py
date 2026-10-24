@@ -17,6 +17,7 @@ class SettlementCreate(BaseModel):
     amount: float = Field(..., gt=0, description="Settlement amount must be positive")
     paymentMode: Optional[str] = "Cash"  # "Cash", "UPI", "UPI App", "Bank Transfer", "Other"
     notes: Optional[str] = ""
+    verificationCode: Optional[str] = None  # e.g., "SPLIT-4F2A"
 
 class SettlementRejectRequest(BaseModel):
     reason: Optional[str] = "Payment not received"
@@ -25,6 +26,7 @@ class SettlementUpdateRequest(BaseModel):
     amount: Optional[float] = Field(None, gt=0, description="Settlement amount must be positive")
     paymentMode: Optional[str] = None
     notes: Optional[str] = None
+    verificationCode: Optional[str] = None
 
 class SettlementResponse(BaseModel):
     id: str
@@ -42,6 +44,7 @@ class SettlementResponse(BaseModel):
     settledAt: Optional[str] = None
     confirmedBy: Optional[str] = None
     rejectionReason: Optional[str] = None
+    verificationCode: Optional[str] = None
     auditLog: Optional[List[SettlementAuditEntry]] = []
 
 class OweItemInfo(BaseModel):

@@ -90,23 +90,45 @@ async def update_profile(payload: UpdateProfileRequest, current_user: dict = Dep
 
 
 class PushTokenRequest(BaseModel):
-    token: str
+    token: Optional[str] = None
     platform: Optional[str] = None  # "android", "ios", "web"
+    subscription: Optional[dict] = None  # Web Push subscription {endpoint, keys}
 
 
 @router.patch("/push-token")
 async def register_push_token(payload: PushTokenRequest, current_user: dict = Depends(get_current_user)):
-    """Store/update the device push token for the current user."""
+    """Store/update native Expo push token or Web Push subscription for current user."""
     db = get_db()
-    token = payload.token.strip()
-    if not token:
-        raise HTTPException(status_code=400, detail="Token cannot be empty.")
+    updated = False
 
-    # Store as a set of tokens (user may have multiple devices)
-    await db.users.update_one(
-        {"_id": current_user["_id"]},
-        {"$addToSet": {"pushTokens": token}}
-    )
+    # 1. Handle Web Push subscription (for closed browser / PWA lockscreen alerts)
+    if payload.subscription and isinstance(payload.subscription, dict) and payload.subscription.get("endpoint"):
+        sub = payload.subscription
+        endpoint = sub.get("endpoint")
+        # Replace if endpoint exists already to prevent duplicates
+        await db.users.update_one(
+            {"_id": current_user["_id"]},
+            {"$pull": {"webPushSubscriptions": {"endpoint": endpoint}}}
+        )
+        await db.users.update_one(
+            {"_id": current_user["_id"]},
+            {"$addToSet": {"webPushSubscriptions": sub}}
+        )
+        updated = True
+
+    # 2. Handle Native Expo Push token (for mobile APK/IPA builds)
+    if payload.token:
+        token = payload.token.strip()
+        if token:
+            await db.users.update_one(
+                {"_id": current_user["_id"]},
+                {"$addToSet": {"pushTokens": token}}
+            )
+            updated = True
+
+    if not updated:
+        raise HTTPException(status_code=400, detail="Either a valid push token or Web Push subscription is required.")
+
     return {"success": True}
 
 

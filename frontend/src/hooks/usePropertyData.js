@@ -11,8 +11,9 @@ import {
   markNotificationsRead,
 } from '../services/api/notificationApi';
 import { computeBalances } from '../services/engine/balanceEngine';
-import { triggerSystemNotification } from '../services/notifications/pushService';
+import { triggerSystemNotification, registerWebPushSubscription } from '../services/notifications/pushService';
 import { toastEmitter } from '../services/notifications/toastEmitter';
+import { notificationSocket } from '../services/realtime/notificationSocket';
 
 /**
  * usePropertyData — all data fetching is gated behind `currentUser`.
@@ -169,29 +170,27 @@ export const usePropertyData = (currentUser) => {
     setRefreshing(false);
   }, [activeProperty, currentUser]);
 
-  // Periodic lightweight notification sync (every 25s) to capture events from partners
+  // Real-time zero-overhead notification delivery via WebSocket room (replaces 25s polling)
   useEffect(() => {
     const propId = activeProperty?._id || activeProperty?.id;
     if (!propId || (!currentUser?._id && !currentUser?.id)) return;
 
-    const interval = setInterval(async () => {
-      try {
-        const fresh = await getNotificationsByProperty(propId);
-        setNotifications((prev) => {
-          // If a new notification has arrived that was created by another manager, alert!
-          if (fresh.length > prev.length && prev.length > 0) {
-            const newest = fresh[0];
-            if (newest && String(newest.actorId) !== currentUserId) {
-              triggerSystemNotification(newest.title, newest.body);
-              toastEmitter.emit(newest.title, newest.body, newest.type || 'info');
-            }
-          }
-          return fresh;
-        });
-      } catch (_) {}
-    }, 25000);
+    const unsubscribe = notificationSocket.subscribe(propId, currentUserId, (newNotif) => {
+      setNotifications((prev) => {
+        const notifId = newNotif.id || newNotif._id;
+        if (prev.some((n) => (n.id || n._id) === notifId)) return prev;
+        return [newNotif, ...prev];
+      });
+    });
 
-    return () => clearInterval(interval);
+    // Sync Web Push subscription in background if permission is already granted
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      registerWebPushSubscription().catch(() => {});
+    }
+
+    return () => {
+      unsubscribe();
+    };
   }, [activeProperty?._id, activeProperty?.id, currentUserId]);
 
   const markNotificationsAsRead = async () => {

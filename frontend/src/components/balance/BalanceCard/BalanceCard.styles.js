@@ -19,13 +19,13 @@ export const createBalanceCardStyles = (tColors = colors, isDark = true) =>
       elevation: 6,
       ...(Platform.OS === 'web'
         ? {
-            backgroundImage: isDark
-              ? 'radial-gradient(ellipse 75% 50% at 85% 0%, rgba(94, 92, 230, 0.14) 0%, rgba(147, 51, 234, 0.04) 50%, transparent 85%)'
-              : 'radial-gradient(ellipse 75% 50% at 85% 0%, rgba(238, 242, 255, 0.90) 0%, transparent 70%)',
-            boxShadow: isDark
-              ? 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.10), 0 16px 36px -8px rgba(0, 0, 0, 0.55)'
-              : 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.95), 0 10px 28px -4px rgba(15, 23, 42, 0.06)',
-          }
+          backgroundImage: isDark
+            ? 'radial-gradient(ellipse 75% 50% at 85% 0%, rgba(94, 92, 230, 0.14) 0%, rgba(147, 51, 234, 0.04) 50%, transparent 85%)'
+            : 'radial-gradient(ellipse 75% 50% at 85% 0%, rgba(238, 242, 255, 0.90) 0%, transparent 70%)',
+          boxShadow: isDark
+            ? 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.10), 0 16px 36px -8px rgba(0, 0, 0, 0.55)'
+            : 'inset 0 1px 1px 0 rgba(255, 255, 255, 0.95), 0 10px 28px -4px rgba(15, 23, 42, 0.06)',
+        }
         : {}),
     },
 
@@ -60,9 +60,9 @@ export const createBalanceCardStyles = (tColors = colors, isDark = true) =>
       marginTop: 2,
       ...(Platform.OS === 'web'
         ? {
-            fontFeatureSettings: '"tnum"',
-            fontVariantNumeric: 'tabular-nums',
-          }
+          fontFeatureSettings: '"tnum"',
+          fontVariantNumeric: 'tabular-nums',
+        }
         : {}),
     },
     managerCountBtn: {
@@ -87,7 +87,7 @@ export const createBalanceCardStyles = (tColors = colors, isDark = true) =>
     divider: {
       height: 1,
       backgroundColor: isDark ? 'rgba(255, 255, 255, 0.07)' : 'rgba(15, 23, 42, 0.06)',
-      marginVertical: 14,
+      marginVertical: 11,
       width: '100%',
     },
 
@@ -95,12 +95,19 @@ export const createBalanceCardStyles = (tColors = colors, isDark = true) =>
     personalSection: {
       width: '100%',
     },
+    personalBalanceRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: "space-between",
+      gap: 10,
+      flexWrap: 'wrap',
+    },
     statusPill: {
       flexDirection: 'row',
       alignItems: 'center',
-      alignSelf: 'flex-start',
-      paddingHorizontal: 10,
-      paddingVertical: 4.5,
+      justifyContent: 'center',
+      paddingHorizontal: 9,
+      paddingVertical: 3.5,
       borderRadius: 9999,
       borderWidth: 1,
     },
@@ -108,24 +115,23 @@ export const createBalanceCardStyles = (tColors = colors, isDark = true) =>
       width: 6,
       height: 6,
       borderRadius: 3,
-      marginRight: 6,
+      marginRight: 5,
     },
     statusText: {
       fontSize: 10.5,
       fontWeight: '800',
-      letterSpacing: 0.3,
+      letterSpacing: 0.4,
     },
     amount: {
       color: tColors.textDark,
-      fontSize: 30,
+      fontSize: 28,
       fontWeight: '700',
       letterSpacing: -0.5,
-      marginTop: 6,
       ...(Platform.OS === 'web'
         ? {
-            fontFeatureSettings: '"tnum"',
-            fontVariantNumeric: 'tabular-nums',
-          }
+          fontFeatureSettings: '"tnum"',
+          fontVariantNumeric: 'tabular-nums',
+        }
         : {}),
     },
     sub: {

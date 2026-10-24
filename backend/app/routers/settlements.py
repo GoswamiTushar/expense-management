@@ -1,4 +1,6 @@
 import time
+import asyncio
+import secrets
 from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -34,6 +36,7 @@ def _format_settlement_response(doc: dict) -> SettlementResponse:
         settledAt=doc.get("settledAt"),
         confirmedBy=doc.get("confirmedBy"),
         rejectionReason=doc.get("rejectionReason"),
+        verificationCode=doc.get("verificationCode"),
         auditLog=[
             SettlementAuditEntry(
                 action=entry.get("action", "unknown"),
@@ -146,6 +149,12 @@ async def create_settlement(
         }
     ]
 
+    # Auto-generate or accept secret verification code for UPI settlements
+    v_code = (payload.verificationCode or "").strip().upper()
+    if not v_code and ("upi" in (payload.paymentMode or "").lower()):
+        v_code = f"SPLIT-{secrets.token_hex(2).upper()}"
+    verification_code = v_code if v_code else None
+
     record = {
         "_id": f"settle_{int(time.time()*1000)}",
         "propertyId": str(payload.propertyId),
@@ -158,6 +167,7 @@ async def create_settlement(
         "notes": (payload.notes or "").strip(),
         "status": initial_status,
         "initiatedBy": actor_id,
+        "verificationCode": verification_code,
         "createdAt": now,
         "settledAt": settled_at,
         "confirmedBy": confirmed_by,
@@ -169,15 +179,18 @@ async def create_settlement(
 
     # Notify property managers / receiver
     if is_receiver:
-        notif_title = "Settlement Confirmed"
-        notif_body = f"{actor_name} confirmed receiving ₹{amount:,.2f} ({payload.paymentMode}) from {payload.settledByName}"
+        notif_title = "Settlement Confirmed ✓"
+        notif_body = f"{actor_name} confirmed receiving ₹{amount:,.2f} ({payload.paymentMode}) from {payload.settledByName}."
         notif_type = "settlement_confirmed"
+        target_uids = [str(payload.settledBy)]
     else:
-        notif_title = "Payment Receipt Confirmation"
-        notif_body = f"{actor_name} marked ₹{amount:,.2f} ({payload.paymentMode}) as paid to {payload.paidToName}. Tap to confirm receipt."
+        code_str = f" (Code: {verification_code})" if verification_code else ""
+        notif_title = "Payment Verification Needed 🔔"
+        notif_body = f"{actor_name} says they paid ₹{amount:,.2f} via {payload.paymentMode}{code_str}. Tap to confirm receipt."
         notif_type = "settlement_pending"
+        target_uids = [str(payload.paidTo)]
 
-    await record_notification(
+    asyncio.create_task(record_notification(
         property_id=record["propertyId"],
         title=notif_title,
         body=notif_body,
@@ -189,9 +202,11 @@ async def create_settlement(
             "amount": amount,
             "paidTo": record["paidTo"],
             "settledBy": record["settledBy"],
+            "verificationCode": verification_code,
             "status": initial_status,
         },
-    )
+        target_user_ids=target_uids,
+    ))
 
     return _format_settlement_response(record)
 
@@ -285,7 +300,7 @@ async def update_settlement(
 
     # Notify recipient
     effective_amt = float(updated.get("amount", 0))
-    await record_notification(
+    asyncio.create_task(record_notification(
         property_id=doc.get("propertyId"),
         title="Settlement Request Updated",
         body=f"{actor_name} updated pending settlement request to ₹{effective_amt:,.2f} ({updated.get('paymentMode')})",
@@ -297,7 +312,7 @@ async def update_settlement(
             "amount": effective_amt,
             "status": "pending",
         },
-    )
+    ))
 
     return _format_settlement_response(updated)
 
@@ -364,22 +379,28 @@ async def confirm_settlement(
 
     updated = await get_db().settlements.find_one({"_id": settlement_id})
 
-    # Notify co-managers / payer
+    # Notify both parties: payer and receiver
     amount = float(doc.get("amount", 0))
-    await record_notification(
+    settled_by_id = str(doc.get("settledBy", ""))
+    paid_to_id = str(doc.get("paidTo", ""))
+    target_uids = list(set([uid for uid in [settled_by_id, paid_to_id] if uid]))
+
+    asyncio.create_task(record_notification(
         property_id=doc.get("propertyId"),
-        title="Settlement Confirmed",
-        body=f"{actor_name} confirmed receipt of ₹{amount:,.2f} from {doc.get('settledByName')}",
+        title="Settlement Approved! ✓",
+        body=f"₹{amount:,.2f} has been settled with {actor_name}'s approval.",
         actor_id=actor_id,
         actor_name=actor_name,
         notif_type="settlement_confirmed",
         data={
             "settlementId": settlement_id,
             "amount": amount,
-            "settledBy": doc.get("settledBy"),
+            "settledBy": settled_by_id,
+            "paidTo": paid_to_id,
             "status": "confirmed",
         },
-    )
+        target_user_ids=target_uids,
+    ))
 
     return _format_settlement_response(updated)
 
@@ -445,7 +466,10 @@ async def reject_settlement(
 
     # Notify payer
     amount = float(doc.get("amount", 0))
-    await record_notification(
+    settled_by_id = str(doc.get("settledBy", ""))
+    target_uids = [settled_by_id] if settled_by_id else []
+
+    asyncio.create_task(record_notification(
         property_id=doc.get("propertyId"),
         title="Settlement Declined",
         body=f"{actor_name} declined the settlement of ₹{amount:,.2f}. Reason: {reason}",
@@ -455,11 +479,12 @@ async def reject_settlement(
         data={
             "settlementId": settlement_id,
             "amount": amount,
-            "settledBy": doc.get("settledBy"),
+            "settledBy": settled_by_id,
             "status": "rejected",
             "reason": reason,
         },
-    )
+        target_user_ids=target_uids,
+    ))
 
     return _format_settlement_response(updated)
 
@@ -535,7 +560,7 @@ async def cancel_settlement(
     updated = await get_db().settlements.find_one({"_id": settlement_id})
 
     amount = float(doc.get("amount", 0))
-    await record_notification(
+    asyncio.create_task(record_notification(
         property_id=doc.get("propertyId"),
         title="Settlement Request Cancelled",
         body=f"{actor_name} cancelled the pending settlement request of ₹{amount:,.2f}",
@@ -547,7 +572,7 @@ async def cancel_settlement(
             "amount": amount,
             "status": "cancelled",
         },
-    )
+    ))
 
     return _format_settlement_response(updated)
 

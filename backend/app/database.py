@@ -43,3 +43,17 @@ async def ping_database() -> bool:
     except Exception as e:
         print(f"[DB Ping Error] {e}")
         return False
+
+async def init_db_indexes():
+    """Create essential performance and TTL cleanup indexes."""
+    try:
+        db = get_db()
+        # Notifications compound index for fast listing & delta queries
+        await db.notifications.create_index([("propertyId", 1), ("createdAt", -1)])
+        # Notifications TTL auto-cleanup (expire after 90 days via expireAt)
+        await db.notifications.create_index([("expireAt", 1)], expireAfterSeconds=0)
+        # Fast user token lookups
+        await db.users.create_index([("pushTokens", 1)])
+        print("[DB Indexes] Performance & TTL indexes verified.")
+    except Exception as e:
+        print(f"[DB Index Warning] {e}")

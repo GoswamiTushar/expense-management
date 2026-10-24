@@ -6,6 +6,52 @@ import { CONFIG } from '../../config/urls';
 import { toastEmitter } from './toastEmitter';
 import { formatCurrency } from '../../utils/currency';
 import { apiClient } from '../api/apiClient';
+import { getVapidPublicKey } from '../api/notificationApi';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+export const registerWebPushSubscription = async () => {
+  if (Platform.OS !== 'web' || typeof window === 'undefined' || !('serviceWorker' in navigator)) {
+    return null;
+  }
+  try {
+    const vapidKey = await getVapidPublicKey();
+    if (!vapidKey) return null;
+
+    const reg = await navigator.serviceWorker.ready;
+    if (!reg || !reg.pushManager) return null;
+
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidKey),
+      });
+    }
+
+    if (sub) {
+      const subJson = sub.toJSON();
+      await apiClient('/auth/push-token', {
+        method: 'PATCH',
+        body: { subscription: subJson, platform: 'web' },
+      });
+      console.log('[WebPush] Successfully registered Web Push subscription with backend.');
+      return subJson;
+    }
+  } catch (err) {
+    console.warn('[WebPush] Subscription notice:', err.message);
+  }
+  return null;
+};
 
 // ─── Notification display behaviour (how system shows the notification) ───────
 Notifications.setNotificationHandler({
@@ -18,9 +64,13 @@ Notifications.setNotificationHandler({
 
 // ─── Register device & get Expo push token ────────────────────────────────────
 export const registerForPushNotifications = async () => {
-  // Web: use browser Notification API
+  // Web: register Service Worker Web Push subscription
   if (Platform.OS === 'web') {
-    return requestBrowserNotificationPermission();
+    const perm = await requestBrowserNotificationPermission();
+    if (perm) {
+      await registerWebPushSubscription();
+    }
+    return perm;
   }
 
   // Native: must be a real device (not simulator)
@@ -74,6 +124,109 @@ export const registerForPushNotifications = async () => {
   } catch (err) {
     console.warn('[Push] Token fetch failed:', err.message);
     return null;
+  }
+};
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const NOTIF_DENIED_STORAGE_KEY = '@ledger_notif_prompt_denied';
+
+// ─── Check current notification permission status ─────────────────────────────
+export const checkNotificationPermissionStatus = async () => {
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'granted') return 'granted';
+      if (Notification.permission === 'denied') return 'denied';
+      return 'off'; // 'default'
+    }
+    return 'unsupported';
+  }
+
+  try {
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status === 'granted') return 'granted';
+    if (status === 'denied') return 'denied';
+    return 'off';
+  } catch (_) {
+    return 'off';
+  }
+};
+
+// ─── Check if user previously denied/dismissed in-app prompt ──────────────────
+export const isNotificationPromptDenied = async () => {
+  try {
+    const val = await AsyncStorage.getItem(NOTIF_DENIED_STORAGE_KEY);
+    return val === 'true';
+  } catch (_) {
+    return false;
+  }
+};
+
+export const setNotificationPromptDenied = async () => {
+  try {
+    await AsyncStorage.setItem(NOTIF_DENIED_STORAGE_KEY, 'true');
+  } catch (_) {}
+};
+
+export const clearNotificationPromptDenied = async () => {
+  try {
+    await AsyncStorage.removeItem(NOTIF_DENIED_STORAGE_KEY);
+  } catch (_) {}
+};
+
+// ─── Request notification permission on user gesture (Button Tap) ──────────────
+export const requestNotificationPermissionWithPrompt = async () => {
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const res = await Notification.requestPermission();
+        if (res === 'granted') {
+          await clearNotificationPromptDenied();
+          // Register Web Push Service Worker subscription so alerts arrive when app is closed
+          await registerWebPushSubscription();
+          // Trigger instant welcome notification so user sees it working immediately
+          await triggerBrowserNotification(
+            'Notifications Enabled! ✓',
+            'You will now receive phone and lockscreen alerts even when the app is closed.'
+          );
+          return 'granted';
+        } else if (res === 'denied') {
+          await setNotificationPromptDenied();
+          return 'denied';
+        }
+        return 'off';
+      } catch (err) {
+        console.warn('[Push] Permission request notice:', err);
+        return 'denied';
+      }
+    }
+    return 'unsupported';
+  }
+
+  // Native iOS / Android
+  try {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+
+    if (finalStatus === 'granted') {
+      await clearNotificationPromptDenied();
+      await registerForPushNotifications();
+      await triggerSystemNotification(
+        'Notifications Enabled! ✓',
+        'You will now receive instant phone alerts for settlements and group expenses.'
+      );
+      return 'granted';
+    } else {
+      await setNotificationPromptDenied();
+      return 'denied';
+    }
+  } catch (err) {
+    console.warn('[Push] Native permission notice:', err);
+    return 'denied';
   }
 };
 
@@ -239,15 +392,45 @@ export const sendExpenseEditNotification = async ({
   await sendToExpoPush(messages);
 };
 
+export const sendSettlementRequestPushNotification = async ({
+  property,
+  payerName,
+  creditorName,
+  amount,
+  code = '',
+  recipients = [],
+}) => {
+  const codeStr = code ? ` (Code: ${code})` : '';
+  const notifTitle = `Payment Verification Needed 🔔`;
+  const notifBody = `${payerName || 'Member'} recorded ${formatCurrency(amount)} via UPI${codeStr}. Tap to confirm receipt.`;
+
+  const osDelivered = await triggerSystemNotification(notifTitle, notifBody);
+  if (!osDelivered) {
+    toastEmitter.emit(notifTitle, notifBody, 'settlement');
+  }
+
+  const messages = recipients.flatMap((u) =>
+    (u.pushTokens || (u.expoPushToken ? [u.expoPushToken] : [])).map((token) => ({
+      to: token,
+      title: notifTitle,
+      body: notifBody,
+      sound: 'default',
+      data: { propertyId: property?._id || property?.id, amount, code },
+    }))
+  );
+  await sendToExpoPush(messages);
+};
+
 export const sendSettlementPushNotification = async ({
   property,
   debtorName,
   creditorName,
   amount,
+  approverName = '',
   recipients = [],
 }) => {
-  const notifTitle = `Settlement Completed: ${property?.name || 'Group'}`;
-  const notifBody = `${debtorName || 'Member'} settled ${formatCurrency(amount)} with ${creditorName || 'Member'}.`;
+  const notifTitle = `Settlement Approved! ✓`;
+  const notifBody = `${formatCurrency(amount)} has been settled with ${approverName || creditorName || 'approval'}.`;
 
   const osDelivered = await triggerSystemNotification(notifTitle, notifBody);
   if (!osDelivered) {
@@ -265,3 +448,4 @@ export const sendSettlementPushNotification = async ({
   );
   await sendToExpoPush(messages);
 };
+

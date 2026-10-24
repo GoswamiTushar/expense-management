@@ -4,12 +4,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { createEditProfileStyles } from './EditProfileModal.styles';
 import { useTheme } from '../../../context/ThemeContext';
 import { useFeedback } from '../../../context/FeedbackContext';
+import {
+  checkNotificationPermissionStatus,
+  requestNotificationPermissionWithPrompt,
+  setNotificationPromptDenied,
+} from '../../../services/notifications/pushService';
 
 export default function EditProfileModal({ visible, onClose, currentUser, onSaveProfile, onLogout }) {
   const [name, setName] = useState('');
   const [upiId, setUpiId] = useState('');
   const { theme, setTheme, isDark, colors: tColors } = useTheme();
   const { hapticsEnabled, soundsEnabled, setHapticsEnabled, setSoundsEnabled, feedback } = useFeedback();
+  const [notifGranted, setNotifGranted] = useState(false);
 
 
   const styles = useMemo(() => createEditProfileStyles(tColors, isDark), [tColors, isDark]);
@@ -21,6 +27,7 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
     if (visible && currentUser) {
       setName(currentUser.name || '');
       setUpiId(currentUser.upiId || '');
+      checkNotificationPermissionStatus().then((s) => setNotifGranted(s === 'granted'));
       fadeAnim.setValue(0);
       scaleAnim.setValue(0.92);
       Animated.parallel([
@@ -157,6 +164,37 @@ export default function EditProfileModal({ visible, onClose, currentUser, onSave
                 onValueChange={(val) => {
                   setSoundsEnabled(val);
                   if (val) feedback.success();
+                }}
+                trackColor={{ false: isDark ? '#232838' : '#CBD5E1', true: tColors.primary }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+
+            <View style={[styles.feedbackRow, { marginTop: 8 }]}>
+              <View style={styles.feedbackInfo}>
+                <View style={[styles.feedbackIconBox, { backgroundColor: isDark ? 'rgba(94, 92, 230, 0.15)' : 'rgba(94, 92, 230, 0.10)' }]}>
+                  <Ionicons name="notifications-outline" size={16} color="#5E5CE6" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.feedbackTitle}>System Push Alerts</Text>
+                  <Text style={styles.feedbackSub}>OS notifications for settlements &amp; expenses</Text>
+                </View>
+              </View>
+              <Switch
+                value={notifGranted}
+                onValueChange={async (val) => {
+                  if (val) {
+                    const res = await requestNotificationPermissionWithPrompt();
+                    setNotifGranted(res === 'granted');
+                    if (res === 'granted') feedback.success();
+                    else if (res === 'denied') {
+                      alert('Notification permission is blocked. Please enable notifications in your browser or device settings.');
+                    }
+                  } else {
+                    await setNotificationPromptDenied();
+                    setNotifGranted(false);
+                    feedback.toggle();
+                  }
                 }}
                 trackColor={{ false: isDark ? '#232838' : '#CBD5E1', true: tColors.primary }}
                 thumbColor="#FFFFFF"
