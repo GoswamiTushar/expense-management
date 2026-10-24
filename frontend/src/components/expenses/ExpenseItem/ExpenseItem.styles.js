@@ -89,8 +89,14 @@ export const createExpenseItemStyles = (tColors = colors, isDark = true) =>
     amount: {
       color: tColors.textDark,
       fontSize: 15,
-      fontWeight: '800',
-      letterSpacing: -0.3,
+      fontWeight: '700',
+      letterSpacing: -0.2,
+      ...(Platform.OS === 'web'
+        ? {
+            fontFeatureSettings: '"tnum"',
+            fontVariantNumeric: 'tabular-nums',
+          }
+        : {}),
     },
     pill: {
       backgroundColor: isDark

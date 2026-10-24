@@ -41,10 +41,18 @@ export default function MainDashboard({ data, onLogout }) {
   const [activeTab, setActiveTab] = useState('home');
   const [cat, setCat] = useState('ALL');
   const [selectedMember, setSelectedMember] = useState('ALL');
+  const [selectedMonth, setSelectedMonth] = useState('ALL');
   const [settleWith, setSettleWith] = useState(null);
   const [settlementToEdit, setSettlementToEdit] = useState(null);
   const [selectedExpense, setSelectedExpense] = useState(null);
   const [activeModal, setActiveModal] = useState(null);
+
+  // Reset filters when active group/property switches
+  useEffect(() => {
+    setCat('ALL');
+    setSelectedMember('ALL');
+    setSelectedMonth('ALL');
+  }, [data.activeProperty?._id, data.activeProperty?.id]);
 
   const handleSelectTab = (tab) => {
     if (tab !== activeTab) {
@@ -350,6 +358,8 @@ export default function MainDashboard({ data, onLogout }) {
             setCat={setCat}
             selectedMember={selectedMember}
             setSelectedMember={setSelectedMember}
+            selectedMonth={selectedMonth}
+            setSelectedMonth={setSelectedMonth}
             setM={setM}
             setSettleWith={setSettleWith}
             onConfirmSettlement={onConfirmSettlement}

@@ -4,10 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { createAppStyles } from '../../styles/app.styles';
 import { useTheme } from '../../context/ThemeContext';
 import BalanceCard from '../balance/BalanceCard/BalanceCard';
-import WhoOwesWhoCard from '../balance/WhoOwesWho/WhoOwesWhoCard';
 import PendingSettlementsCard from '../settlement/PendingSettlementsCard/PendingSettlementsCard';
-import CategoryFilters from '../expenses/CategoryFilters/CategoryFilters';
-import MemberFilters from '../expenses/MemberFilters/MemberFilters';
+import ConsolidatedFilters, { getExpenseMonthKey } from '../expenses/ConsolidatedFilters/ConsolidatedFilters';
 import ExpenseList from '../expenses/ExpenseList/ExpenseList';
 import ExportButton from '../export/ExportButton';
 
@@ -17,6 +15,8 @@ export default function DashboardContent({
   setCat,
   selectedMember = 'ALL',
   setSelectedMember = () => {},
+  selectedMonth = 'ALL',
+  setSelectedMonth = () => {},
   setM,
   setSettleWith,
   onConfirmSettlement,
@@ -62,9 +62,10 @@ export default function DashboardContent({
   const filtered = useMemo(() => {
     return (data.expenses || [])
       .filter((e) => !e.isDeleted && !e.deleted && e.deleted !== 'Y' && e.isDeleted !== 'Y')
+      .filter((e) => (selectedMonth === 'ALL' ? true : getExpenseMonthKey(e) === selectedMonth))
       .filter((e) => (cat === 'ALL' ? true : e.category === cat))
       .filter((e) => (selectedMember === 'ALL' ? true : String(e.paidBy) === String(selectedMember)));
-  }, [data.expenses, cat, selectedMember]);
+  }, [data.expenses, selectedMonth, cat, selectedMember]);
 
   const renderLoading = () => (
     <View style={[styles.emptyBox, { paddingVertical: 64 }]}>
@@ -173,6 +174,10 @@ export default function DashboardContent({
             expenses={data.expenses}
             userMap={userMap}
             currentUser={data.currentUser}
+            onSettleWithUser={(user, amount, isOwedByMe = true) => {
+              setSettleWith({ user, amount, isOwedByMe });
+              setM('showSettle', true);
+            }}
           />
           <PendingSettlementsCard
             pendingIncoming={data.balanceData?.pendingIncoming || []}
@@ -183,26 +188,44 @@ export default function DashboardContent({
             onEdit={onEditSettlement}
             onOpenHistory={onOpenSettlements}
           />
-          <WhoOwesWhoCard
-            balanceData={data.balanceData}
-            userMap={userMap}
-            onSettleWithUser={(user, amount, isOwedByMe = true) => {
-              setSettleWith({ user, amount, isOwedByMe });
-              setM('showSettle', true);
-            }}
-          />
           <View style={styles.sectionHeader}>
             <View style={styles.sectionTitleBox}>
-              <Text style={styles.title}>
-                Logged Expenses ({data.totalExpenseCount || data.expenses.length})
-              </Text>
+              <Text style={styles.title}>Logged Expenses</Text>
               <Text style={styles.sub}>
-                {data.totalExpenseCount || data.expenses.length} expenses
+                {selectedMonth !== 'ALL' || cat !== 'ALL' || selectedMember !== 'ALL'
+                  ? 'Filtered transactions'
+                  : 'All group transactions'}
               </Text>
             </View>
             <View style={styles.headerActions}>
+              {(selectedMonth !== 'ALL' || cat !== 'ALL' || selectedMember !== 'ALL') && (
+                <TouchableOpacity
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 4,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    borderRadius: 9999,
+                    backgroundColor: isDark ? 'rgba(239, 68, 68, 0.12)' : 'rgba(239, 68, 68, 0.08)',
+                    borderWidth: 1,
+                    borderColor: isDark ? 'rgba(239, 68, 68, 0.28)' : 'rgba(239, 68, 68, 0.18)',
+                  }}
+                  onPress={() => {
+                    setSelectedMonth('ALL');
+                    setSelectedMember('ALL');
+                    setCat('ALL');
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="refresh" size={11} color={isDark ? '#FCA5A5' : '#DC2626'} />
+                  <Text style={{ fontSize: 11.5, fontWeight: '700', color: isDark ? '#FCA5A5' : '#DC2626' }}>
+                    Reset
+                  </Text>
+                </TouchableOpacity>
+              )}
               <ExportButton
-                expenses={data.expenses}
+                expenses={filtered}
                 property={data.activeProperty}
                 settlements={data.settlements}
                 userMap={userMap}
@@ -217,15 +240,25 @@ export default function DashboardContent({
             </View>
           )}
 
-          {/* Dynamic Group Member Filter */}
-          <MemberFilters
-            members={members}
+          {/* Consolidated Single-Row Filter Bar (Month • Member • Category) */}
+          <ConsolidatedFilters
+            selectedMonth={selectedMonth}
+            onSelectMonth={setSelectedMonth}
             selectedMember={selectedMember}
             onSelectMember={setSelectedMember}
+            selectedCategory={cat}
+            onSelectCategory={setCat}
+            members={members}
             expenseCountsByMember={expenseCountsByMember}
+            activeProperty={data.activeProperty}
+            expenses={data.expenses}
+            onClearAll={() => {
+              setSelectedMonth('ALL');
+              setSelectedMember('ALL');
+              setCat('ALL');
+            }}
           />
 
-          <CategoryFilters selectedCategory={cat} onSelectCategory={setCat} />
           <ExpenseList expenses={filtered} userMap={userMap} onSelectExpense={onSelectExpense} />
 
           {data.loadingMoreExpenses && (

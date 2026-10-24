@@ -71,8 +71,28 @@ export const createWhoOwesWhoStyles = (tColors = colors, isDark = true) =>
       fontSize: 12,
       marginTop: 2,
     },
-    list: {
-      gap: 9,
+    gridContainer: {
+      gap: 10,
+    },
+    gridRowPair: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      gap: 10,
+      width: '100%',
+    },
+    gridRowSingle: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'stretch',
+      width: '100%',
+    },
+    colPair: {
+      flex: 1,
+    },
+    colSingle: {
+      width: '48.5%',
+      minWidth: 155,
+      maxWidth: 240,
     },
   });
 

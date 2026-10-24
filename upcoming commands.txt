@@ -1,0 +1,13 @@
+/plan
+Okay here's a new part. 
+we know we had started out application as airbnb management, then transitioned to generic app which can handle every type of expenses. fiar enough satisfactory, sits well for our needs as well as generic needs.
+Thing is , now I need to implement income flow along with flow where I can log such stuff: name of the guest, how many guests, came via which platform: airbnb, booking.com, friend refferal, offline, or whatever the source was 
+I will also log from which date to which date they stayed. I will also upload their aadhaar / pan whatever document which they shared with us , we will uplaod it to s3 and keep link in db, with preview of the uploaded documents within app only
+I want to also save details of the guests which stayed like thier name number etc for leads
+I will also log how much they paid, or how much I got , how much commission the platform got from which the guest came.
+If I am missing I want suggestion what else I can save
+
+My problem is, how shall I fit this into an app which is generic to expense maanagement, my use case is very specific. I want you to plan this implementation, in a generic way so this is helpful not just in our case but for others as well who might use this app for their purposes.
+
+Let me know if this makes sense 
+or guide me or suggest me other way around if not possible.

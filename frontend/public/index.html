@@ -24,8 +24,30 @@
     <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
     <link rel="shortcut icon" href="/favicon.png" />
 
+    <!-- Google Fonts: Modern Fintech Typography (Plus Jakarta Sans & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- The `react-native-web` recommended style reset -->
     <style id="expo-reset">
+      /* Apply modern typography globally across all elements */
+      html,
+      body,
+      #root,
+      button,
+      input,
+      select,
+      textarea,
+      div,
+      span,
+      p {
+        font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+      }
+
       /* These styles make the body full-height and dark before JS executes */
       html,
       body {

@@ -35,6 +35,12 @@ yarn-error.*
 .env.local
 .env*.local
 .env.*
+backend/.env
+backend/.env.local
+frontend/.env
+frontend/.env.local
+!.env.example
+!.env*.example
 
 # typescript
 *.tsbuildinfo
@@ -49,7 +55,18 @@ __pycache__/
 *$py.class
 venv/
 .venv/
-backend/.env
-backend/.env.local
-frontend/.env
-frontend/.env.local
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+
+# Graphify Knowledge Graph & Cache
+graphify-out/
+.graphify*
+
+
